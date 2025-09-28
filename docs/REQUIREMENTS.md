@@ -16,6 +16,7 @@ Cloudflare services will be used for hosting static-assets/documents and databas
 All downloadable documents will be stored in a Cloudflare R2 bucket.
 Any database tables will be created in a Cloudflare D1 database.
 Service bindings are defined in `wrangler.jsonc`.
+Drizzle will be used for the database ORM. Setup guide: https://orm.drizzle.team/docs/get-started/d1-new
 
 ### Auth
 Better Auth will be used to set up sessions and authentication flows.

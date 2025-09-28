@@ -24,5 +24,13 @@
       "binding": "DOCUMENTS",
       "bucket_name": "documents"
     }
+  ],
+  "d1_databases": [
+    {
+      "binding": "APP",
+      "database_name": "app",
+      "database_id": "b24a968f-19e4-47d9-a981-89ab2204f486",
+      "migrations_dir": "./database/migrations"
+    }
   ]
 }
