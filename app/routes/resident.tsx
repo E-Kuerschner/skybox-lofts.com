@@ -123,7 +123,7 @@ export default function Resident({ actionData }: Route.ComponentProps) {
               )}
               <button
                 type="submit"
-                className="w-full px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors duration-200 text-lg"
+                className="inline-flex items-center justify-center w-full md:w-auto px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all duration-200 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 Sign in
               </button>
