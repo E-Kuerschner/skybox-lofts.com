@@ -1,8 +1,19 @@
 import type { Route } from "./+types/resident";
+import { useRevalidator } from "react-router";
 import { authClient } from "~/util/authClient";
 import { getAuth } from "~/auth";
+import { PasswordEntryForm } from "~/components/PasswordEntryForm";
 
-const { useSession } = authClient;
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const auth = getAuth(context);
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+
+  return {
+    session,
+  };
+}
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -44,91 +55,59 @@ export async function action({ request, context }: Route.ActionArgs) {
   }
 }
 
-export default function Resident({ actionData }: Route.ComponentProps) {
-  const { data: session, isPending } = useSession();
+export default function Resident({ loaderData }: Route.ComponentProps) {
+  const { session } = loaderData;
+  const revalidator = useRevalidator();
 
   const handleSignOut = async () => {
     try {
       await authClient.signOut();
+      revalidator.revalidate();
     } catch (error) {
       console.error("Sign out failed:", error);
     }
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen pt-16 pb-4">
-      <div className="text-center space-y-8">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+    <main className="flex items-center justify-center min-h-screen pt-16 pb-4 bg-gradient-to-b from-stone-100 to-neutral-50">
+      <div className="text-center space-y-8 px-6">
+        <h1 className="text-4xl font-bold text-foreground">
           Resident Area
         </h1>
 
-        {isPending ? (
-          <div className="text-lg text-gray-600 dark:text-gray-400">
-            Loading...
-          </div>
-        ) : session?.user ? (
+        {session?.user ? (
           <div className="space-y-6">
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 max-w-md mx-auto">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <div className="bg-card rounded-lg p-6 max-w-md mx-auto border shadow-lg">
+              <h2 className="text-xl font-semibold text-foreground mb-4">
                 Session Info
               </h2>
               <div className="space-y-2 text-left">
-                <p className="text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">User ID:</span>{" "}
+                <p className="text-muted-foreground">
+                  <span className="font-medium text-foreground">User ID:</span>{" "}
                   {session.user.id}
                 </p>
-                <p className="text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Name:</span> {session.user.name}
+                <p className="text-muted-foreground">
+                  <span className="font-medium text-foreground">Name:</span> {session.user.name}
                 </p>
-                <p className="text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Anonymous:</span>{" "}
+                <p className="text-muted-foreground">
+                  <span className="font-medium text-foreground">Anonymous:</span>{" "}
                   {session.user.isAnonymous ? "Yes" : "No"}
                 </p>
-                <p className="text-gray-700 dark:text-gray-300">
-                  <span className="font-medium">Session ID:</span>{" "}
+                <p className="text-muted-foreground">
+                  <span className="font-medium text-foreground">Session ID:</span>{" "}
                   {session.session.id}
                 </p>
               </div>
             </div>
             <button
               onClick={handleSignOut}
-              className="inline-block px-8 py-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-200 text-lg"
+              className="inline-block px-8 py-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold rounded-lg transition-colors duration-200 text-lg shadow"
             >
               Sign out
             </button>
           </div>
         ) : (
-          <div className="space-y-6">
-            <form method="post" className="max-w-md mx-auto space-y-4">
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Enter Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white text-lg"
-                  placeholder="Password"
-                />
-              </div>
-              {actionData?.error && (
-                <div className="text-red-600 dark:text-red-400 text-sm">
-                  {actionData.error}
-                </div>
-              )}
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center w-full md:w-auto px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all duration-200 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              >
-                Sign in
-              </button>
-            </form>
-          </div>
+          <PasswordEntryForm />
         )}
       </div>
     </main>
