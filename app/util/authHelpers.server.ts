@@ -1,8 +1,8 @@
-import { getAuth } from "~/auth";
 import { type AppLoadContext, redirect } from "react-router";
+import { getAuth } from "~/auth";
 
 type Options = {
-  skipRedirect?: boolean;
+  returnUnauthorized?: boolean;
 };
 
 export async function isAuthenticated(
@@ -16,12 +16,10 @@ export async function isAuthenticated(
   });
 
   if (!session) {
-    if (options?.skipRedirect) {
-      throw new Error("Unauthorized");
+    if (options?.returnUnauthorized) {
+      throw new Response("Unauthorized", { status: 401 });
     }
 
-    return redirect("/resident/login");
+    throw redirect("/resident/login");
   }
-
-  return session;
 }

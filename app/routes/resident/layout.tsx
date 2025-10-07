@@ -1,11 +1,15 @@
-import { Link, Outlet, useLocation } from "react-router";
-import TextLogo from "../../components/text-logo.svg";
+import { useMemo } from "react";
+import { Link, Outlet, useLocation, useRevalidator } from "react-router";
+import { LogOut } from "lucide-react";
 import { WrigleyClock } from "~/components/WrigleyClock";
 import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
-import { useMemo } from "react";
+import { Button } from "~/components/ui/button";
+import { authClient } from "~/util/authClient";
+import TextLogo from "../../components/text-logo.svg";
 
 export default function ResidentLayout() {
   const location = useLocation();
+  const revalidator = useRevalidator();
   const pathSegments = location.pathname.split("/").filter(Boolean);
 
   const pageTitle = useMemo(() => {
@@ -17,6 +21,16 @@ export default function ResidentLayout() {
     if (lastSegment === "budget") return "Budget";
     return "Resident Info";
   }, [pathSegments]);
+
+  const handleSignOut = async () => {
+    authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          revalidator.revalidate();
+        },
+      },
+    });
+  };
 
   return (
     <div className="flex h-full">
@@ -44,8 +58,16 @@ export default function ResidentLayout() {
         </nav>
       </aside>
       <main className="flex-grow">
-        <div className="p-6 ps-8 flex items-center justify-between border-b border-stone-200">
+        <div className="p-6 ps-8 pe-6 flex items-center justify-between border-b border-stone-200">
           <ResidentBreadcrumbs />
+          <Button
+            onClick={handleSignOut}
+            variant="ghost"
+            size="icon"
+            aria-label="Sign out"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
         </div>
         <div className="p-8">
           <h1 className="mt-4 text-4xl mb-8 text-green-900">{pageTitle}</h1>

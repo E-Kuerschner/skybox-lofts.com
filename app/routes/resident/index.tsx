@@ -1,13 +1,12 @@
 import type { Route } from "./+types/index";
-import { isAuthenticated } from "~/util/authHelpers.server";
 import { ContentCard } from "~/components/ContentCard";
 import { ContactForm } from "~/components/ContactForm";
+import { isAuthenticated } from "~/util/authHelpers.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const session = await isAuthenticated(request, context);
+  await isAuthenticated(request, context);
 
   return {
-    session,
     contactEmail: context.cloudflare.env.CONTACT_US_EMAIL,
   };
 }

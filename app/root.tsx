@@ -10,6 +10,13 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 
+export function meta() {
+  return [
+    { title: "Skybox Lofts" },
+    { name: "description", content: "Welcome to Skybox Lofts" },
+  ];
+}
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {

@@ -49,9 +49,13 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     headers: request.headers,
   });
 
+  console.log("login session", session);
+
   if (session) {
     return redirect("/resident");
   }
+
+  return null;
 }
 
 export default function ResidentLogin() {

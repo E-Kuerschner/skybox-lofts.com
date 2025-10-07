@@ -4,7 +4,7 @@ import { isAuthenticated } from "~/util/authHelpers.server";
 
 export async function action({ request, context }: Route.ActionArgs) {
   await isAuthenticated(request, context, {
-    skipRedirect: true,
+    returnUnauthorized: true,
   });
 
   const formData = await request.formData();

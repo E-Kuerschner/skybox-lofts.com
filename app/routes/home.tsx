@@ -1,16 +1,8 @@
-import type { Route } from "./+types/home";
 import { Link } from "react-router";
+import { ArrowRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { ContentCard } from "~/components/ContentCard";
-import { ArrowRight } from "lucide-react";
 import pennantLogoGreen from "../components/pennant-logo-green.svg";
-
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Skybox Lofts" },
-    { name: "description", content: "Welcome to Skybox Lofts" },
-  ];
-}
 
 export default function Home() {
   return (

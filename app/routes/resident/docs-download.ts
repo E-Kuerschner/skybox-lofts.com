@@ -1,5 +1,5 @@
+import type { Route } from "./+types/docs-download";
 import { isAuthenticated } from "~/util/authHelpers.server";
-import type { Route } from "../../../.react-router/types/app/routes/+types";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAuthenticated(request, context);

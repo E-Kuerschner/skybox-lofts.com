@@ -1,9 +1,11 @@
 import type { Route } from "./+types/board";
 import { ContentCard } from "~/components/ContentCard";
 import { getDatabase } from "~/util/database.server";
+import { isAuthenticated } from "~/util/authHelpers.server";
 import { boardMembers } from "../../../database/schema";
 
-export async function loader({ context }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
+  await isAuthenticated(request, context);
   const db = getDatabase(context);
 
   const boardMemberData = await db.select().from(boardMembers);
