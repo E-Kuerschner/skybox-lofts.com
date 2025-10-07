@@ -14,17 +14,15 @@ export function PasswordEntryForm() {
   const actionData = useActionData<{ error?: string }>();
 
   return (
-    <Card className="max-w-md mx-auto border-4 border-[#2d5016]/10 shadow-xl">
+    <Card className="max-w-md mx-auto border-4 border-[#2d5016]/10 shadow-xl min-w-[400px] min-h-[350px]">
       <CardHeader className="space-y-2">
-        <CardTitle className="text-2xl text-center">
-          Resident Access
-        </CardTitle>
+        <CardTitle className="text-2xl text-center">Resident Access</CardTitle>
         <CardDescription className="text-center">
           Enter the building password to continue
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form method="post" className="space-y-4">
+        <Form method="post" className="space-y-4 flex flex-col grow">
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
@@ -41,13 +39,11 @@ export function PasswordEntryForm() {
               {actionData.error}
             </div>
           )}
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full bg-[#2d5016] hover:bg-[#2d5016]/90 text-white shadow-lg hover:shadow-xl transition-all"
-          >
-            Sign In
-          </Button>
+          <div className="flex items-end grow">
+            <Button type="submit" size="lg" className="w-full transition-all">
+              Sign In
+            </Button>
+          </div>
         </Form>
       </CardContent>
     </Card>

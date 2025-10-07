@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["vite.config.ts",
+  "include": [
+    "vite.config.ts",
+    "react-router.config.ts",
     "database/**/*.ts",
     "better-auth-config.ts",
     "app/auth/options.ts"

@@ -69,11 +69,11 @@ The project uses **shadcn/ui** for building the component library:
 - Base color: "neutral"
 - Icon library: Lucide React
 - Path aliases configured:
-  - `@/app/components` → components
-  - `@/app/components/ui` → ui components
-  - `@/app/lib` → utilities
-  - `@/app/utils` → utilities
-  - `@/app/hooks` → hooks
+  - `~/components` → components
+  - `~/components/ui` → ui components
+  - `~/lib` → utilities
+  - `~/utils` → utilities
+  - `~/hooks` → hooks
 
 TailwindCSS v4 is configured via Vite plugin with CSS variables for theming.
 
@@ -99,4 +99,7 @@ Project requirements and specifications are documented in the `docs/` folder.
 - The project uses modern React 19 and React Router 7 patterns
 - TailwindCSS v4 is configured via Vite plugin (not a config file)
 - When adding shadcn components, they will be installed with all necessary dependencies automatically
-- ALWAYS use Tailwind theme variables (from app.css) instead of raw color utility classes e.g. text-muted-foreground over text-neutral-600 
+- ALWAYS use Tailwind theme variables (from app.css) instead of raw color utility classes e.g. text-muted-foreground over text-neutral-600
+- Use the Playwright MCP server to view or verify your changes on localhost at port 5173
+- Always check if the dev server is running first before trying to start it yourself
+- All file names for React component should be in PascalCase
