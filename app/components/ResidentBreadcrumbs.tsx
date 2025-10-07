@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { Link, useLocation } from "react-router";
 import {
   Breadcrumb,
@@ -29,7 +30,7 @@ export const ResidentBreadcrumbs = () => {
           const label = segment.charAt(0).toUpperCase() + segment.slice(1);
 
           return (
-            <div key={`crumb-${segment}`}>
+            <Fragment key={`crumb-${segment}`}>
               <BreadcrumbSeparator />
               <BreadcrumbItem key={segment}>
                 {isLast ? (
@@ -43,7 +44,7 @@ export const ResidentBreadcrumbs = () => {
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
-            </div>
+            </Fragment>
           );
         })}
       </BreadcrumbList>
