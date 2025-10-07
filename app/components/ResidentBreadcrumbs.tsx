@@ -29,7 +29,7 @@ export const ResidentBreadcrumbs = () => {
           const label = segment.charAt(0).toUpperCase() + segment.slice(1);
 
           return (
-            <>
+            <div key={`crumb-${segment}`}>
               <BreadcrumbSeparator />
               <BreadcrumbItem key={segment}>
                 {isLast ? (
@@ -43,7 +43,7 @@ export const ResidentBreadcrumbs = () => {
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
-            </>
+            </div>
           );
         })}
       </BreadcrumbList>
