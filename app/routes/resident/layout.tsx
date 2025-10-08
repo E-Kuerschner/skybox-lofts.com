@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useRevalidator } from "react-router";
-import { LogOut } from "lucide-react";
+import { LogOutIcon, Menu } from "lucide-react";
 import { WrigleyClock } from "~/components/WrigleyClock";
 import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
 import { Button } from "~/components/ui/button";
 import { authClient } from "~/util/authClient";
+import { cn } from "~/lib/utils";
 import TextLogo from "../../components/text-logo.svg";
 
 export default function ResidentLayout() {
@@ -32,9 +33,21 @@ export default function ResidentLayout() {
     });
   };
 
+  const [isOpen, setIsOpen] = useState(false);
+  const toggleMenuOpen = () => {
+    setIsOpen((open) => !open);
+  };
+
+  // close the mobile menu when the location changes
+  const [lastLocation, setLastLocation] = useState(location.pathname);
+  if (location.pathname !== lastLocation) {
+    setIsOpen(false);
+    setLastLocation(location.pathname);
+  }
+
   return (
-    <div className="flex h-full">
-      <aside className="w-64 shrink-0 border-e border-stone-200 shadow-m">
+    <div className="md:flex h-full">
+      <aside className="hidden md:block w-64 shrink-0 border-e border-stone-200 shadow-m">
         <div className="flex flex-col px-8 pt-8">
           <a href="/" aria-label="Go home">
             <img src={TextLogo} alt="Skybox Lofts" className="" />
@@ -57,23 +70,76 @@ export default function ResidentLayout() {
           </Link>
         </nav>
       </aside>
-      <main className="flex-grow">
-        <div className="p-6 ps-8 pe-6 flex items-center justify-between border-b border-stone-200">
-          <ResidentBreadcrumbs />
+      <main
+        className={cn("md:flex-grow flex flex-col md:block h-full", {
+          "overflow-hidden": isOpen,
+        })}
+      >
+        <a
+          href="/"
+          aria-label="Go home"
+          className="md:hidden self-center mt-8 drop-shadow-2xl"
+        >
+          <img src={TextLogo} alt="Skybox Lofts" className="" />
+        </a>
+        <div className="p-6 ps-8 pe-6 flex items-center border-b border-stone-200">
+          <Button
+            className="md:hidden justify-self-start border-2 me-4"
+            onClick={toggleMenuOpen}
+            variant="ghost"
+            size="icon"
+            aria-label="Open nav menu"
+          >
+            <Menu className="h-8 w-8" />
+          </Button>
+          <ResidentBreadcrumbs className="grow" />
           <Button
             onClick={handleSignOut}
             variant="ghost"
             size="icon"
             aria-label="Sign out"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOutIcon className="h-5 w-5" />
           </Button>
         </div>
         <div className="p-8">
-          <h1 className="mt-4 text-4xl mb-8 text-green-900">{pageTitle}</h1>
+          <h1 className="text-4xl mb-8 text-green-900">{pageTitle}</h1>
           <Outlet />
         </div>
       </main>
+      {isOpen && (
+        <div
+          className="fixed top-0 left-0 h-dvh w-dvw opacity-15 bg-slate-600"
+          onClick={toggleMenuOpen}
+        />
+      )}
+      <aside
+        className={cn(
+          "absolute z-10 top-0 left-0 md:hidden h-full w-64 site-bg -translate-x-full transition-transform duration-500 ease-in-out",
+          {
+            "-translate-x-0": isOpen,
+          },
+        )}
+      >
+        <div className="flex flex-col px-8 pt-8">
+          <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
+          <hr className="border-1 border-stone-500" />
+        </div>
+        <nav className="flex flex-col">
+          <Link
+            className="hover:text-emerald-600  py-6 text-center hover:bg-stone-200"
+            to="/resident/documents"
+          >
+            Documents
+          </Link>
+          <Link
+            className="hover:text-emerald-600 py-6 text-center hover:bg-stone-200"
+            to="/resident/board"
+          >
+            Board Members
+          </Link>
+        </nav>
+      </aside>
     </div>
   );
 }

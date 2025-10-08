@@ -9,17 +9,21 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 
-export const ResidentBreadcrumbs = () => {
+type Props = {
+  className?: string;
+};
+
+export const ResidentBreadcrumbs = ({ className }: Props) => {
   const location = useLocation();
   const pathSegments = location.pathname.split("/").filter(Boolean);
 
   return (
-    <Breadcrumb>
+    <Breadcrumb className={className}>
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink
             asChild
-            className="text-emerald-600 hover:text-emerald-800 hover:underline"
+            className="text-emerald-600 hover:text-emerald-800 hover:underline text-lg md:text-base"
           >
             <Link to="/">Home</Link>
           </BreadcrumbLink>
@@ -34,10 +38,12 @@ export const ResidentBreadcrumbs = () => {
               <BreadcrumbSeparator />
               <BreadcrumbItem key={segment}>
                 {isLast ? (
-                  <BreadcrumbPage>{label}</BreadcrumbPage>
+                  <BreadcrumbPage className="md:text-base text-lg">
+                    {label}
+                  </BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink
-                    className="text-emerald-600 hover:text-emerald-800 hover:underline"
+                    className="text-emerald-600 hover:text-emerald-800 hover:underline text-lg md:text-base"
                     asChild
                   >
                     <Link to={href}>{label}</Link>

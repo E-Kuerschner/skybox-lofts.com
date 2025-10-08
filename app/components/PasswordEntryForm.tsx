@@ -14,7 +14,7 @@ export function PasswordEntryForm() {
   const actionData = useActionData<{ error?: string }>();
 
   return (
-    <Card className="max-w-md mx-auto border-4 border-[#2d5016]/10 shadow-xl min-w-[400px] min-h-[350px]">
+    <Card className="max-w-md mx-auto border-4 border-[#2d5016]/10 shadow-xl min-w-[300px] md:min-w-[400px] min-h-[350px]">
       <CardHeader className="space-y-2">
         <CardTitle className="text-2xl text-center">Resident Access</CardTitle>
         <CardDescription className="text-center">
@@ -40,7 +40,12 @@ export function PasswordEntryForm() {
             </div>
           )}
           <div className="flex items-end grow">
-            <Button type="submit" size="lg" className="w-full transition-all">
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full transition-all"
+              variant="cta"
+            >
               Sign In
             </Button>
           </div>

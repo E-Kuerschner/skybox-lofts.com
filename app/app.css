@@ -135,3 +135,9 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+    .site-bg {
+        @apply bg-gradient-to-b from-stone-100 to-neutral-50 dark:bg-gray-950;
+    }
+}

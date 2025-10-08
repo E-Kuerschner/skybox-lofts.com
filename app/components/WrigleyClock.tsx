@@ -55,7 +55,9 @@ export const WrigleyClock = ({ className }: Props) => {
         cx="285"
         cy="285"
         r="280"
-        fill="url(#paint0_linear_0_1)"
+        // fill="url(#paint0_linear_0_1)"
+        // TODO why does linear gradient work on mobile screen sizes
+        fill="#27342D"
         stroke="#FFF5D2"
         strokeWidth="10"
       />
@@ -121,7 +123,9 @@ export const WrigleyClock = ({ className }: Props) => {
       />
       <path
         d="M285 278.5C289.142 278.5 292.5 281.858 292.5 286C292.5 290.143 289.142 293.5 285 293.5C280.858 293.5 277.5 290.143 277.5 286C277.5 281.858 280.858 278.5 285 278.5Z"
-        stroke="url(#paint1_linear_0_1)"
+        // TODO why does linear gradient work on mobile screen sizes
+        fill="#27342D"
+        // stroke="url(#paint1_linear_0_1)"
         strokeWidth="3"
       />
       <defs>
