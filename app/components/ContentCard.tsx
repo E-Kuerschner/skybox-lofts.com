@@ -14,7 +14,7 @@ export function ContentCard({
   return (
     <Card
       className={cn(
-        "rounded-2xl shadow-xl p-8 md:p-12 border-4 border-[#2d5016]/10 relative overflow-hidden",
+        "rounded-2xl shadow-xl p-6 md:p-8 border-4 border-[#2d5016]/10 relative overflow-hidden",
         className,
       )}
       {...props}

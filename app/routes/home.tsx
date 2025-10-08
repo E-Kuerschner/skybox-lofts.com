@@ -28,7 +28,7 @@ export default function Home() {
       </header>
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-8 flex-grow">
-        <ContentCard className="px-6">
+        <ContentCard>
           <div className="text-center space-y-6">
             <h1 className="text-3xl md:text-5xl font-bold text-foreground tracking-tight">
               Welcome to Skybox Lofts!

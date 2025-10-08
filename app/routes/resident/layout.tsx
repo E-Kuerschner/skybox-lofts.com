@@ -98,12 +98,11 @@ export default function ResidentLayout() {
       >
         <Button
           onClick={toggleMenuOpen}
-          variant="ghost"
-          size="icon"
+          variant="icon"
           aria-label="Close nav menu"
-          className="absolute top-4 right-4 bg-white border-2 hover:scale-[0.9]"
+          className="absolute top-4 right-4"
         >
-          <XIcon className="size-5" />
+          <XIcon className="size-4" />
         </Button>
         <SideBarContent renderLogo={false} />
       </aside>
@@ -120,23 +119,16 @@ export default function ResidentLayout() {
         </a>
         <div className="p-6 ps-8 pe-6 flex items-center border-b border-stone-200">
           <Button
-            className="md:hidden justify-self-start border-2 me-4 bg-white"
+            className="md:hidden me-3"
             onClick={toggleMenuOpen}
-            variant="ghost"
-            size="icon"
+            variant="icon"
             aria-label="Open nav menu"
           >
-            <Menu className="h-8 w-8" />
+            <Menu className="size-4" />
           </Button>
           <ResidentBreadcrumbs className="grow" />
-          <Button
-            onClick={handleSignOut}
-            variant="ghost"
-            size="icon"
-            aria-label="Sign out"
-            className="border-2 hover:scale-[0.9] bg-white"
-          >
-            <LogOutIcon className="h-5 w-5" />
+          <Button onClick={handleSignOut} variant="icon" aria-label="Sign out">
+            <LogOutIcon className="size-4" />
           </Button>
         </div>
         <div className="relative z-10 p-8">

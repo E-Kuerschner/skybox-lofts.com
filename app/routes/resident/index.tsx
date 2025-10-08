@@ -14,7 +14,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 export default function Index({ loaderData }: Route.ComponentProps) {
   return (
     <div className="flex flex-col md:flex-row gap-8">
-      <ContentCard className="p-6 md:p-8 flex-1">
+      <ContentCard className="flex-1">
         <h2 className="text-2xl font-semibold text-foreground mb-2">
           News & Announcements
         </h2>
@@ -22,7 +22,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
           No announcements at this time.
         </div>
       </ContentCard>
-      <ContentCard className="p-6 md:p-8 flex-2">
+      <ContentCard className="flex-2">
         <h2 className="text-2xl font-semibold text-foreground mb-2">
           Contact Us
         </h2>
