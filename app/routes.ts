@@ -7,17 +7,17 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
-  index("routes/home.tsx"),
-  route("contact", "routes/contact.ts"),
+  index("routes/Home.tsx"),
+  route("contact", "routes/contactForm.ts"),
   route("api/auth/*", "routes/auth.ts"),
   ...prefix("resident", [
-    route("login", "routes/resident/login.tsx"),
-    layout("routes/resident/layout.tsx", [
-      index("routes/resident/index.tsx"),
-      route("board", "routes/resident/board.tsx"),
+    route("login", "routes/ResidentLogin.tsx"),
+    layout("routes/ResidentLayout.tsx", [
+      index("routes/ResidentHome.tsx"),
+      route("board", "routes/BoardMembers.tsx"),
       ...prefix("documents", [
-        index("routes/resident/documents.tsx"),
-        route("download", "routes/resident/docs-download.ts"),
+        index("routes/Documents.tsx"),
+        route("download", "routes/documentDownload.ts"),
       ]),
     ]),
   ]),

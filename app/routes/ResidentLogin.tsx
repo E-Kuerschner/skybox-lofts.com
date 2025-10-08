@@ -1,8 +1,8 @@
-import type { Route } from ".react-router/types/app/routes/resident/+types";
+import type { Route } from "./+types/ResidentLogin";
 import { getAuth } from "~/auth";
 import { PasswordEntryForm } from "~/components/PasswordEntryForm";
 import { redirect } from "react-router";
-import TextLogo from "../../components/text-logo.svg";
+import TextLogo from "../components/text-logo.svg";
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -61,7 +61,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 export default function ResidentLogin() {
   return (
     <main className="flex flex-col gap-4 items-center justify-center min-h-screen pt-16 pb-4 bg-gradient-to-b from-stone-100 to-neutral-50">
-      <a href="/" aria-label="Go home">
+      <a href="/public" aria-label="Go home">
         <img
           src={TextLogo}
           alt="Skybox Lofts"

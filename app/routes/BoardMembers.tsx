@@ -1,8 +1,8 @@
-import type { Route } from "./+types/board";
+import type { Route } from "./+types/BoardMembers";
 import { ContentCard } from "~/components/ContentCard";
 import { getDatabase } from "~/util/database.server";
 import { isAuthenticated } from "~/util/authHelpers.server";
-import { boardMembers } from "../../../database/schema";
+import { boardMembers } from "../../database/schema";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAuthenticated(request, context);
@@ -14,7 +14,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   };
 }
 
-export default function BoardMembersPage({ loaderData }: Route.ComponentProps) {
+export default function BoardMembers({ loaderData }: Route.ComponentProps) {
   return (
     <ContentCard>
       <table className="w-full">

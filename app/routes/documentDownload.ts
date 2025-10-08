@@ -1,4 +1,4 @@
-import type { Route } from "./+types/docs-download";
+import type { Route } from "./+types/documentDownload";
 import { isAuthenticated } from "~/util/authHelpers.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {

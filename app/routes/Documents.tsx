@@ -1,8 +1,7 @@
-import { isAuthenticated } from "~/util/authHelpers.server";
-import type { Route } from "./+types/documents";
-import type { AppLoadContext } from "react-router";
 import { Suspense } from "react";
-import { Await } from "react-router";
+import { Await, type AppLoadContext } from "react-router";
+import type { Route } from "./+types/Documents";
+import { isAuthenticated } from "~/util/authHelpers.server";
 import {
   Accordion,
   AccordionContent,
@@ -60,9 +59,7 @@ function LoadingSpinner() {
 
 const defaultAccordionValue = ["building-info"];
 
-export default function DocumentsHomePage({
-  loaderData,
-}: Route.ComponentProps) {
+export default function Documents({ loaderData }: Route.ComponentProps) {
   return (
     <div>
       <p className="text-muted-foreground mb-6">

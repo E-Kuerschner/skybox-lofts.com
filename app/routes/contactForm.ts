@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import type { Route } from "./+types/contact";
+import type { Route } from "./+types/contactForm";
 import { isAuthenticated } from "~/util/authHelpers.server";
 
 export async function action({ request, context }: Route.ActionArgs) {

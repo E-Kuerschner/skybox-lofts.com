@@ -1,4 +1,4 @@
-import type { Route } from "./+types/index";
+import type { Route } from "./+types/ResidentHome";
 import { ContentCard } from "~/components/ContentCard";
 import { ContactForm } from "~/components/ContactForm";
 import { isAuthenticated } from "~/util/authHelpers.server";
@@ -11,7 +11,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   };
 }
 
-export default function Index({ loaderData }: Route.ComponentProps) {
+export default function ResidentHome({ loaderData }: Route.ComponentProps) {
   return (
     <div className="flex flex-col md:flex-row gap-8">
       <ContentCard className="flex-1">

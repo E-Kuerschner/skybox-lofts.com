@@ -6,14 +6,14 @@ import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
 import { Button } from "~/components/ui/button";
 import { authClient } from "~/util/authClient";
 import { cn } from "~/lib/utils";
-import TextLogo from "../../components/text-logo.svg";
+import TextLogo from "../components/text-logo.svg";
 
 const SideBarContent = ({ renderLogo = true }: { renderLogo?: boolean }) => {
   return (
     <div>
       <div className="flex flex-col px-8 pt-8">
         {renderLogo && (
-          <a href="/" aria-label="Go home">
+          <a href="/public" aria-label="Go home">
             <img src={TextLogo} alt="Skybox Lofts" className="" />
           </a>
         )}
@@ -114,7 +114,11 @@ export default function ResidentLayout() {
           },
         )}
       >
-        <a href="/" aria-label="Go home" className="md:hidden self-center mt-8">
+        <a
+          href="/public"
+          aria-label="Go home"
+          className="md:hidden self-center mt-8"
+        >
           <img src={TextLogo} alt="Skybox Lofts" className="" />
         </a>
         <div className="p-6 ps-8 pe-6 flex items-center border-b border-stone-200">
