@@ -39,6 +39,7 @@ const LayoutNavLink = ({ children, ...props }: LayoutNavLinkProps) => {
   );
 };
 
+// shared elements between the mobile, collapsible sidebar the static desktop version
 const SideBarContent = ({
   renderLogo = true,
   className,
@@ -108,7 +109,7 @@ export default function ResidentLayout() {
       <aside className="hidden md:block w-64 shrink-0 border-e border-stone-200 shadow-m">
         <SideBarContent />
       </aside>
-      {/* overlay fixed behind the menu */}
+      {/* overlay fixed behind the collapsible, mobile sidebar */}
       {isOpen && (
         <div
           className="fixed z-10 top-0 left-0 h-dvh w-dvw opacity-15 bg-slate-600"
