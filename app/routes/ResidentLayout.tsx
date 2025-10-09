@@ -12,7 +12,7 @@ import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
 import { Button } from "~/components/ui/button";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { authClient } from "~/util/authClient";
-import { cn } from "~/lib/utils";
+import { cn } from "~/util/ui/utils";
 import TextLogo from "../components/text-logo.svg";
 
 type LayoutNavLinkProps = Omit<NavLinkProps, "children"> & {

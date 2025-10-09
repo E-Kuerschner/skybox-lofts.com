@@ -1,4 +1,4 @@
-import { cn } from "~/lib/utils";
+import { cn } from "~/util/ui/utils";
 
 type Props = {
   className?: string;
