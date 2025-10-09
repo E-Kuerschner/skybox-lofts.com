@@ -1,18 +1,43 @@
 import { useMemo, useState } from "react";
 import {
-  Link,
   Outlet,
   useLocation,
   useRevalidator,
   NavLink,
+  type NavLinkProps,
 } from "react-router";
 import { LogOutIcon, Menu } from "lucide-react";
 import { WrigleyClock } from "~/components/WrigleyClock";
 import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
 import { Button } from "~/components/ui/button";
+import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { authClient } from "~/util/authClient";
 import { cn } from "~/lib/utils";
 import TextLogo from "../components/text-logo.svg";
+
+type LayoutNavLinkProps = Omit<NavLinkProps, "children"> & {
+  children: string;
+};
+
+const LayoutNavLink = ({ children, ...props }: LayoutNavLinkProps) => {
+  return (
+    <NavLink
+      className={({ isActive }) =>
+        cn("hover:text-emerald-600 py-6 w-full", {
+          "text-emerald-600": isActive,
+        })
+      }
+      {...props}
+    >
+      {({ isPending }) => (
+        <span className="flex items-center gap-3">
+          <span>{children}</span>
+          {isPending && <LoadingSpinner className="inline size-4" />}
+        </span>
+      )}
+    </NavLink>
+  );
+};
 
 const SideBarContent = ({
   renderLogo = true,
@@ -31,37 +56,11 @@ const SideBarContent = ({
       <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
       <hr className="border-1 border-slate-200" />
       <nav className="flex flex-col items-start *:hover:translate-x-2 *:transition-transform *:hover:scale-105 *:active:scale-[0.9] *:active:text-emerald-600">
-        <NavLink
-          end
-          className={({ isActive }) =>
-            cn("hover:text-emerald-600 py-6 w-full", {
-              "text-emerald-600": isActive,
-            })
-          }
-          to="/resident"
-        >
+        <LayoutNavLink end to="/resident">
           Resident Home
-        </NavLink>
-        <NavLink
-          className={({ isActive }) =>
-            cn("hover:text-emerald-600 py-6 w-full", {
-              "text-emerald-600": isActive,
-            })
-          }
-          to="/resident/documents"
-        >
-          Documents
-        </NavLink>
-        <NavLink
-          className={({ isActive }) =>
-            cn("hover:text-emerald-600 py-6 w-full", {
-              "text-emerald-600": isActive,
-            })
-          }
-          to="/resident/board"
-        >
-          Board Members
-        </NavLink>
+        </LayoutNavLink>
+        <LayoutNavLink to="/resident/documents">Documents</LayoutNavLink>
+        <LayoutNavLink to="/resident/board">Board Members</LayoutNavLink>
       </nav>
     </div>
   );

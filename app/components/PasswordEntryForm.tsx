@@ -1,4 +1,4 @@
-import { Form, useActionData } from "react-router";
+import { Form, useActionData, useNavigation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -12,6 +12,9 @@ import {
 
 export function PasswordEntryForm() {
   const actionData = useActionData<{ error?: string }>();
+  const navigation = useNavigation();
+
+  const isSubmitting = navigation.formAction === "/resident/login";
 
   return (
     <Card className="max-w-md mx-auto border-4 border-[#2d5016]/10 shadow-xl min-w-[300px] md:min-w-[400px] min-h-[350px]">
@@ -45,6 +48,7 @@ export function PasswordEntryForm() {
               size="lg"
               className="w-full transition-all"
               variant="cta"
+              disabled={isSubmitting}
             >
               Sign In
             </Button>

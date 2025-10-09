@@ -60,17 +60,15 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
 export default function ResidentLogin() {
   return (
-    <main className="flex flex-col gap-4 items-center justify-center min-h-screen pt-16 pb-4 bg-gradient-to-b from-stone-100 to-neutral-50">
-      <a href="/public" aria-label="Go home">
+    <main className="flex flex-col gap-4 items-center justify-center min-h-screen site-bg">
+      <a href="/" aria-label="Go home">
         <img
           src={TextLogo}
           alt="Skybox Lofts"
           className="drop-shadow-xl hover:scale-[1.05] transition-transform duration-200"
         />
       </a>
-      <div className="text-center space-y-8 px-6">
-        <PasswordEntryForm />
-      </div>
+      <PasswordEntryForm />
     </main>
   );
 }
