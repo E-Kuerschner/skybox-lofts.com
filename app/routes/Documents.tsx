@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Await, type AppLoadContext } from "react-router";
+import { FileIcon } from "lucide-react";
 import type { Route } from "./+types/Documents";
 import { isAuthenticated } from "~/util/authHelpers.server";
 import {
@@ -37,12 +38,15 @@ function FileList({ files }: { files: { key: string; name: string }[] }) {
     <ul className="space-y-2">
       {files.map((file) => (
         <li key={file.key}>
-          <a
-            href={`/resident/documents/download?key=${encodeURIComponent(file.key)}`}
-            className="text-emerald-600 hover:text-emerald-700 hover:underline"
-          >
-            {file.name}
-          </a>
+          <div className="flex items-center space-x-2">
+            <FileIcon className="size-4 stroke-emerald-400" />
+            <a
+              href={`/resident/documents/download?key=${encodeURIComponent(file.key)}`}
+              className="text-emerald-600 hover:text-emerald-700 hover:underline"
+            >
+              {file.name}
+            </a>
+          </div>
         </li>
       ))}
     </ul>
@@ -66,7 +70,11 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
         Building documents, meeting notes and financials are available to all
         residents for download. Expand the sections below to see more.
       </p>
-      <Accordion type="multiple" defaultValue={defaultAccordionValue}>
+      <Accordion
+        type="multiple"
+        defaultValue={defaultAccordionValue}
+        className="bg-white px-4 rounded-md border-2 border-slate-200"
+      >
         <AccordionItem value="building-info">
           <AccordionTrigger>Building Information</AccordionTrigger>
           <AccordionContent>

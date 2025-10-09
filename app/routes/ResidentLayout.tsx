@@ -1,6 +1,12 @@
 import { useMemo, useState } from "react";
-import { Link, Outlet, useLocation, useRevalidator } from "react-router";
-import { LogOutIcon, Menu, XIcon } from "lucide-react";
+import {
+  Link,
+  Outlet,
+  useLocation,
+  useRevalidator,
+  NavLink,
+} from "react-router";
+import { LogOutIcon, Menu } from "lucide-react";
 import { WrigleyClock } from "~/components/WrigleyClock";
 import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
 import { Button } from "~/components/ui/button";
@@ -8,31 +14,54 @@ import { authClient } from "~/util/authClient";
 import { cn } from "~/lib/utils";
 import TextLogo from "../components/text-logo.svg";
 
-const SideBarContent = ({ renderLogo = true }: { renderLogo?: boolean }) => {
+const SideBarContent = ({
+  renderLogo = true,
+  className,
+}: {
+  renderLogo?: boolean;
+  className?: string;
+}) => {
   return (
-    <div>
-      <div className="flex flex-col px-8 pt-8">
-        {renderLogo && (
-          <a href="/public" aria-label="Go home">
-            <img src={TextLogo} alt="Skybox Lofts" className="" />
-          </a>
-        )}
-        <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
-        <hr className="border-1 border-stone-500" />
-      </div>
-      <nav className="flex flex-col">
-        <Link
-          className="hover:text-emerald-600  py-6 text-center hover:bg-stone-200"
+    <div className={cn("px-8 pt-8 flex flex-col", className)}>
+      {renderLogo && (
+        <a href="/" aria-label="Go home">
+          <img src={TextLogo} alt="Skybox Lofts" />
+        </a>
+      )}
+      <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
+      <hr className="border-1 border-slate-200" />
+      <nav className="flex flex-col items-start *:hover:translate-x-2 *:transition-transform *:hover:scale-105 *:active:scale-[0.9] *:active:text-emerald-600">
+        <NavLink
+          end
+          className={({ isActive }) =>
+            cn("hover:text-emerald-600 py-6 w-full", {
+              "text-emerald-600": isActive,
+            })
+          }
+          to="/resident"
+        >
+          Resident Home
+        </NavLink>
+        <NavLink
+          className={({ isActive }) =>
+            cn("hover:text-emerald-600 py-6 w-full", {
+              "text-emerald-600": isActive,
+            })
+          }
           to="/resident/documents"
         >
           Documents
-        </Link>
-        <Link
-          className="hover:text-emerald-600 py-6 text-center hover:bg-stone-200"
+        </NavLink>
+        <NavLink
+          className={({ isActive }) =>
+            cn("hover:text-emerald-600 py-6 w-full", {
+              "text-emerald-600": isActive,
+            })
+          }
           to="/resident/board"
         >
           Board Members
-        </Link>
+        </NavLink>
       </nav>
     </div>
   );
@@ -90,21 +119,20 @@ export default function ResidentLayout() {
       {/* mobile-only aside that slides in from the left side of the screen */}
       <aside
         className={cn(
-          "absolute top-0 z-10 left-0 md:hidden h-full w-64 site-bg -translate-x-full transition-transform duration-500 ease-in-out",
+          "flex flex-col justify-between absolute top-0 z-10 left-0 md:hidden h-full w-64 site-bg -translate-x-full transition-transform duration-500 ease-in-out",
           {
             "-translate-x-0": isOpen,
           },
         )}
       >
+        <SideBarContent className="pt-2" renderLogo={false} />
         <Button
-          onClick={toggleMenuOpen}
-          variant="icon"
-          aria-label="Close nav menu"
-          className="absolute top-4 right-4"
+          className="mx-4 mb-4"
+          variant="destructive"
+          onClick={handleSignOut}
         >
-          <XIcon className="size-4" />
+          Sign out
         </Button>
-        <SideBarContent renderLogo={false} />
       </aside>
       <main
         className={cn(
@@ -114,14 +142,11 @@ export default function ResidentLayout() {
           },
         )}
       >
-        <a
-          href="/public"
-          aria-label="Go home"
-          className="md:hidden self-center mt-8"
-        >
+        <a href="/" aria-label="Go home" className="md:hidden self-center mt-8">
           <img src={TextLogo} alt="Skybox Lofts" className="" />
         </a>
-        <div className="p-6 ps-8 pe-6 flex items-center border-b border-stone-200">
+        {/* TODO move out of main */}
+        <div className="p-6 ps-5 md:ps-8 pe-6 flex items-center border-b border-stone-200">
           <Button
             className="md:hidden me-3"
             onClick={toggleMenuOpen}
@@ -131,12 +156,19 @@ export default function ResidentLayout() {
             <Menu className="size-4" />
           </Button>
           <ResidentBreadcrumbs className="grow" />
-          <Button onClick={handleSignOut} variant="icon" aria-label="Sign out">
+          <Button
+            className="hidden md:block"
+            onClick={handleSignOut}
+            variant="icon"
+            aria-label="Sign out"
+          >
             <LogOutIcon className="size-4" />
           </Button>
         </div>
-        <div className="relative z-10 p-8">
-          <h1 className="text-4xl mb-8 text-green-900">{pageTitle}</h1>
+        <div className="relative z-10 p-5 md:p-8">
+          <h1 className="text-2xl md:text-4xl mb-8 text-green-900">
+            {pageTitle}
+          </h1>
           <Outlet />
         </div>
       </main>

@@ -23,7 +23,7 @@ export const ResidentBreadcrumbs = ({ className }: Props) => {
         <BreadcrumbItem>
           <BreadcrumbLink
             asChild
-            className="text-emerald-600 hover:text-emerald-800 hover:underline text-lg md:text-base"
+            className="text-emerald-600 hover:text-emerald-800 hover:underline text-base md:text-lg"
           >
             <Link to="/">Home</Link>
           </BreadcrumbLink>
@@ -38,12 +38,12 @@ export const ResidentBreadcrumbs = ({ className }: Props) => {
               <BreadcrumbSeparator />
               <BreadcrumbItem key={segment}>
                 {isLast ? (
-                  <BreadcrumbPage className="md:text-base text-lg">
+                  <BreadcrumbPage className="text-base md:text-lg">
                     {label}
                   </BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink
-                    className="text-emerald-600 hover:text-emerald-800 hover:underline text-lg md:text-base"
+                    className="text-emerald-600 hover:text-emerald-800 hover:underline text-base md:text-lg"
                     asChild
                   >
                     <Link to={href}>{label}</Link>
