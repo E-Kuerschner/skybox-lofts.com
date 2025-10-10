@@ -1,8 +1,9 @@
 import type { BetterAuthOptions } from "better-auth";
-import { anonymous } from "better-auth/plugins";
+import { anonymous, admin } from "better-auth/plugins";
 
 export const options = {
   plugins: [
+    admin(),
     anonymous({
       // onLinkAccount: async ({ anonymousUser, newUser }) => {
       //   // perform actions like moving the cart items from anonymous user to the new user

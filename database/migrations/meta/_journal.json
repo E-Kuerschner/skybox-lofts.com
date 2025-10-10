@@ -15,6 +15,13 @@
       "when": 1759806391371,
       "tag": "0001_lumpy_sir_ram",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1760054499490,
+      "tag": "0002_tearful_anita_blake",
+      "breakpoints": true
     }
   ]
 }

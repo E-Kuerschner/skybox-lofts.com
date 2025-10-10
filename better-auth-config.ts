@@ -8,7 +8,7 @@
 
   Helpful guide: https://hono.dev/examples/better-auth-on-cloudflare
  */
-import { drizzle } from "drizzle-orm/bun-sqlite";
+import { drizzle } from "drizzle-orm/d1";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth";
 import { options } from "./app/auth/options";
@@ -17,9 +17,14 @@ import * as schema from "./database/schema";
 
 export const auth: ReturnType<typeof betterAuth> = betterAuth({
   ...options,
-  database: drizzleAdapter(drizzle(), {
-    provider: "sqlite",
-    usePlural: true,
-    schema,
-  }),
+  database: drizzleAdapter(
+    drizzle(
+      "./.wrangler/state/v3/d1/miniflare-D1DatabaseObject/de771219e24b62731a77124e9b884ba49d9f86f804f98f6914c83bc973571688.sqlite",
+    ),
+    {
+      provider: "sqlite",
+      usePlural: true,
+      schema,
+    },
+  ),
 });

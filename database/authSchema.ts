@@ -15,6 +15,10 @@ export const users = sqliteTable("users", {
     .$defaultFn(() => new Date())
     .$onUpdate(() => new Date())
     .notNull(),
+  role: text("role"),
+  banned: integer("banned", { mode: "boolean" }).default(false),
+  banReason: text("ban_reason"),
+  banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
   isAnonymous: integer("is_anonymous", { mode: "boolean" }),
 });
 
@@ -33,6 +37,7 @@ export const sessions = sqliteTable("sessions", {
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  impersonatedBy: text("impersonated_by"),
 });
 
 export const accounts = sqliteTable("accounts", {
