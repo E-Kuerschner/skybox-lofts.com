@@ -13,7 +13,9 @@
     "auth:generate": "bunx --bun @better-auth/cli generate --config ./better-auth-config.ts --yes --output database/authSchema.ts",
     "db:generate": "bun auth:generate && drizzle-kit generate --config database/drizzle.config.ts",
     "db:migrate": "bun --env-file=.dev.vars drizzle-kit --config database/drizzle.config.ts migrate",
-    "db:migrate:local": "wrangler d1 migrations apply app --local"
+    "db:migrate:local": "wrangler d1 migrations apply app --local",
+    "db:seed": "bun --env-file=.dev.vars ./scripts/seedDefaultUser.ts --remote",
+    "db:seed:local": "bun ./scripts/seedDefaultUser.ts --remote --local"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.12",
@@ -37,6 +39,7 @@
     "@cloudflare/vite-plugin": "^1.13.5",
     "@react-router/dev": "^7.9.2",
     "@tailwindcss/vite": "^4.1.13",
+    "@types/bun": "^1.2.23",
     "@types/node": "^22",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",

@@ -5,7 +5,8 @@
     "react-router.config.ts",
     "database/**/*.ts",
     "better-auth-config.ts",
-    "app/auth/options.ts"
+    "app/auth/options.ts",
+    "scripts/**/*.ts"
   ],
   "compilerOptions": {
     "composite": true,
