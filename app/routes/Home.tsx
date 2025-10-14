@@ -68,10 +68,7 @@ export default function Home() {
           <p className="font-semibold">Skybox Lofts</p>
           <p>920 W Sheridan Rd, Chicago, IL 60613</p>
           <p>
-            <a
-              href="https://skybox-lofts.com"
-              className="text-emerald-600 hover:underline"
-            >
+            <a href="https://skybox-lofts.com" className="link">
               skybox-lofts.com
             </a>
           </p>

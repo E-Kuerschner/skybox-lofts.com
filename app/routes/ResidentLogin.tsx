@@ -1,45 +1,55 @@
 import type { Route } from "./+types/ResidentLogin";
+import { useState } from "react";
+import { redirect } from "react-router";
 import { getAuth } from "~/auth";
 import { PasswordEntryForm } from "~/components/PasswordEntryForm";
-import { redirect } from "react-router";
 import TextLogo from "../components/text-logo.svg";
 
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
+  const loginMethod = formData.get("loginMethod") as string;
   const password = formData.get("password") as string;
+  const email = formData.get("email") as string;
 
-  if (!password) {
-    return {
-      error: "Password is required",
-    };
-  }
-
-  const appSecret = context.cloudflare.env.APP_SECRET;
-  if (password !== appSecret) {
-    return {
-      error: "Invalid password",
-    };
-  }
-
-  try {
-    const auth = getAuth(context);
-    const session = await auth.api.signInAnonymous({
-      headers: request.headers,
-      returnHeaders: true,
-    });
-
-    if (!session) {
-      throw new Error("Failed to create session");
+  if (loginMethod === "anonymous") {
+    if (!password) {
+      return {
+        error: "Password is required",
+      };
     }
 
-    return redirect("/resident", {
-      headers: session.headers,
-    });
-  } catch (error) {
-    console.error("Anonymous sign in failed:", error);
-    return {
-      error: "Sign in failed. Please try again.",
-    };
+    const appSecret = context.cloudflare.env.APP_SECRET;
+    if (password !== appSecret) {
+      return {
+        error: "Invalid password",
+      };
+    }
+
+    try {
+      const auth = getAuth(context);
+      const session = await auth.api.signInAnonymous({
+        headers: request.headers,
+        returnHeaders: true,
+      });
+
+      if (!session) {
+        throw new Error("Failed to create session");
+      }
+
+      return redirect("/resident", {
+        headers: session.headers,
+      });
+    } catch (error) {
+      console.error("Anonymous sign in failed:", error);
+      return {
+        error: "Sign in failed. Please try again.",
+      };
+    }
+  } else if (loginMethod === "full") {
+    console.log("log in ", email);
+    return new Response("logged in", { status: 200 });
+  } else {
+    throw new Error(`Unknown login method: ${loginMethod}`);
   }
 }
 
@@ -48,8 +58,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const session = await auth.api.getSession({
     headers: request.headers,
   });
-
-  console.log("login session", session);
 
   if (session) {
     return redirect("/resident");
