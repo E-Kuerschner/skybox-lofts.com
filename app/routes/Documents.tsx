@@ -42,7 +42,7 @@ function FileList({ files }: { files: { key: string; name: string }[] }) {
       {files.map((file) => (
         <li key={file.key}>
           <div className="flex items-center space-x-2 text-emerald-600 hover:text-emerald-700">
-            <FileIcon className="size-4 stroke-current" />
+            <FileIcon className="size-4 stroke-current shrink-0" />
             <a
               href={`/resident/documents/download?key=${encodeURIComponent(file.key)}`}
               className="text-current hover:underline"
