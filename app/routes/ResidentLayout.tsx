@@ -47,6 +47,9 @@ const SideBarContent = ({
   renderLogo?: boolean;
   className?: string;
 }) => {
+  const session = authClient.useSession();
+  const isAdmin = session.data?.user.role === "admin";
+
   return (
     <div className={cn("px-8 pt-8 flex flex-col", className)}>
       {renderLogo && (
@@ -62,6 +65,11 @@ const SideBarContent = ({
         </LayoutNavLink>
         <LayoutNavLink to="/resident/documents">Documents</LayoutNavLink>
         <LayoutNavLink to="/resident/board">Board Members</LayoutNavLink>
+        {isAdmin && (
+          <LayoutNavLink to="/resident/management">
+            Resident Management
+          </LayoutNavLink>
+        )}
       </nav>
     </div>
   );

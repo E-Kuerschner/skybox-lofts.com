@@ -12,7 +12,11 @@ import {
 } from "~/components/ui/card";
 import { cn } from "~/util/ui/utils";
 
-export function PasswordEntryForm() {
+type Props = {
+  magicLinkEmailSent: boolean;
+};
+
+export function PasswordEntryForm({ magicLinkEmailSent }: Props) {
   const [loginMethod, setLoginMethod] = useState<"anonymous" | "full">(
     "anonymous",
   );
@@ -20,6 +24,8 @@ export function PasswordEntryForm() {
   const navigation = useNavigation();
 
   const isSubmitting = navigation.formAction === "/resident/login";
+  const emailSentState =
+    loginMethod === "full" && navigation.state === "idle" && magicLinkEmailSent;
 
   return (
     <Card className="max-w-md mx-auto border-4 border-[#2d5016]/10 shadow-xl min-w-[300px] md:min-w-[400px] min-h-[350px]">
@@ -31,6 +37,13 @@ export function PasswordEntryForm() {
           {loginMethod === "anonymous"
             ? "Enter the building password to continue"
             : "Enter your email to receive a one-time link"}
+          {/*  TODO add banner component */}
+          {emailSentState && (
+            <div className="border-2 bg-green-600/30 p-2 rounded-lg text-start mt-4 text-foreground">
+              Email sent! Click the link sent to your inbox. You may close this
+              tab.
+            </div>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
