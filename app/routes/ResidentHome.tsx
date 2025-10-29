@@ -1,7 +1,9 @@
 import type { Route } from "./+types/ResidentHome";
+import { useSearchParams } from "react-router";
 import { ContentCard } from "~/components/ContentCard";
 import { ContactForm } from "~/components/ContactForm";
 import { isAuthenticated } from "~/util/authHelpers.server";
+import { StatusBanner } from "~/components/StatusBanner";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAuthenticated(request, context);
@@ -12,15 +14,25 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export default function ResidentHome({ loaderData }: Route.ComponentProps) {
+  const [params] = useSearchParams();
+
+  const verified = params.get("verified");
   return (
     <div className="flex flex-col md:flex-row gap-8">
       <ContentCard className="flex-1">
         <h2 className="text-2xl font-semibold text-foreground mb-2">
-          News & Announcements
+          News & Messages
         </h2>
-        <div className="border rounded-lg p-8 text-center text-muted-foreground">
-          No announcements at this time.
-        </div>
+        {verified === "1" ? (
+          <StatusBanner
+            variant="success"
+            message="Thank you! Your email has been verified."
+          />
+        ) : (
+          <div className="border rounded-lg p-8 text-center text-muted-foreground">
+            No announcements at this time.
+          </div>
+        )}
       </ContentCard>
       <ContentCard className="flex-2">
         <h2 className="text-2xl font-semibold text-foreground mb-2">

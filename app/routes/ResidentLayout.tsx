@@ -6,12 +6,14 @@ import {
   NavLink,
   type NavLinkProps,
 } from "react-router";
+import type { Route } from "./+types/ResidentLayout";
 import { LogOutIcon, Menu } from "lucide-react";
 import { WrigleyClock } from "~/components/WrigleyClock";
 import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
 import { Button } from "~/components/ui/button";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { authClient } from "~/util/authClient";
+import { isAuthenticated } from "~/util/authHelpers.server";
 import { cn } from "~/util/ui/utils";
 import TextLogo from "../components/text-logo.svg";
 
@@ -43,13 +45,14 @@ const LayoutNavLink = ({ children, ...props }: LayoutNavLinkProps) => {
 const SideBarContent = ({
   renderLogo = true,
   className,
+  isAdmin,
+  userName,
 }: {
   renderLogo?: boolean;
   className?: string;
+  isAdmin: boolean;
+  userName?: string | null;
 }) => {
-  const session = authClient.useSession();
-  const isAdmin = session.data?.user.role === "admin";
-
   return (
     <div className={cn("px-8 pt-8 flex flex-col", className)}>
       {renderLogo && (
@@ -58,6 +61,11 @@ const SideBarContent = ({
         </a>
       )}
       <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
+      {userName && (
+        <p className="md:hidden text-sm text-muted-foreground mb-2">
+          Hello, {userName}
+        </p>
+      )}
       <hr className="border-1 border-slate-200" />
       <nav className="flex flex-col items-start *:hover:translate-x-2 *:transition-transform *:hover:scale-105 *:active:scale-[0.9] *:active:text-emerald-600">
         <LayoutNavLink end to="/resident">
@@ -75,10 +83,20 @@ const SideBarContent = ({
   );
 };
 
-export default function ResidentLayout() {
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const session = await isAuthenticated(request, context);
+
+  return {
+    userName: session.user.name,
+    isAdmin: session.user.role === "admin",
+  };
+}
+
+export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
   const location = useLocation();
   const revalidator = useRevalidator();
   const pathSegments = location.pathname.split("/").filter(Boolean);
+  const { userName, isAdmin } = loaderData;
 
   const pageTitle = useMemo(() => {
     const lastSegment = pathSegments[pathSegments.length - 1];
@@ -86,6 +104,7 @@ export default function ResidentLayout() {
     if (lastSegment === "documents") return "Resident Documents";
     if (lastSegment === "board") return "Board Members";
     if (lastSegment === "meeting-notes") return "Meeting Notes";
+    if (lastSegment === "management") return "Resident Management";
     if (lastSegment === "budget") return "Budget";
     return "Resident Info";
   }, [pathSegments]);
@@ -115,12 +134,12 @@ export default function ResidentLayout() {
   return (
     <div className="relative md:flex h-full">
       <aside className="hidden md:block w-64 shrink-0 border-e border-stone-200 shadow-m">
-        <SideBarContent />
+        <SideBarContent isAdmin={isAdmin} userName={userName} />
       </aside>
       {/* overlay fixed behind the collapsible, mobile sidebar */}
       {isOpen && (
         <div
-          className="fixed z-10 top-0 left-0 h-dvh w-dvw opacity-15 bg-slate-600"
+          className="fixed z-10 top-0 left-0 h-dvh w-dvw bg-black/15"
           onClick={toggleMenuOpen}
         />
       )}
@@ -133,7 +152,12 @@ export default function ResidentLayout() {
           },
         )}
       >
-        <SideBarContent className="pt-2" renderLogo={false} />
+        <SideBarContent
+          className="pt-2"
+          renderLogo={false}
+          isAdmin={isAdmin}
+          userName={userName}
+        />
         <Button
           className="mx-4 mb-4"
           variant="destructive"
@@ -164,6 +188,11 @@ export default function ResidentLayout() {
             <Menu className="size-4" />
           </Button>
           <ResidentBreadcrumbs className="grow" />
+          {userName && (
+            <span className="hidden md:inline text-sm text-muted-foreground me-4">
+              Hello, {userName}
+            </span>
+          )}
           <Button
             className="hidden md:block"
             onClick={handleSignOut}

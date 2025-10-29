@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { cn } from "~/util/ui/utils";
+import { StatusBanner } from "~/components/StatusBanner";
 
 type Props = {
   magicLinkEmailSent: boolean;
@@ -37,12 +38,12 @@ export function PasswordEntryForm({ magicLinkEmailSent }: Props) {
           {loginMethod === "anonymous"
             ? "Enter the building password to continue"
             : "Enter your email to receive a one-time link"}
-          {/*  TODO add banner component */}
           {emailSentState && (
-            <div className="border-2 bg-green-600/30 p-2 rounded-lg text-start mt-4 text-foreground">
-              Email sent! Click the link sent to your inbox. You may close this
-              tab.
-            </div>
+            <StatusBanner
+              variant="success"
+              message="Email sent! Click the link sent to your inbox. You may close this tab."
+              className="mt-4 text-start"
+            />
           )}
         </CardDescription>
       </CardHeader>
@@ -76,9 +77,7 @@ export function PasswordEntryForm({ magicLinkEmailSent }: Props) {
             />
           </div>
           {actionData?.error && (
-            <div className="text-destructive text-sm font-medium">
-              {actionData.error}
-            </div>
+            <StatusBanner variant="error" message={actionData.error} />
           )}
           <div className="flex items-end grow">
             <Button

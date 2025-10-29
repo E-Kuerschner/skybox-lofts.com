@@ -22,4 +22,24 @@ export async function isAuthenticated(
 
     throw redirect("/resident/login");
   }
+
+  return session;
+}
+
+export async function isAdmin(
+  request: Request,
+  context: AppLoadContext,
+  options?: Options,
+) {
+  const session = await isAuthenticated(request, context, options);
+
+  if (session.user.role !== "admin") {
+    if (options?.returnUnauthorized) {
+      throw new Response("Forbidden", { status: 403 });
+    }
+
+    throw redirect("/resident");
+  }
+
+  return session;
 }

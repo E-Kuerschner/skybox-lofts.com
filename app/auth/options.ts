@@ -5,22 +5,39 @@ export type MagicLinkFunction = Parameters<
   typeof magicLink
 >[number]["sendMagicLink"];
 
+export type SendVerificationEmailFunction = NonNullable<
+  BetterAuthOptions["emailVerification"]
+>["sendVerificationEmail"];
+
 type Options = {
   sendMagicLink?: MagicLinkFunction;
+  sendVerificationEmail?: SendVerificationEmailFunction;
 };
 
 const defaultSendMagicLink: MagicLinkFunction = ({ email, url }) => {
   console.log(`${email}: ${url}`);
 };
 
+const defaultSendVerificationEmail: SendVerificationEmailFunction = async ({
+  user,
+  url,
+}) => {
+  console.log(`Verification email for ${user.email}: ${url}`);
+};
+
 export const makeOptions = ({
   sendMagicLink = defaultSendMagicLink,
+  sendVerificationEmail = defaultSendVerificationEmail,
 }: Options) =>
   ({
     // TODO move to env vars?
     baseURL: import.meta.env.DEV
       ? "http://localhost:5173"
       : "https://skybox-lofts.com",
+    emailVerification: {
+      sendOnSignUp: false, // We'll manually trigger for invited users
+      sendVerificationEmail,
+    },
     plugins: [
       admin(),
       anonymous({

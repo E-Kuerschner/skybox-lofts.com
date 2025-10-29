@@ -103,3 +103,6 @@ Project requirements and specifications are documented in the `docs/` folder.
 - Use the Playwright MCP server to view or verify your changes on localhost at port 5173
 - Always check if the dev server is running first before trying to start it yourself
 - All file names for React component should be in PascalCase
+- Assume that users of this app aren't very technical. This should always be taken into account when writing any user-facing, written content.
+- Prefer using react-router action functions over better-auth authClient methods
+- Prefer fetching the user session in the data loader function instead of using authClient in the components

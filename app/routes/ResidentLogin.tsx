@@ -58,22 +58,21 @@ export async function action({ request, context }: Route.ActionArgs) {
     const auth = getAuth(context);
     try {
       // check /app/auth/index.ts - this function will intentionally throw if the email is not found in the DB
-      const response = await auth.api.signInMagicLink({
+      await auth.api.signInMagicLink({
         body: {
           email,
           callbackURL: "/resident",
           errorCallbackURL: "/resident/login",
         },
         headers: request.headers,
-        asResponse: true,
       });
 
-      response.headers.set(
-        "Set-Cookie",
-        await emailTrackerCookie.serialize("sent"),
-      );
-
-      return response;
+      return new Response(null, {
+        status: 200,
+        headers: {
+          "Set-Cookie": await emailTrackerCookie.serialize("sent"),
+        },
+      });
     } catch (error) {
       if ((error as Error).message === USER_NOT_FOUND) {
         return {

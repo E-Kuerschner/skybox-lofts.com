@@ -19,7 +19,7 @@ export default [
         index("routes/Documents.tsx"),
         route("download", "routes/documentDownload.ts"),
       ]),
-      route("management", "routes/ResidentManagement.tsx"),
+      route("management", "routes/ResidentManagement/index.tsx"),
     ]),
   ]),
 ] satisfies RouteConfig;
