@@ -6,24 +6,40 @@ export type MagicLinkFunction = Parameters<
 >[number]["sendMagicLink"];
 
 export type SendVerificationEmailFunction = NonNullable<
-  BetterAuthOptions["emailVerification"]
->["sendVerificationEmail"];
+  NonNullable<BetterAuthOptions["emailVerification"]>["sendVerificationEmail"]
+>;
 
 type Options = {
   sendMagicLink?: MagicLinkFunction;
   sendVerificationEmail?: SendVerificationEmailFunction;
 };
 
-const defaultSendMagicLink: MagicLinkFunction = ({ email, url }) => {
-  console.log(`${email}: ${url}`);
-};
-
-const defaultSendVerificationEmail: SendVerificationEmailFunction = async ({
-  user,
+export const defaultSendMagicLink: MagicLinkFunction = async ({
+  email,
   url,
 }) => {
-  console.log(`Verification email for ${user.email}: ${url}`);
+  console.log(`
+    ========================================
+    MAGIC LINK EMAIL
+    ========================================
+    To: ${email}
+    Verification URL: ${url}
+    ========================================
+  `);
 };
+
+export const defaultSendVerificationEmail: SendVerificationEmailFunction =
+  async ({ user, url }) => {
+    console.log(`
+      ========================================
+      VERIFICATION EMAIL
+      ========================================
+      To: ${user.email}
+      Name: ${user.name}
+      Verification URL: ${url}
+      ========================================s
+    `);
+  };
 
 export const makeOptions = ({
   sendMagicLink = defaultSendMagicLink,
@@ -35,6 +51,7 @@ export const makeOptions = ({
       ? "http://localhost:5173"
       : "https://skybox-lofts.com",
     emailVerification: {
+      autoSignInAfterVerification: true,
       sendOnSignUp: false, // We'll manually trigger for invited users
       sendVerificationEmail,
     },

@@ -10,6 +10,8 @@ import {
   makeOptions,
   type MagicLinkFunction,
   type SendVerificationEmailFunction,
+  defaultSendMagicLink,
+  defaultSendVerificationEmail,
 } from "./options";
 
 export const USER_NOT_FOUND = "User not found";
@@ -18,16 +20,7 @@ export function getAuth(ctx: AppLoadContext) {
   const db = getDatabase(ctx);
 
   const sendMagicLink: MagicLinkFunction = async ({ email, url }, request) => {
-    if (import.meta.env.DEV) {
-      console.log(`
-            ========================================
-            MAGIC LINK EMAIL
-            ========================================
-            To: ${email}
-            Verification URL: ${url}
-            ========================================
-      `);
-    } else {
+    if (import.meta.env.PROD) {
       const existingUser = await db
         .select()
         .from(schema.users)
@@ -53,17 +46,7 @@ export function getAuth(ctx: AppLoadContext) {
     user,
     url,
   }) => {
-    if (import.meta.env.DEV) {
-      console.log(`
-        ========================================
-        VERIFICATION EMAIL
-        ========================================
-        To: ${user.email}
-        Name: ${user.name}
-        Verification URL: ${url}
-        ========================================
-      `);
-    } else {
+    if (import.meta.env.PROD) {
       const message = welcomeEmail(user.name, url);
       await sendEmail(ctx, user.email, "Welcome to Skybox Lofts!", message);
     }
@@ -71,8 +54,20 @@ export function getAuth(ctx: AppLoadContext) {
 
   const auth = betterAuth({
     ...makeOptions({
-      sendMagicLink,
-      sendVerificationEmail,
+      sendMagicLink: (args) => {
+        if (import.meta.env.DEV) {
+          defaultSendMagicLink(args);
+        }
+
+        return sendMagicLink(args);
+      },
+      sendVerificationEmail: async (args) => {
+        if (import.meta.env.DEV) {
+          defaultSendVerificationEmail(args);
+        }
+
+        return sendVerificationEmail(args);
+      },
     }),
     secret: ctx.cloudflare.env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db, {
