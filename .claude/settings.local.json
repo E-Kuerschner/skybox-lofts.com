@@ -7,7 +7,8 @@
       "mcp__jetbrains__search_in_files_by_text",
       "mcp__jetbrains__find_files_by_name_keyword",
       "mcp__MCP_DOCKER__fetch",
-      "WebSearch"
+      "WebSearch",
+      "mcp__MCP_DOCKER__search_cloudflare_documentation"
     ],
     "deny": [],
     "ask": []

@@ -47,7 +47,7 @@ export function MobileUserDrawer({
       <SheetTrigger asChild>
         <Button className="w-full">Register New Resident</Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="px-6 pb-6">
+      <SheetContent side="bottom">
         <SheetHeader>
           <SheetTitle>Register Resident</SheetTitle>
           <SheetDescription>
