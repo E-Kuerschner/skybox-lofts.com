@@ -35,6 +35,19 @@ export function NewResidentForm({
   className,
   vertical = false,
 }: UserFormProps) {
+  const handleRoleChange = (value: string) => {
+    if (value === "admin") {
+      const confirmed = window.confirm(
+        "You are about to invite a new resident with admin capabilities. Admins can access all features and can add/remove other residents. Are you sure you want to proceed?",
+      );
+      if (confirmed) {
+        onRoleChange(value);
+      }
+    } else {
+      onRoleChange(value);
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -72,7 +85,12 @@ export function NewResidentForm({
       </div>
       <div className={vertical ? "w-full space-y-2" : "w-40"}>
         {vertical && <Label htmlFor="user-role">Role</Label>}
-        <Select name="role" required value={role} onValueChange={onRoleChange}>
+        <Select
+          name="role"
+          required
+          value={role}
+          onValueChange={handleRoleChange}
+        >
           <SelectTrigger id="user-role" className="bg-background w-full">
             <SelectValue placeholder="Role" />
           </SelectTrigger>

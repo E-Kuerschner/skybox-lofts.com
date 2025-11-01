@@ -5,6 +5,7 @@ import {
   useRevalidator,
   NavLink,
   type NavLinkProps,
+  createCookie,
 } from "react-router";
 import type { Route } from "./+types/ResidentLayout";
 import { LogOutIcon, Menu } from "lucide-react";
@@ -16,6 +17,11 @@ import { authClient } from "~/util/authClient";
 import { isAuthenticated } from "~/util/authHelpers.server";
 import { cn } from "~/util/ui/utils";
 import TextLogo from "../components/text-logo.svg";
+
+// Cookie used in ResidentLogin to track magic link email sent status
+const emailTrackerCookie = createCookie("email-tracker", {
+  maxAge: 60 * 5, // 5 minutes
+});
 
 type LayoutNavLinkProps = Omit<NavLinkProps, "children"> & {
   children: string;
@@ -85,6 +91,26 @@ const SideBarContent = ({
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const session = await isAuthenticated(request, context);
+
+  // Check if the email tracker cookie exists
+  const cookieHeader = request.headers.get("Cookie");
+  const emailTrackerExists = await emailTrackerCookie.parse(cookieHeader);
+
+  // If user is authenticated and the cookie exists, clear it
+  if (emailTrackerExists) {
+    return new Response(
+      JSON.stringify({
+        userName: session.user.name,
+        isAdmin: session.user.role === "admin",
+      }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Set-Cookie": await emailTrackerCookie.serialize("", { maxAge: 0 }),
+        },
+      },
+    );
+  }
 
   return {
     userName: session.user.name,
