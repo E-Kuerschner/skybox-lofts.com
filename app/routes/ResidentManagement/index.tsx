@@ -2,6 +2,7 @@ import type { Route } from "./+types/index";
 import { Form } from "react-router";
 import { eq } from "drizzle-orm";
 import { useState, useEffect } from "react";
+import { Trash2Icon } from "lucide-react";
 import { getAuth } from "~/auth";
 import { getDatabase } from "~/util/database.server";
 import { isAdmin } from "~/util/authHelpers.server";
@@ -163,7 +164,7 @@ export default function ResidentManagement({
       )}
 
       <div className="border rounded-lg overflow-hidden">
-        <Table>
+        <Table className="bg-white">
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
@@ -195,8 +196,9 @@ export default function ResidentManagement({
                       <input type="hidden" name="userId" value={user.id} />
                       <Button
                         type="submit"
-                        variant="destructive"
-                        size="sm"
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive"
                         onClick={(e) => {
                           if (
                             !confirm(
@@ -207,7 +209,7 @@ export default function ResidentManagement({
                           }
                         }}
                       >
-                        Delete
+                        <Trash2Icon className="size-4" />
                       </Button>
                     </Form>
                   )}

@@ -16,7 +16,7 @@ export default [
     route("login", "routes/ResidentLogin.tsx"),
     layout("routes/ResidentLayout.tsx", [
       index("routes/ResidentHome.tsx"),
-      route("board", "routes/BoardMembers.tsx"),
+      route("board", "routes/BoardMembers/index.tsx"),
       ...prefix("documents", [
         index("routes/Documents.tsx"),
         route("download", "routes/documentDownload.ts"),
