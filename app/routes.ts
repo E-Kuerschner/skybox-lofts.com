@@ -18,7 +18,7 @@ export default [
       index("routes/ResidentHome.tsx"),
       route("board", "routes/BoardMembers/index.tsx"),
       ...prefix("documents", [
-        index("routes/Documents.tsx"),
+        index("routes/Documents/index.tsx"),
         route("download", "routes/documentDownload.ts"),
       ]),
       route("management", "routes/ResidentManagement/index.tsx"),

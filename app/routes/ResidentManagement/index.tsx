@@ -1,24 +1,20 @@
 import type { Route } from "./+types/index";
-import { Form } from "react-router";
 import { eq } from "drizzle-orm";
-import { useState, useEffect } from "react";
-import { Trash2Icon } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { UserPlusIcon } from "lucide-react";
+import { useNavigation } from "react-router";
 import { getAuth } from "~/auth";
 import { getDatabase } from "~/util/database.server";
 import { isAdmin } from "~/util/authHelpers.server";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
+import { NoContent } from "~/components/NoContent";
 import * as schema from "../../../database/schema";
-import { NewResidentForm } from "./NewResidentForm";
+import { ResidentCard } from "./ResidentCard";
+import { ResidentRegistrationDialog } from "./ResidentRegistrationDialog";
 import { MobileUserDrawer } from "./MobileUserDrawer";
 import { StatusBanner } from "~/components/StatusBanner";
+import { SearchInput } from "~/components/SearchInput";
+import { fuzzyMatch } from "~/util/fuzzySearch";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAdmin(request, context);
@@ -37,6 +33,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 async function handleDeleteUser(
   userId: string,
   db: ReturnType<typeof getDatabase>,
+  auth: ReturnType<typeof getAuth>,
+  request: Request,
 ) {
   if (!userId) {
     return { error: "User ID is required" };
@@ -58,9 +56,21 @@ async function handleDeleteUser(
       return { error: "Cannot delete admin users" };
     }
 
-    await db.delete(schema.users).where(eq(schema.users.id, userId));
+    // First, revoke all active sessions for the user
+    await auth.api.revokeUserSessions({
+      headers: request.headers,
+      body: { userId },
+    });
+
+    // Then, remove the user using Better Auth admin API
+    await auth.api.removeUser({
+      headers: request.headers,
+      body: { userId },
+    });
+
     return { success: true };
   } catch (error) {
+    console.error("Error deleting user:", error);
     return { error: "Failed to delete user" };
   }
 }
@@ -108,16 +118,58 @@ async function handleCreateUser(
   }
 }
 
+async function handleUpdateUser(
+  userId: string,
+  name: string,
+  email: string,
+  role: string,
+  db: ReturnType<typeof getDatabase>,
+) {
+  if (!userId || !name || !email || !role) {
+    return { error: "User ID, name, email, and role are required" };
+  }
+
+  try {
+    // Check if user exists
+    const existingUser = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.id, userId))
+      .get();
+
+    if (!existingUser) {
+      return { error: "User not found" };
+    }
+
+    // Update user in database
+    await db
+      .update(schema.users)
+      .set({
+        name,
+        email,
+        role,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.users.id, userId));
+
+    return { success: true, message: "User updated successfully" };
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return { error: "Failed to update user. Email may already exist." };
+  }
+}
+
 export async function action({ request, context }: Route.ActionArgs) {
   await isAdmin(request, context, { returnUnauthorized: true });
 
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
   const db = getDatabase(context);
+  const auth = getAuth(context);
 
   if (intent === "delete") {
     const userId = formData.get("userId") as string;
-    return handleDeleteUser(userId, db);
+    return handleDeleteUser(userId, db, auth, request);
   }
 
   if (intent === "create") {
@@ -127,6 +179,14 @@ export async function action({ request, context }: Route.ActionArgs) {
     return handleCreateUser(name, email, role, db, getAuth(context));
   }
 
+  if (intent === "update") {
+    const userId = formData.get("userId") as string;
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const role = formData.get("role") as string;
+    return handleUpdateUser(userId, name, email, role, db);
+  }
+
   return { error: "Invalid intent" };
 }
 
@@ -134,9 +194,21 @@ export default function ResidentManagement({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
+  const navigation = useNavigation();
   const [newUserName, setNewUserName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserRole, setNewUserRole] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [optimisticUsers, setOptimisticUsers] = useState(loaderData.users);
+
+  // Sync optimistic users with loader data
+  useEffect(() => {
+    if (navigation.state === "idle") {
+      setOptimisticUsers(loaderData.users);
+    }
+  }, [loaderData.users, navigation.state]);
 
   // Clear form after successful submission
   useEffect(() => {
@@ -144,12 +216,80 @@ export default function ResidentManagement({
       setNewUserName("");
       setNewUserEmail("");
       setNewUserRole("");
+      setEditingUserId(null);
     }
   }, [actionData?.success]);
+
+  // Handle edit user
+  const handleEditUser = (user: {
+    id: string;
+    name: string | null;
+    email: string;
+    role: string | null;
+  }) => {
+    setEditingUserId(user.id);
+    setNewUserName(user.name || "");
+    setNewUserEmail(user.email);
+    setNewUserRole(user.role || "");
+    setIsDialogOpen(true);
+  };
+
+  // Handle new user
+  const handleNewUser = () => {
+    setEditingUserId(null);
+    setNewUserName("");
+    setNewUserEmail("");
+    setNewUserRole("");
+    setIsDialogOpen(true);
+  };
 
   const isFormValid = Boolean(
     newUserName.trim() && newUserEmail.trim() && newUserRole,
   );
+
+  // Apply optimistic update when submitting
+  useEffect(() => {
+    if (navigation.state === "submitting" && navigation.formData) {
+      const intent = navigation.formData.get("intent");
+      const userId = navigation.formData.get("userId") as string;
+      const name = navigation.formData.get("name") as string;
+      const email = navigation.formData.get("email") as string;
+      const role = navigation.formData.get("role") as string;
+
+      if (intent === "update" && userId) {
+        // Optimistically update the user
+        setOptimisticUsers((prev) =>
+          prev.map((user) =>
+            user.id === userId
+              ? { ...user, name, email, role, updatedAt: new Date() }
+              : user,
+          ),
+        );
+      } else if (intent === "delete" && userId) {
+        // Optimistically delete the user
+        setOptimisticUsers((prev) => prev.filter((user) => user.id !== userId));
+      }
+    }
+  }, [navigation.state, navigation.formData]);
+
+  // Revert optimistic updates on error
+  useEffect(() => {
+    if (actionData?.error && navigation.state === "idle") {
+      setOptimisticUsers(loaderData.users);
+    }
+  }, [actionData?.error, loaderData.users, navigation.state]);
+
+  // Filter users based on search query
+  const filteredUsers = useMemo(() => {
+    if (!searchQuery) {
+      return optimisticUsers;
+    }
+    return optimisticUsers.filter(
+      (user) =>
+        fuzzyMatch(searchQuery, user.name || "") ||
+        fuzzyMatch(searchQuery, user.email || ""),
+    );
+  }, [optimisticUsers, searchQuery]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -163,94 +303,78 @@ export default function ResidentManagement({
         />
       )}
 
-      <div className="border rounded-lg overflow-hidden">
-        <Table className="bg-white">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Email Verified</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loaderData.users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell className="capitalize">{user.role || ""}</TableCell>
-                <TableCell>
-                  {user.emailVerified ? (
-                    <span className="text-emerald-600"> Verified</span>
-                  ) : (
-                    <span className="text-muted-foreground">Pending</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  {user.role === "admin" ? (
-                    <span className="text-sm text-muted-foreground">—</span>
-                  ) : (
-                    <Form method="post">
-                      <input type="hidden" name="intent" value="delete" />
-                      <input type="hidden" name="userId" value={user.id} />
-                      <Button
-                        type="submit"
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive"
-                        onClick={(e) => {
-                          if (
-                            !confirm(
-                              `Are you sure you want to delete ${user.name}?`,
-                            )
-                          ) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        <Trash2Icon className="size-4" />
-                      </Button>
-                    </Form>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
+      <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
+        <p className="mb-8 text-muted-foreground">
+          In order to grant access to the protected pages of our website, new
+          residents must be officially registered below. Once their information
+          has been submitted, they will receive instructions for how to verify
+          their email address and sign in. Please double check all email
+          addresses before sending out invitations as the recipients will be
+          able to access our site.
+        </p>
+        {/* Search and Register Button */}
+        <div className="flex flex-row gap-3 items-center justify-between mb-4">
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Name or email..."
+            className="max-w-md"
+          />
+          <Button
+            variant="secondary"
+            onClick={handleNewUser}
+            className="hidden md:flex"
+          >
+            <UserPlusIcon className="size-4 mr-2" />
+            Invite Resident
+          </Button>
+          {/* Mobile Add User Button with Drawer */}
+          <div className="md:hidden">
+            <MobileUserDrawer
+              name={newUserName}
+              email={newUserEmail}
+              role={newUserRole}
+              isFormValid={isFormValid}
+              onNameChange={setNewUserName}
+              onEmailChange={setNewUserEmail}
+              onRoleChange={setNewUserRole}
+              actionData={actionData}
+            />
+          </div>
+        </div>
 
-            {/* New User Row - Desktop Only */}
-            <TableRow className="bg-muted/50 hidden md:table-row">
-              <TableCell colSpan={5}>
-                <Form method="post">
-                  <NewResidentForm
-                    name={newUserName}
-                    email={newUserEmail}
-                    role={newUserRole}
-                    isFormValid={isFormValid}
-                    onNameChange={setNewUserName}
-                    onEmailChange={setNewUserEmail}
-                    onRoleChange={setNewUserRole}
-                    submitLabel="Register"
-                  />
-                </Form>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+        {/* Resident Cards */}
+        <div className="space-y-2">
+          {filteredUsers.length === 0 ? (
+            <NoContent message="No residents found" />
+          ) : (
+            filteredUsers.map((user) => (
+              <ResidentCard
+                key={user.id}
+                user={user}
+                isAdmin={true}
+                onEdit={handleEditUser}
+              />
+            ))
+          )}
+        </div>
       </div>
 
-      {/* Mobile Add User Button with Drawer */}
-      <div className="md:hidden">
-        <MobileUserDrawer
-          name={newUserName}
-          email={newUserEmail}
-          role={newUserRole}
-          isFormValid={isFormValid}
-          onNameChange={setNewUserName}
-          onEmailChange={setNewUserEmail}
-          onRoleChange={setNewUserRole}
-          actionData={actionData}
-        />
-      </div>
+      {/* Desktop Registration Dialog */}
+      <ResidentRegistrationDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        name={newUserName}
+        email={newUserEmail}
+        role={newUserRole}
+        isFormValid={isFormValid}
+        onNameChange={setNewUserName}
+        onEmailChange={setNewUserEmail}
+        onRoleChange={setNewUserRole}
+        actionData={actionData}
+        editMode={editingUserId !== null}
+        userId={editingUserId || undefined}
+      />
     </div>
   );
 }

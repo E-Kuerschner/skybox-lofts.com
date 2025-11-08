@@ -39,11 +39,15 @@ export default function MobileBoardMemberDrawer({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <Button onClick={() => setOpen(true)} className="w-full">
+      <Button
+        variant="secondary"
+        onClick={() => setOpen(true)}
+        className="w-full"
+      >
         <Plus className="mr-2 h-4 w-4" />
         Add Board Member
       </Button>
-      <SheetContent side="bottom">
+      <SheetContent className="site-bg" side="bottom">
         <SheetHeader>
           <SheetTitle>Add Board Member</SheetTitle>
           <SheetDescription>
@@ -52,7 +56,7 @@ export default function MobileBoardMemberDrawer({
         </SheetHeader>
         <div className="mt-6 space-y-4">
           {actionData?.error && (
-            <StatusBanner status="error" message={actionData.error} />
+            <StatusBanner variant="error" message={actionData.error} />
           )}
           <Form method="post" onSubmit={() => {}}>
             <input type="hidden" name="intent" value="create" />

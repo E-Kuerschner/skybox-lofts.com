@@ -11,6 +11,7 @@ import {
 } from "~/components/ui/sheet";
 import { NewResidentForm } from "./NewResidentForm";
 import { StatusBanner } from "~/components/StatusBanner";
+import { UserPlusIcon } from "lucide-react";
 
 type MobileUserDrawerProps = {
   name: string;
@@ -45,9 +46,11 @@ export function MobileUserDrawer({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button className="w-full">Register New Resident</Button>
+        <Button size="icon" variant="secondary">
+          <UserPlusIcon className="size-4" />
+        </Button>
       </SheetTrigger>
-      <SheetContent side="bottom">
+      <SheetContent className="site-bg" side="bottom">
         <SheetHeader>
           <SheetTitle>Register Resident</SheetTitle>
           <SheetDescription>

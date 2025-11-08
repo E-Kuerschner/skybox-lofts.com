@@ -1,7 +1,7 @@
-import { Suspense, useState } from "react";
+import type { Route } from "./+types/index";
+import { Suspense, useMemo, useState } from "react";
 import { Await, type AppLoadContext, useFetcher } from "react-router";
 import { FileIcon, Trash2Icon, UploadIcon } from "lucide-react";
-import type { Route } from "./+types/Documents";
 import { isAuthenticated } from "~/util/authHelpers.server";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import {
@@ -11,7 +11,10 @@ import {
   AccordionTrigger,
 } from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
-import { DocumentUploadDrawer } from "~/components/DocumentUploadDrawer";
+import { fuzzyMatch } from "~/util/fuzzySearch";
+import { SearchInput } from "~/components/SearchInput";
+import { DocumentUploadDialog } from "./DocumentUploadDialog";
+import { NoContent } from "~/components/NoContent";
 
 async function fetchDocuments(prefix: string, context: AppLoadContext) {
   const files = await context.cloudflare.env.DOCUMENTS.list({
@@ -52,15 +55,27 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 function FileList({
   files,
   isAdmin,
+  searchQuery,
 }: {
   files: { key: string; name: string }[];
   isAdmin: boolean;
+  searchQuery?: string;
 }) {
   const fetcher = useFetcher();
 
+  // Filter files based on search query
+  const filteredFiles = useMemo(() => {
+    if (!searchQuery) return files;
+    return files.filter((file) => fuzzyMatch(searchQuery, file.name));
+  }, [files, searchQuery]);
+
+  if (filteredFiles.length === 0) {
+    return <NoContent message="No documents found" />;
+  }
+
   return (
     <ul className="space-y-2">
-      {files.map((file) => (
+      {filteredFiles.map((file) => (
         <li key={file.key}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 link">
@@ -91,7 +106,7 @@ function FileList({
                   type="submit"
                   variant="ghost"
                   size="icon"
-                  className="text-destructive hover:text-destructive"
+                  className="hover:text-destructive"
                   disabled={fetcher.state !== "idle"}
                 >
                   <Trash2Icon className="size-4" />
@@ -115,17 +130,32 @@ const Fallback = (
 
 export default function Documents({ loaderData }: Route.ComponentProps) {
   const [isUploadDrawerOpen, setIsUploadDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div>
+    <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
       <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
         <p className="text-muted-foreground">
           Building documents, meeting notes and financials are available to all
           residents for download. Expand the sections below to see more.
         </p>
+      </div>
+
+      <div className="flex flex-col gap-2 md:flex-row items-center justify-between mb-4">
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search documents..."
+          className="max-w-md"
+        />
         {/* Admin Upload Button */}
         {loaderData.isAdmin && (
-          <Button onClick={() => setIsUploadDrawerOpen(true)}>
+          <Button
+            variant="secondary"
+            // disable document upload on mobile
+            className="hidden md:flex"
+            onClick={() => setIsUploadDrawerOpen(true)}
+          >
             <UploadIcon className="size-4 mr-2" />
             Upload Document
           </Button>
@@ -135,38 +165,56 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
       <Accordion
         type="multiple"
         defaultValue={defaultAccordionValue}
-        className="bg-white px-4 rounded-md border-2 border-slate-200"
+        className="space-y-2"
       >
-        <AccordionItem value="building-info">
+        <AccordionItem
+          value="building-info"
+          className="bg-card border rounded-lg px-4"
+        >
           <AccordionTrigger>Building Information</AccordionTrigger>
           <AccordionContent>
             <FileList
               files={loaderData.buildingFiles}
               isAdmin={loaderData.isAdmin}
+              searchQuery={searchQuery}
             />
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="meeting-notes">
+        <AccordionItem
+          value="meeting-notes"
+          className="bg-card border rounded-lg px-4"
+        >
           <AccordionTrigger>Meeting Notes</AccordionTrigger>
           <AccordionContent>
             <Suspense fallback={Fallback}>
               <Await resolve={loaderData.meetingNotesFiles}>
                 {(files) => (
-                  <FileList files={files} isAdmin={loaderData.isAdmin} />
+                  <FileList
+                    files={files}
+                    isAdmin={loaderData.isAdmin}
+                    searchQuery={searchQuery}
+                  />
                 )}
               </Await>
             </Suspense>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="budget">
+        <AccordionItem
+          value="budget"
+          className="bg-card border rounded-lg px-4"
+        >
           <AccordionTrigger>Budget</AccordionTrigger>
           <AccordionContent>
             <Suspense fallback={Fallback}>
               <Await resolve={loaderData.budgetFiles}>
                 {(files) => (
-                  <FileList files={files} isAdmin={loaderData.isAdmin} />
+                  <FileList
+                    files={files}
+                    isAdmin={loaderData.isAdmin}
+                    searchQuery={searchQuery}
+                  />
                 )}
               </Await>
             </Suspense>
@@ -176,7 +224,7 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
 
       {/* Upload Drawer */}
       {loaderData.isAdmin && (
-        <DocumentUploadDrawer
+        <DocumentUploadDialog
           open={isUploadDrawerOpen}
           onOpenChange={setIsUploadDrawerOpen}
           existingCategories={loaderData.existingCategories}

@@ -8,7 +8,11 @@ import { useEffect, useRef, useState } from "react";
 const CONTACT_FORM_FETCHER_KEY = "contact-form-fetcher";
 
 export const ContactForm = () => {
-  const { data, state, Form: FetcherForm } = useFetcher<{
+  const {
+    data,
+    state,
+    Form: FetcherForm,
+  } = useFetcher<{
     success: boolean;
     error?: string;
   }>({
@@ -81,6 +85,7 @@ export const ContactForm = () => {
           id="name"
           name="name"
           placeholder="Your name"
+          className="bg-white/40"
           required
           minLength={2}
           disabled={isSubmitting}
@@ -93,6 +98,7 @@ export const ContactForm = () => {
           name="email"
           type="email"
           placeholder="your.email@example.com"
+          className="bg-white/40"
           disabled={isSubmitting}
         />
       </div>
@@ -102,6 +108,7 @@ export const ContactForm = () => {
           id="subject"
           name="subject"
           placeholder="What is this about?"
+          className="bg-white/40"
           required
           minLength={5}
           disabled={isSubmitting}
@@ -113,13 +120,18 @@ export const ContactForm = () => {
           id="message"
           name="message"
           placeholder="Your message..."
-          className="min-h-[120px]"
+          className="min-h-[120px] bg-white/40"
           required
           minLength={10}
           disabled={isSubmitting}
         />
       </div>
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button
+        variant="secondary"
+        type="submit"
+        className="w-full"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? "Sending..." : "Send Message"}
       </Button>
     </FetcherForm>

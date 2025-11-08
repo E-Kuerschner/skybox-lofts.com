@@ -40,7 +40,7 @@ export default function NewBoardMemberForm({
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           required
-          className="bg-background"
+          className="bg-background md:shadow-lg"
         />
       </div>
 
@@ -54,12 +54,17 @@ export default function NewBoardMemberForm({
           value={role}
           onChange={(e) => onRoleChange(e.target.value)}
           required
-          className="bg-background"
+          className="bg-background md:shadow-lg"
         />
       </div>
 
       <div className={vertical ? "w-full" : "w-32"}>
-        <Button type="submit" className="w-full" disabled={!isFormValid}>
+        <Button
+          type="submit"
+          variant="cta"
+          className="w-full"
+          disabled={!isFormValid}
+        >
           {submitLabel}
         </Button>
       </div>

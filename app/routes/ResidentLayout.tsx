@@ -8,7 +8,7 @@ import {
   createCookie,
 } from "react-router";
 import type { Route } from "./+types/ResidentLayout";
-import { LogOutIcon, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { WrigleyClock } from "~/components/WrigleyClock";
 import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
 import { Button } from "~/components/ui/button";
@@ -60,28 +60,30 @@ const SideBarContent = ({
   userName?: string | null;
 }) => {
   return (
-    <div className={cn("px-8 pt-8 flex flex-col", className)}>
-      {renderLogo && (
-        <a href="/" aria-label="Go home">
-          <img src={TextLogo} alt="Skybox Lofts" />
-        </a>
-      )}
-      <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
-      {userName && (
-        <p className="md:hidden text-sm text-muted-foreground mb-2">
-          Hello, {userName}
-        </p>
-      )}
+    <div className={cn("px-4 md:px-8 flex flex-col", className)}>
+      <div className="flex flex-col pt-4 h-auto md:h-[200px]">
+        {renderLogo && (
+          <a href="/" aria-label="Go home">
+            <img src={TextLogo} alt="Skybox Lofts" />
+          </a>
+        )}
+        <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
+        {userName && (
+          <p className="md:hidden text-sm text-muted-foreground mb-2">
+            Hello, {userName}
+          </p>
+        )}
+      </div>
       <hr className="border-1 border-slate-200" />
       <nav className="flex flex-col items-start *:hover:translate-x-2 *:transition-transform *:hover:scale-105 *:active:scale-[0.9] *:active:text-emerald-600">
         <LayoutNavLink end to="/resident">
-          Resident Home
+          🏠 Resident Home
         </LayoutNavLink>
-        <LayoutNavLink to="/resident/documents">Documents</LayoutNavLink>
-        <LayoutNavLink to="/resident/board">Board Members</LayoutNavLink>
+        <LayoutNavLink to="/resident/documents">📄 Documents</LayoutNavLink>
+        <LayoutNavLink to="/resident/board">👥 Board Members</LayoutNavLink>
         {isAdmin && (
           <LayoutNavLink to="/resident/management">
-            Resident Management
+            ⚙️ Resident Management
           </LayoutNavLink>
         )}
       </nav>
@@ -145,6 +147,13 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
     });
   };
 
+  const handleDesktopSignOut = async () => {
+    const confirmSignout = confirm("Would you like to sign out?");
+    if (confirmSignout) {
+      await handleSignOut();
+    }
+  };
+
   const [isOpen, setIsOpen] = useState(false);
   const toggleMenuOpen = () => {
     setIsOpen((open) => !open);
@@ -159,7 +168,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="relative md:flex h-full">
-      <aside className="hidden md:block w-64 shrink-0 border-e border-stone-200 shadow-m">
+      <aside className="hidden md:block w-64 shrink-0 border-e border-stone-200 bg-white">
         <SideBarContent isAdmin={isAdmin} userName={userName} />
       </aside>
       {/* overlay fixed behind the collapsible, mobile sidebar */}
@@ -179,62 +188,73 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
         )}
       >
         <SideBarContent
-          className="pt-2"
           renderLogo={false}
           isAdmin={isAdmin}
           userName={userName}
         />
         <Button
           className="mx-4 mb-4"
-          variant="destructive"
+          variant="secondary"
           onClick={handleSignOut}
         >
           Sign out
         </Button>
       </aside>
-      <main
+      <div
         className={cn(
-          "relative z-0 md:flex-grow flex flex-col md:block h-full",
+          "relative z-0 md:flex-grow flex flex-col h-full site-bg",
           {
             "overflow-hidden": isOpen,
           },
         )}
       >
-        <a href="/" aria-label="Go home" className="md:hidden self-center mt-8">
-          <img src={TextLogo} alt="Skybox Lofts" className="" />
-        </a>
-        {/* TODO move out of main */}
-        <div className="p-6 ps-5 md:ps-8 pe-6 flex items-center border-b border-stone-200">
-          <Button
-            className="md:hidden me-3"
-            onClick={toggleMenuOpen}
-            variant="icon"
-            aria-label="Open nav menu"
+        <header className="flex flex-col">
+          <a
+            href="/"
+            aria-label="Go home"
+            className="md:hidden self-center my-4"
           >
-            <Menu className="size-4" />
-          </Button>
-          <ResidentBreadcrumbs className="grow" />
-          {userName && (
-            <span className="hidden md:inline text-sm text-muted-foreground me-4">
-              Hello, {userName}
-            </span>
-          )}
-          <Button
-            className="hidden md:block"
-            onClick={handleSignOut}
-            variant="icon"
-            aria-label="Sign out"
-          >
-            <LogOutIcon className="size-4" />
-          </Button>
-        </div>
-        <div className="relative z-10 p-5 md:p-8">
-          <h1 className="text-2xl md:text-4xl mb-8 text-green-900">
-            {pageTitle}
-          </h1>
+            <img src={TextLogo} alt="Skybox Lofts" className="" />
+          </a>
+          {/* TODO move out of main */}
+          <div className="md:h-[200px] h-auto md:bg-[url(/banner.jpg)] bg-cover bg-center border-b">
+            <div className="md:h-[200px] h-auto flex flex-col justify-end pb-4 px-5 md:px-8 frosted-glass">
+              <div className="flex gap-1 items-center">
+                <Button
+                  className="md:hidden"
+                  onClick={toggleMenuOpen}
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Open nav menu"
+                >
+                  <Menu className="size-4" />
+                </Button>
+                <h1 className="text-2xl md:text-4xl md:mb-4 text-green-900 md:text-white font-semibold md:text-shadow-lg/50">
+                  {pageTitle}
+                </h1>
+              </div>
+              <div className="flex items-center justify-between">
+                <ResidentBreadcrumbs className="hidden md:flex grow" />
+                {userName && (
+                  <span className="hidden md:inline text-foreground md:text-white md:text-shadow-lg/50">
+                    Hello,{" "}
+                    <span
+                      className="text-emerald-300 hover:text-emerald-500 hover:underline cursor-pointer"
+                      aria-label="Sign out"
+                      onClick={handleDesktopSignOut}
+                    >
+                      {userName}
+                    </span>
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+        <main className="relative z-10 p-3 md:p-8 site-bg grow">
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

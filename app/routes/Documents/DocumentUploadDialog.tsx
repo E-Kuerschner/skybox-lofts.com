@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
-import { useFetcher } from "react-router";
+import { Link, useFetcher } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "~/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -20,18 +19,19 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { StatusBanner } from "~/components/StatusBanner";
+import { cn } from "~/util/ui/utils";
 
-type DocumentUploadDrawerProps = {
+type DocumentUploadDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   existingCategories: string[];
 };
 
-export function DocumentUploadDrawer({
+export function DocumentUploadDialog({
   open,
   onOpenChange,
   existingCategories,
-}: DocumentUploadDrawerProps) {
+}: DocumentUploadDialogProps) {
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state === "submitting";
 
@@ -39,8 +39,9 @@ export function DocumentUploadDrawer({
   const [customCategory, setCustomCategory] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const isCustomCategory = selectedCategory === "custom";
-  const categoryValue = isCustomCategory ? customCategory : selectedCategory;
+  // const isCustomCategory = selectedCategory === "custom";
+  // const categoryValue = isCustomCategory ? customCategory : selectedCategory;
+  const categoryValue = selectedCategory;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,7 +60,7 @@ export function DocumentUploadDrawer({
     }
   };
 
-  // Close sheet and reset form on successful upload
+  // Close dialog and reset form on successful upload
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data?.success) {
       handleClose();
@@ -67,14 +68,15 @@ export function DocumentUploadDrawer({
   }, [fetcher.state, fetcher.data]);
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Upload Document</SheetTitle>
-          <SheetDescription>
-            Upload a new document to the selected category.
-          </SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="site-bg">
+        <DialogHeader>
+          <DialogTitle>Upload Document</DialogTitle>
+          <DialogDescription>
+            Choose a file to upload from your computer and the category to file
+            it under. Files will be accessible to all registered residents.
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Error Message */}
         {fetcher.data && !fetcher.data.success && fetcher.data.error && (
@@ -100,7 +102,7 @@ export function DocumentUploadDrawer({
                 onValueChange={setSelectedCategory}
                 disabled={isSubmitting}
               >
-                <SelectTrigger id="category-select">
+                <SelectTrigger id="category-select" className="bg-white">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -115,26 +117,26 @@ export function DocumentUploadDrawer({
                         .join(" ")}
                     </SelectItem>
                   ))}
-                  <SelectItem value="custom">+ New Category</SelectItem>
+                  {/*<SelectItem value="custom">+ New Category</SelectItem>*/}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Custom Category Input */}
-            {isCustomCategory && (
-              <div className="space-y-2">
-                <Label htmlFor="custom-category">Category Name</Label>
-                <Input
-                  id="custom-category"
-                  type="text"
-                  value={customCategory}
-                  onChange={(e) => setCustomCategory(e.target.value)}
-                  placeholder="Enter category name"
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
-            )}
+            {/*/!* Custom Category Input *!/*/}
+            {/*{isCustomCategory && (*/}
+            {/*  <div className="space-y-2">*/}
+            {/*    <Label htmlFor="custom-category">Category Name</Label>*/}
+            {/*    <Input*/}
+            {/*      id="custom-category"*/}
+            {/*      type="text"*/}
+            {/*      value={customCategory}*/}
+            {/*      onChange={(e) => setCustomCategory(e.target.value)}*/}
+            {/*      placeholder="Enter category name"*/}
+            {/*      disabled={isSubmitting}*/}
+            {/*      required*/}
+            {/*    />*/}
+            {/*  </div>*/}
+            {/*)}*/}
 
             {/* Hidden input for category value */}
             <input type="hidden" name="category" value={categoryValue} />
@@ -146,6 +148,7 @@ export function DocumentUploadDrawer({
                 id="file"
                 name="file"
                 type="file"
+                className={cn("bg-white", [selectedFile && "text-emerald-500"])}
                 onChange={handleFileChange}
                 disabled={isSubmitting}
                 required
@@ -159,14 +162,11 @@ export function DocumentUploadDrawer({
             </div>
           </div>
 
-          <SheetFooter className="mt-6">
-            <SheetClose asChild>
-              <Button variant="outline" disabled={isSubmitting} type="button">
-                Cancel
-              </Button>
-            </SheetClose>
+          <DialogFooter className="mt-6">
             <Button
+              variant="cta"
               type="submit"
+              className="w-full"
               disabled={
                 isSubmitting ||
                 !selectedFile ||
@@ -174,11 +174,11 @@ export function DocumentUploadDrawer({
                 categoryValue.trim() === ""
               }
             >
-              {isSubmitting ? "Uploading..." : "Upload Document"}
+              {isSubmitting ? "Uploading..." : "Upload"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </fetcher.Form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

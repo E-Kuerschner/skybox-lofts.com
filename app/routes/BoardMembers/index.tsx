@@ -18,6 +18,7 @@ import { Trash2Icon, Edit3Icon } from "lucide-react";
 import NewBoardMemberForm from "./NewBoardMemberForm";
 import MobileBoardMemberDrawer from "./MobileBoardMemberDrawer";
 import { StatusBanner } from "~/components/StatusBanner";
+import { Switch } from "~/components/ui/switch";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const session = await isAuthenticated(request, context);
@@ -83,7 +84,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   // Only admins can create or delete board members
   if (session.user.role !== "admin") {
-    return { error: "Unauthorized" };
+    return { success: false, error: "Unauthorized" };
   }
 
   const db = getDatabase(context);
@@ -101,7 +102,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     return handleCreateBoardMember(name, role, db);
   }
 
-  return { error: "Invalid action" };
+  return { success: false, error: "Invalid action" };
 }
 
 export default function BoardMembers({
@@ -139,31 +140,33 @@ export default function BoardMembers({
         />
       )}
 
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-        <p className="text-muted-foreground">
-          Serving on the HOA board is voluntary. If you are interesting in
-          helping our community, please contact any of the current board
-          members.
-        </p>
-        {/* Admin Upload Button */}
-        {loaderData.isAdmin && (
-          <Button onClick={() => setEditMode((prev) => !prev)}>
-            {editMode ? (
-              "Done"
-            ) : (
-              <>
-                <Edit3Icon className="size-4 mr-2" />
-                Make changes
-              </>
-            )}
-          </Button>
-        )}
-      </div>
-
-      <div className="border rounded-lg overflow-hidden">
-        <Table className="bg-white">
+      <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+          <p className="text-muted-foreground">
+            Serving on the HOA board is voluntary. If you are interesting in
+            helping our community, please contact any of the current board
+            members.
+          </p>
+          {/* Admin Upload Button */}
+          {loaderData.isAdmin && (
+            <Button
+              variant={editMode ? "outline" : "secondary"}
+              onClick={() => setEditMode((prev) => !prev)}
+            >
+              {editMode ? (
+                "Done"
+              ) : (
+                <>
+                  <Edit3Icon className="size-4 mr-2" />
+                  Make changes
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+        <Table>
           <TableHeader>
-            <TableRow className="*:font-bold">
+            <TableRow className="*:font-bold px-4">
               <TableHead>Name</TableHead>
               <TableHead>Position</TableHead>
               {editMode && (
@@ -172,6 +175,23 @@ export default function BoardMembers({
             </TableRow>
           </TableHeader>
           <TableBody>
+            {/* New Board Member Row - Desktop Only - Admin Only */}
+            {editMode && (
+              <TableRow className="bg-muted hover:bg-muted hidden md:table-row">
+                <TableCell className="py-4" colSpan={3}>
+                  <Form method="post">
+                    <NewBoardMemberForm
+                      name={newMemberName}
+                      role={newMemberRole}
+                      isFormValid={isFormValid}
+                      onNameChange={setNewMemberName}
+                      onRoleChange={setNewMemberRole}
+                      submitLabel="Add"
+                    />
+                  </Form>
+                </TableCell>
+              </TableRow>
+            )}
             {loaderData.boardMemberData.map((member) => (
               <TableRow key={member.id}>
                 <TableCell>{member.name}</TableCell>
@@ -189,7 +209,7 @@ export default function BoardMembers({
                         type="submit"
                         variant="ghost"
                         size="icon"
-                        className="text-destructive hover:text-destructive"
+                        className="hover:text-destructive"
                         onClick={(e) => {
                           if (
                             !confirm(
@@ -207,24 +227,6 @@ export default function BoardMembers({
                 )}
               </TableRow>
             ))}
-
-            {/* New Board Member Row - Desktop Only - Admin Only */}
-            {editMode && (
-              <TableRow className="bg-muted/50 hidden md:table-row">
-                <TableCell colSpan={3}>
-                  <Form method="post">
-                    <NewBoardMemberForm
-                      name={newMemberName}
-                      role={newMemberRole}
-                      isFormValid={isFormValid}
-                      onNameChange={setNewMemberName}
-                      onRoleChange={setNewMemberRole}
-                      submitLabel="Add"
-                    />
-                  </Form>
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       </div>

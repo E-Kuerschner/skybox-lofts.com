@@ -34,7 +34,7 @@ export function PasswordEntryForm({ magicLinkEmailSent }: Props) {
     loginMethod === "full" && navigation.state === "idle" && magicLinkEmailSent;
 
   return (
-    <Card className="max-w-md md:shadow-xl min-w-full md:mx-auto md:min-w-[500px] min-h-[550px]">
+    <Card className="max-w-md md:shadow-xl min-w-full md:mx-auto md:min-w-[500px] min-h-[550px] ">
       <CardHeader>
         <a href="/" aria-label="Go home" className="w-fit m-auto mb-8">
           <img
@@ -101,7 +101,7 @@ export function PasswordEntryForm({ magicLinkEmailSent }: Props) {
                   <>
                     <input type="hidden" name="intent" value="reset-email" />
                     <p className="text-sm text-muted-foreground">
-                      Not seeing the email? Try looking in your spam folder or
+                      Not seeing the email? Try looking in your spam folder or{" "}
                       <button className="link" type="submit">
                         request a new email.
                       </button>

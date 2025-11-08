@@ -1,5 +1,6 @@
 import type { Route } from "./+types/ResidentHome";
 import { useSearchParams } from "react-router";
+import { MegaphoneIcon, MailIcon } from "lucide-react";
 import { ContentCard } from "~/components/ContentCard";
 import { ContactForm } from "~/components/ContactForm";
 import { isAuthenticated } from "~/util/authHelpers.server";
@@ -19,25 +20,23 @@ export default function ResidentHome({ loaderData }: Route.ComponentProps) {
   const verified = params.get("verified");
   return (
     <div className="flex flex-col md:flex-row gap-8">
-      <ContentCard className="flex-1">
-        <h2 className="text-2xl font-semibold text-foreground mb-2">
-          News & Messages
-        </h2>
+      <ContentCard
+        className="flex-1"
+        title="News & Messages"
+        iconName="megaphone"
+      >
         {verified === "1" ? (
           <StatusBanner
             variant="success"
             message="Thank you! Your email has been verified."
           />
         ) : (
-          <div className="border rounded-lg p-8 text-center text-muted-foreground">
-            No announcements at this time.
+          <div className="border rounded-lg p-8 text-center text-muted-foreground bg-white">
+            Nothing new right now, check back soon! ☀️
           </div>
         )}
       </ContentCard>
-      <ContentCard className="flex-2">
-        <h2 className="text-2xl font-semibold text-foreground mb-2">
-          Contact Us
-        </h2>
+      <ContentCard className="flex-2" title="Contact Us" iconName="mail">
         <p className="text-muted-foreground mb-6">
           Have a question or concern? Email{" "}
           <span className="text-emerald-600">{loaderData.contactEmail}</span>,

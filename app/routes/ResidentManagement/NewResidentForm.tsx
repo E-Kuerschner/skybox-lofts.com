@@ -101,7 +101,12 @@ export function NewResidentForm({
         </Select>
       </div>
       <div className={vertical ? "w-full" : "w-32"}>
-        <Button type="submit" className="w-full" disabled={!isFormValid}>
+        <Button
+          variant="cta"
+          type="submit"
+          className="w-full"
+          disabled={!isFormValid}
+        >
           {submitLabel}
         </Button>
       </div>

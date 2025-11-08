@@ -21,7 +21,11 @@ export const ResidentBreadcrumbs = ({ className }: Props) => {
     <Breadcrumb className={className}>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink asChild className="link text-base">
+          <BreadcrumbLink
+            asChild
+            // shadows applied in desktop size due to the unique background that the breadcrumbs are rendered on top of
+            className="md:text-shadow-lg/50"
+          >
             <Link to="/">Home</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -32,12 +36,14 @@ export const ResidentBreadcrumbs = ({ className }: Props) => {
 
           return (
             <Fragment key={`crumb-${segment}`}>
-              <BreadcrumbSeparator />
+              <BreadcrumbSeparator className="md:text-white" />
               <BreadcrumbItem key={segment}>
                 {isLast ? (
-                  <BreadcrumbPage className="text-base">{label}</BreadcrumbPage>
+                  <BreadcrumbPage className="md:text-white md:text-shadow-lg/50">
+                    {label}
+                  </BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink className="link text-base" asChild>
+                  <BreadcrumbLink className="md:text-shadow-lg/50" asChild>
                     <Link to={href}>{label}</Link>
                   </BreadcrumbLink>
                 )}
