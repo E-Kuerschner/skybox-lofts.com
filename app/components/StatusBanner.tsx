@@ -2,7 +2,7 @@ import { cn } from "~/util/ui/utils";
 
 type StatusBannerProps = {
   variant: "success" | "error";
-  message: string;
+  message: React.ReactNode;
   className?: string;
 };
 

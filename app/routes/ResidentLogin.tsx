@@ -12,6 +12,16 @@ const emailTrackerCookie = createCookie("email-tracker", {
 export async function action({ request, context }: Route.ActionArgs) {
   const formData = await request.formData();
   const loginMethod = formData.get("loginMethod") as string;
+  const intent = formData.get("intent") as string;
+
+  if (intent && intent === "reset-email") {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        "Set-Cookie": await emailTrackerCookie.serialize(null, { maxAge: -1 }),
+      },
+    });
+  }
 
   if (loginMethod === "anonymous") {
     const password = formData.get("password") as string;
@@ -105,14 +115,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 export default function ResidentLogin({ loaderData }: Route.ComponentProps) {
   const magicLinkEmailSent = loaderData.magicLinkEmailSent ?? false;
   return (
-    <main className="flex flex-col gap-4 items-center justify-center min-h-screen site-bg">
-      <a href="/" aria-label="Go home">
-        <img
-          src={TextLogo}
-          alt="Skybox Lofts"
-          className="drop-shadow-xl hover:scale-[1.05] transition-transform duration-200"
-        />
-      </a>
+    <main className="flex flex-col items-center justify-center min-h-screen site-bg">
       <PasswordEntryForm magicLinkEmailSent={magicLinkEmailSent} />
     </main>
   );

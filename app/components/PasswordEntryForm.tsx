@@ -10,17 +10,22 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
 import { cn } from "~/util/ui/utils";
 import { StatusBanner } from "~/components/StatusBanner";
+import TextLogo from "~/components/text-logo.svg";
 
 type Props = {
   magicLinkEmailSent: boolean;
 };
 
 export function PasswordEntryForm({ magicLinkEmailSent }: Props) {
-  const [loginMethod, setLoginMethod] = useState<"anonymous" | "full">(
-    "anonymous",
-  );
+  const [loginMethod, setLoginMethod] = useState<"anonymous" | "full">("full");
   const actionData = useActionData<{ error?: string }>();
   const navigation = useNavigation();
 
@@ -29,53 +34,110 @@ export function PasswordEntryForm({ magicLinkEmailSent }: Props) {
     loginMethod === "full" && navigation.state === "idle" && magicLinkEmailSent;
 
   return (
-    <Card className="max-w-md mx-auto border-4 border-[#2d5016]/10 shadow-xl min-w-[300px] md:min-w-[400px] min-h-[350px]">
-      <CardHeader className="space-y-2">
-        <CardTitle className="text-2xl text-center">
-          {loginMethod === "anonymous" ? "Resident Access" : "Resident Log In"}
-        </CardTitle>
-        <CardDescription className="text-center">
-          {loginMethod === "anonymous"
-            ? "Enter the building password to continue"
-            : "Enter your email to receive a one-time link"}
-          {emailSentState && (
-            <StatusBanner
-              variant="success"
-              message="Email sent! Click the link sent to your inbox. You may close this tab."
-              className="mt-4 text-start"
-            />
-          )}
+    <Card className="max-w-md mx-auto border-4 border-[#2d5016]/10 shadow-xl min-w-[300px] md:min-w-[500px] min-h-[550px]">
+      <CardHeader>
+        <a href="/" aria-label="Go home" className="w-fit m-auto mb-8">
+          <img
+            src={TextLogo}
+            alt="Skybox Lofts"
+            className="drop-shadow-xl hover:scale-[1.05] transition-transform duration-200"
+          />
+        </a>
+        <CardTitle className="text-2xl text-start">Resident Sign-In</CardTitle>
+        <CardDescription className="text-start">
+          <p>
+            Registered residents can access building information, documents and
+            community features.
+          </p>
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="mt-4">
         <Form method="post" className="space-y-4 flex flex-col grow">
           <input type="hidden" value={loginMethod} name="loginMethod" />
-          {/* resident password input*/}
-          <div className={cn("space-y-2", { hidden: loginMethod === "full" })}>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              type="password"
-              id="password"
-              name="password"
-              required={loginMethod === "anonymous"}
-              placeholder="Enter password"
-              className="text-lg"
-            />
-          </div>
-          {/* email input*/}
-          <div
-            className={cn("space-y-2", { hidden: loginMethod === "anonymous" })}
+          <Accordion
+            type="single"
+            value={emailSentState ? "email-sent" : loginMethod}
           >
-            <Label htmlFor="email">Email</Label>
-            <Input
-              type="email"
-              id="email"
-              name="email"
-              required={loginMethod === "full"}
-              placeholder="Enter your email"
-              className="text-lg"
-            />
-          </div>
+            <AccordionItem
+              value="full"
+              className="border-0 data-[state=closed]:opacity-0 transition-opacity duration-500"
+            >
+              <AccordionContent>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required={loginMethod === "full"}
+                    placeholder="Enter your email"
+                    className="text-lg"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Or for temporary, immediate access{" "}
+                    <span
+                      className="link"
+                      onClick={() => setLoginMethod("anonymous")}
+                    >
+                      enter the site password.
+                    </span>
+                  </p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem
+              value="email-sent"
+              className="border-0 data-[state=closed]:opacity-0 transition-opacity duration-500"
+            >
+              <AccordionContent>
+                <div className="flex flex-col gap-4">
+                  <StatusBanner
+                    variant="success"
+                    message="We sent an email containing your single-use sign-in
+                        link. Click the link to continue to the resident portal.
+                        You may close this tab."
+                    className="mt-4 text-start"
+                  />
+                  <>
+                    <input type="hidden" name="intent" value="reset-email" />
+                    <p className="text-sm text-muted-foreground">
+                      Not seeing the email? Try looking in your spam folder or
+                      <button className="link" type="submit">
+                        request a new email.
+                      </button>
+                    </p>
+                  </>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem
+              value="anonymous"
+              className="border-0 data-[state=closed]:opacity-0 transition-opacity duration-500"
+            >
+              <AccordionContent>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Site Password</Label>
+                  <Input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required={loginMethod === "anonymous"}
+                    placeholder="Enter site password"
+                    className="text-lg"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Nevermind,{" "}
+                    <span
+                      className="link"
+                      onClick={() => setLoginMethod("full")}
+                    >
+                      log in with my email.
+                    </span>
+                  </p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
           {actionData?.error && (
             <StatusBanner variant="error" message={actionData.error} />
           )}
@@ -85,29 +147,11 @@ export function PasswordEntryForm({ magicLinkEmailSent }: Props) {
               size="lg"
               className="w-full transition-all"
               variant="cta"
-              disabled={isSubmitting}
+              disabled={isSubmitting || emailSentState}
             >
-              {loginMethod === "anonymous" ? "Sign In" : "Get link"}
+              {loginMethod === "anonymous" ? "Sign In" : "Get sign-in link"}
             </Button>
           </div>
-          {loginMethod === "anonymous" ? (
-            <p className="text-sm text-muted-foreground">
-              Or, to access more features,{" "}
-              <span className="link" onClick={() => setLoginMethod("full")}>
-                log in using your email.
-              </span>
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Or, for limited but immediate access,{" "}
-              <span
-                className="link"
-                onClick={() => setLoginMethod("anonymous")}
-              >
-                enter the resident site password.
-              </span>
-            </p>
-          )}
         </Form>
       </CardContent>
     </Card>
