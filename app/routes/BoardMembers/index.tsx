@@ -18,7 +18,6 @@ import { Trash2Icon, Edit3Icon } from "lucide-react";
 import NewBoardMemberForm from "./NewBoardMemberForm";
 import MobileBoardMemberDrawer from "./MobileBoardMemberDrawer";
 import { StatusBanner } from "~/components/StatusBanner";
-import { Switch } from "~/components/ui/switch";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const session = await isAuthenticated(request, context);
