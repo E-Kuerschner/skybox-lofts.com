@@ -1,7 +1,6 @@
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import pennantLogoGreen from "../components/pennant-logo-green.svg";
 
 export default function Home() {
   return (

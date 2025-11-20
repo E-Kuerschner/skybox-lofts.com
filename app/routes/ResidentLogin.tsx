@@ -2,7 +2,6 @@ import type { Route } from "./+types/ResidentLogin";
 import { redirect, createCookie } from "react-router";
 import { getAuth, USER_NOT_FOUND } from "~/auth";
 import { PasswordEntryForm } from "~/components/PasswordEntryForm";
-import TextLogo from "../components/text-logo.svg";
 
 // cookie to track whether the user has been sent a magic link or not yet
 const emailTrackerCookie = createCookie("email-tracker", {

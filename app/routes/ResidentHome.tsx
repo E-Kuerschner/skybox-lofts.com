@@ -1,6 +1,5 @@
 import type { Route } from "./+types/ResidentHome";
 import { useSearchParams } from "react-router";
-import { MegaphoneIcon, MailIcon } from "lucide-react";
 import { ContentCard } from "~/components/ContentCard";
 import { ContactForm } from "~/components/ContactForm";
 import { isAuthenticated } from "~/util/authHelpers.server";
