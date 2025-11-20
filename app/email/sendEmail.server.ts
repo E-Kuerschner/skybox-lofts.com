@@ -13,12 +13,8 @@ export const sendEmail = async (
     from: "no-reply@skybox-lofts.com",
     to: [to],
     subject: emailSubject,
-    text: emailBody,
-    html: `
-      <p>
-        ${emailBody}
-      </p>
-    `,
+    // text: emailBody,
+    html: emailBody,
   });
 
   if (error) {
