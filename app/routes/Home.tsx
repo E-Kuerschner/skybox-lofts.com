@@ -21,7 +21,7 @@ export default function Home() {
 
         {/* Right Column - Content */}
         <div className="w-full md:w-1/2 bg-gradient-to-br from-stone-50 to-stone-100 flex flex-col">
-          <main className="flex flex-col justify-center w-full px-8 md:px-12 lg:px-16 py-12 md:py-16 grow">
+          <main className="flex flex-col justify-center w-full px-8 md:px-12 lg:px-16 py-6 md:py-16 grow">
             <div className="max-w-xl mx-auto space-y-6">
               <h1 className="text-3xl md:text-5xl font-bold text-foreground tracking-tight">
                 Welcome to Skybox Lofts!
@@ -54,7 +54,7 @@ export default function Home() {
             </div>
           </main>
           {/* Footer */}
-          <footer className="text-center text-muted-foreground border-t py-3">
+          <footer className="text-center text-muted-foreground border-t pb-8 pt-3">
             <div className="space-y-2">
               <p className="font-semibold">Skybox Lofts</p>
               <p>920 W Sheridan Rd, Chicago, IL 60613</p>

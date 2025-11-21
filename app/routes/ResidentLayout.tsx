@@ -259,7 +259,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
             </div>
           </div>
         </header>
-        <main className="relative z-10 p-3 md:p-8 site-bg grow">
+        <main className="relative z-10 px-3 pt-3 pb-8 md:pt-8 md:px-8 site-bg grow">
           <Outlet />
         </main>
       </div>
