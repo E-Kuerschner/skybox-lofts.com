@@ -200,6 +200,7 @@ export default function ResidentManagement({
   const [newUserRole, setNewUserRole] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [optimisticUsers, setOptimisticUsers] = useState(loaderData.users);
 
@@ -210,17 +211,19 @@ export default function ResidentManagement({
     }
   }, [loaderData.users, navigation.state]);
 
-  // Clear form after successful submission
+  // Clear form and close dialogs/drawers after successful submission
   useEffect(() => {
-    if (actionData?.success) {
+    if (navigation.state === "idle" && actionData?.success) {
       setNewUserName("");
       setNewUserEmail("");
       setNewUserRole("");
       setEditingUserId(null);
+      setIsDialogOpen(false);
+      setIsMobileDrawerOpen(false);
     }
-  }, [actionData?.success]);
+  }, [navigation.state, actionData?.success]);
 
-  // Handle edit user
+  // Handle edit user (desktop - uses dialog)
   const handleEditUser = (user: {
     id: string;
     name: string | null;
@@ -232,6 +235,20 @@ export default function ResidentManagement({
     setNewUserEmail(user.email);
     setNewUserRole(user.role || "");
     setIsDialogOpen(true);
+  };
+
+  // Handle edit user (mobile - uses drawer)
+  const handleEditUserMobile = (user: {
+    id: string;
+    name: string | null;
+    email: string;
+    role: string | null;
+  }) => {
+    setEditingUserId(user.id);
+    setNewUserName(user.name || "");
+    setNewUserEmail(user.email);
+    setNewUserRole(user.role || "");
+    setIsMobileDrawerOpen(true);
   };
 
   // Handle new user
@@ -343,8 +360,8 @@ export default function ResidentManagement({
           </div>
         </div>
 
-        {/* Resident Cards */}
-        <div className="space-y-2">
+        {/* Resident Cards - Desktop (uses dialog for edit) */}
+        <div className="space-y-2 hidden md:block">
           {filteredUsers.length === 0 ? (
             <NoContent message="No residents found" />
           ) : (
@@ -358,23 +375,59 @@ export default function ResidentManagement({
             ))
           )}
         </div>
+
+        {/* Resident Cards - Mobile (uses drawer for edit) */}
+        <div className="space-y-2 md:hidden">
+          {filteredUsers.length === 0 ? (
+            <NoContent message="No residents found" />
+          ) : (
+            filteredUsers.map((user) => (
+              <ResidentCard
+                key={user.id}
+                user={user}
+                isAdmin={true}
+                onEdit={handleEditUserMobile}
+              />
+            ))
+          )}
+        </div>
       </div>
 
-      {/* Desktop Registration Dialog */}
-      <ResidentRegistrationDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        name={newUserName}
-        email={newUserEmail}
-        role={newUserRole}
-        isFormValid={isFormValid}
-        onNameChange={setNewUserName}
-        onEmailChange={setNewUserEmail}
-        onRoleChange={setNewUserRole}
-        actionData={actionData}
-        editMode={editingUserId !== null}
-        userId={editingUserId || undefined}
-      />
+      {/* Desktop Registration Dialog (hidden on mobile) */}
+      <div className="hidden md:block">
+        <ResidentRegistrationDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          name={newUserName}
+          email={newUserEmail}
+          role={newUserRole}
+          isFormValid={isFormValid}
+          onNameChange={setNewUserName}
+          onEmailChange={setNewUserEmail}
+          onRoleChange={setNewUserRole}
+          actionData={actionData}
+          editMode={editingUserId !== null}
+          userId={editingUserId || undefined}
+        />
+      </div>
+
+      {/* Mobile Edit Drawer (only shown on mobile for editing) */}
+      <div className="md:hidden">
+        <MobileUserDrawer
+          name={newUserName}
+          email={newUserEmail}
+          role={newUserRole}
+          isFormValid={isFormValid}
+          onNameChange={setNewUserName}
+          onEmailChange={setNewUserEmail}
+          onRoleChange={setNewUserRole}
+          actionData={actionData}
+          editMode={true}
+          userId={editingUserId || undefined}
+          open={isMobileDrawerOpen}
+          onOpenChange={setIsMobileDrawerOpen}
+        />
+      </div>
     </div>
   );
 }

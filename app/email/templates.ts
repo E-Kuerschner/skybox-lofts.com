@@ -14,7 +14,7 @@ export const welcomeEmail = (name: string, verificationLink: string) => `
           <tr>
             <td style="padding: 40px 30px;">
               <div style="text-align: center; margin-bottom: 32px;">
-                <img src="https://skybox-lofts.com/text_logo.svg" alt="Skybox Lofts" style="width: 280px; max-width: 100%; height: auto;" />
+                <img src="https://skybox-lofts.com/text_logo.png" alt="Skybox Lofts" style="width: 280px; max-width: 100%; height: auto;" />
               </div>
               <h1 style="margin: 0 0 20px; font-size: 24px; font-weight: 600; color: #171717;">Hello ${name},</h1>
 
@@ -70,7 +70,7 @@ export const signInEmail = (name: string, signInLink: string) => `
           <tr>
             <td style="padding: 40px 30px;">
               <div style="text-align: center; margin-bottom: 32px;">
-                <img src="https://skybox-lofts.com/text_logo.svg" alt="Skybox Lofts" style="width: 280px; max-width: 100%; height: auto;" />
+                <img src="https://skybox-lofts.com/text_logo.png" alt="Skybox Lofts" style="width: 280px; max-width: 100%; height: auto;" />
               </div>
               <h1 style="margin: 0 0 20px; font-size: 24px; font-weight: 600; color: #171717;">Hello ${name},</h1>
 

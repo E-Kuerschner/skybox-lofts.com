@@ -6,6 +6,7 @@
     "database/**/*.ts",
     "better-auth-config.ts",
     "app/auth/options.ts",
+    "app/email/templates.ts",
     "scripts/**/*.ts"
   ],
   "compilerOptions": {

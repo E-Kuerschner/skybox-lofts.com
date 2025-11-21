@@ -22,6 +22,10 @@ type MobileUserDrawerProps = {
   onEmailChange: (value: string) => void;
   onRoleChange: (value: string) => void;
   actionData?: { success?: boolean; error?: string; message?: string };
+  editMode?: boolean;
+  userId?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export function MobileUserDrawer({
@@ -33,30 +37,48 @@ export function MobileUserDrawer({
   onEmailChange,
   onRoleChange,
   actionData,
+  editMode = false,
+  userId,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: MobileUserDrawerProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // Use controlled state if provided, otherwise use internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = controlledOnOpenChange || setInternalOpen;
 
   // Close drawer on successful submission
   useEffect(() => {
     if (actionData?.success) {
-      setOpen(false);
+      // Close both internal and controlled state to ensure drawer closes
+      setInternalOpen(false);
+      if (controlledOnOpenChange) {
+        controlledOnOpenChange(false);
+      }
     }
-  }, [actionData?.success]);
+  }, [actionData?.success, controlledOnOpenChange]);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button size="icon" variant="secondary">
-          <UserPlusIcon className="size-4" />
-        </Button>
-      </SheetTrigger>
+      {!editMode && (
+        <SheetTrigger asChild>
+          <Button size="icon" variant="secondary">
+            <UserPlusIcon className="size-4" />
+          </Button>
+        </SheetTrigger>
+      )}
       <SheetContent className="site-bg" side="bottom">
         <SheetHeader>
-          <SheetTitle>Register Resident</SheetTitle>
-          <SheetDescription>
-            Enter the resident's information below. They will receive a welcome
-            email with a link to verify their email.
-          </SheetDescription>
+          <SheetTitle>
+            {editMode ? "Update Resident" : "Register Resident"}
+          </SheetTitle>
+          {!editMode && (
+            <SheetDescription>
+              Enter the resident's information below. They will receive a
+              welcome email with a link to verify their email.
+            </SheetDescription>
+          )}
         </SheetHeader>
 
         {/* Error/Success Messages */}
@@ -69,6 +91,14 @@ export function MobileUserDrawer({
         )}
 
         <Form method="post" className="mt-6">
+          <input
+            type="hidden"
+            name="intent"
+            value={editMode ? "update" : "create"}
+          />
+          {editMode && userId && (
+            <input type="hidden" name="userId" value={userId} />
+          )}
           <NewResidentForm
             name={name}
             email={email}
@@ -77,7 +107,7 @@ export function MobileUserDrawer({
             onNameChange={onNameChange}
             onEmailChange={onEmailChange}
             onRoleChange={onRoleChange}
-            submitLabel="Submit"
+            submitLabel={editMode ? "Save" : "Submit"}
             vertical
           />
         </Form>
