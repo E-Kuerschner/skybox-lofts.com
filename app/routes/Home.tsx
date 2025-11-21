@@ -9,11 +9,14 @@ export default function Home() {
       <div className="flex-grow flex flex-col md:flex-row">
         {/* Left Column - Image */}
         <div className="relative w-full md:w-1/2 h-[40vh] md:h-auto">
-          <img
-            src="/banner.jpg"
-            alt="Skybox Lofts"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <picture>
+            <source type="image/webp" srcSet="/banner.webp" />
+            <img
+              src="/banner.jpg"
+              alt="Skybox Lofts"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </picture>
         </div>
 
         {/* Right Column - Content */}

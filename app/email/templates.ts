@@ -16,7 +16,7 @@ export const welcomeEmail = (name: string, verificationLink: string) => `
               <h1 style="margin: 0 0 20px; font-size: 24px; font-weight: 600; color: #171717;">Hello ${name},</h1>
 
               <p style="margin: 0 0 16px; font-size: 16px; line-height: 24px; color: #525252;">
-                You have been invited by the Skybox Lofts board to join the Skybox Lofts online community website: <a href="https://skybox-lofts.com" style="color: #0ea5e9; text-decoration: none;">skybox-lofts.com</a>.
+                You have been invited by the Skybox Lofts board to join the Skybox Lofts online community website: <a href="https://skybox-lofts.com" style="color: #059669; text-decoration: none;">skybox-lofts.com</a>.
               </p>
 
               <p style="margin: 0 0 16px; font-size: 16px; line-height: 24px; color: #525252;">
@@ -30,7 +30,7 @@ export const welcomeEmail = (name: string, verificationLink: string) => `
               <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 32px 0;">
                 <tr>
                   <td align="center">
-                    <a href="${verificationLink}" style="display: inline-block; padding: 12px 32px; font-size: 16px; font-weight: 500; color: #ffffff; background-color: #0ea5e9; text-decoration: none; border-radius: 6px;">Verify Email Address</a>
+                    <a href="${verificationLink}" style="display: inline-block; padding: 12px 32px; font-size: 16px; font-weight: 600; color: #ffffff; background-color: #059669; text-decoration: none; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);">Verify Email Address</a>
                   </td>
                 </tr>
               </table>
@@ -38,7 +38,7 @@ export const welcomeEmail = (name: string, verificationLink: string) => `
               <p style="margin: 0 0 8px; font-size: 14px; line-height: 20px; color: #737373;">
                 Or copy and paste this link into your browser:
               </p>
-              <p style="margin: 0 0 24px; font-size: 14px; line-height: 20px; color: #0ea5e9; word-break: break-all;">
+              <p style="margin: 0 0 24px; font-size: 14px; line-height: 20px; color: #059669; word-break: break-all;">
                 ${verificationLink}
               </p>
 
@@ -83,7 +83,7 @@ export const signInEmail = (name: string, signInLink: string) => `
               <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 32px 0;">
                 <tr>
                   <td align="center">
-                    <a href="${signInLink}" style="display: inline-block; padding: 12px 32px; font-size: 16px; font-weight: 500; color: #ffffff; background-color: #0ea5e9; text-decoration: none; border-radius: 6px;">Sign In</a>
+                    <a href="${signInLink}" style="display: inline-block; padding: 12px 32px; font-size: 16px; font-weight: 600; color: #ffffff; background-color: #059669; text-decoration: none; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);">Sign In</a>
                   </td>
                 </tr>
               </table>
@@ -91,7 +91,7 @@ export const signInEmail = (name: string, signInLink: string) => `
               <p style="margin: 0 0 8px; font-size: 14px; line-height: 20px; color: #737373;">
                 Or copy and paste this link into your browser:
               </p>
-              <p style="margin: 0 0 24px; font-size: 14px; line-height: 20px; color: #0ea5e9; word-break: break-all;">
+              <p style="margin: 0 0 24px; font-size: 14px; line-height: 20px; color: #059669; word-break: break-all;">
                 ${signInLink}
               </p>
 

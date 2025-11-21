@@ -216,9 +216,17 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
           >
             <img src={TextLogo} alt="Skybox Lofts" className="" />
           </a>
-          {/* TODO move out of main */}
-          <div className="md:h-[200px] h-auto md:bg-[url(/banner.jpg)] bg-cover bg-center border-b">
-            <div className="md:h-[200px] h-auto flex flex-col justify-end pb-4 px-5 md:px-8 frosted-glass">
+          <div className="relative md:h-[200px] h-auto border-b">
+            {/* Banner background image with webP support and JPEG fallback */}
+            <picture className="hidden md:block absolute inset-0">
+              <source type="image/webp" srcSet="/banner.webp" />
+              <img
+                src="/banner.jpg"
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            </picture>
+            <div className="relative md:h-[200px] h-auto flex flex-col justify-end pb-4 px-5 md:px-8 frosted-glass">
               <div className="flex gap-1 items-center">
                 <Button
                   className="md:hidden"
