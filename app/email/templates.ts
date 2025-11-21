@@ -13,14 +13,17 @@ export const welcomeEmail = (name: string, verificationLink: string) => `
         <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
           <tr>
             <td style="padding: 40px 30px;">
+              <div style="text-align: center; margin-bottom: 32px;">
+                <img src="https://skybox-lofts.com/text_logo.svg" alt="Skybox Lofts" style="width: 280px; max-width: 100%; height: auto;" />
+              </div>
               <h1 style="margin: 0 0 20px; font-size: 24px; font-weight: 600; color: #171717;">Hello ${name},</h1>
 
               <p style="margin: 0 0 16px; font-size: 16px; line-height: 24px; color: #525252;">
-                You have been invited by the Skybox Lofts board to join the Skybox Lofts online community website: <a href="https://skybox-lofts.com" style="color: #059669; text-decoration: none;">skybox-lofts.com</a>.
+                You have been invited to join the Skybox Lofts online community website: <a href="https://skybox-lofts.com" style="color: #059669; text-decoration: none;">skybox-lofts.com</a>.
               </p>
 
               <p style="margin: 0 0 16px; font-size: 16px; line-height: 24px; color: #525252;">
-                Here, only verified residents can access all building and meeting documentation, subscribe to community news and announcements and more.
+                Here, verified residents can access building documents, lookup helpful resources like vetted contractors and subscribe to community news, announcements and more.
               </p>
 
               <p style="margin: 0 0 24px; font-size: 16px; line-height: 24px; color: #525252;">
@@ -40,14 +43,6 @@ export const welcomeEmail = (name: string, verificationLink: string) => `
               </p>
               <p style="margin: 0 0 24px; font-size: 14px; line-height: 20px; color: #059669; word-break: break-all;">
                 ${verificationLink}
-              </p>
-
-              <p style="margin: 0 0 8px; font-size: 16px; line-height: 24px; color: #525252;">
-                Have a nice day!
-              </p>
-
-              <p style="margin: 0; font-size: 16px; line-height: 24px; color: #525252;">
-                - Skybox Lofts
               </p>
             </td>
           </tr>
@@ -74,6 +69,9 @@ export const signInEmail = (name: string, signInLink: string) => `
         <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
           <tr>
             <td style="padding: 40px 30px;">
+              <div style="text-align: center; margin-bottom: 32px;">
+                <img src="https://skybox-lofts.com/text_logo.svg" alt="Skybox Lofts" style="width: 280px; max-width: 100%; height: auto;" />
+              </div>
               <h1 style="margin: 0 0 20px; font-size: 24px; font-weight: 600; color: #171717;">Hello ${name},</h1>
 
               <p style="margin: 0 0 24px; font-size: 16px; line-height: 24px; color: #525252;">
