@@ -68,7 +68,7 @@ async function handleDeleteUser(
       body: { userId },
     });
 
-    return { success: true };
+    return { success: true, message: "Resident removed successfully" };
   } catch (error) {
     console.error("Error deleting user:", error);
     return { error: "Failed to delete user" };
@@ -205,6 +205,7 @@ export default function ResidentManagement({
     useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [optimisticUsers, setOptimisticUsers] = useState(loaderData.users);
+  const [successKey, setSuccessKey] = useState(0);
 
   // Sync optimistic users with loader data
   useEffect(() => {
@@ -213,12 +214,13 @@ export default function ResidentManagement({
     }
   }, [loaderData.users, navigation.state]);
 
-  // Close dialogs after successful submission
+  // Close dialogs after successful submission and increment success key
   useEffect(() => {
     if (navigation.state === "idle" && actionData?.success) {
       setIsDialogOpen(false);
       setIsMobileDrawerOpen(false);
       setIsMobileCreateDrawerOpen(false);
+      setSuccessKey((prev) => prev + 1);
     }
   }, [navigation.state, actionData?.success]);
 
@@ -324,9 +326,10 @@ export default function ResidentManagement({
       )}
       {actionData?.success && (
         <StatusBanner
+          key={successKey}
           variant="success"
           autoDismiss={3000}
-          message={"Operation completed successfully"}
+          message={actionData.message || "Operation completed successfully"}
         />
       )}
 
