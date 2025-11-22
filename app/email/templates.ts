@@ -7,12 +7,12 @@ export const welcomeEmail = (name: string, verificationLink: string) => `
   <title>Welcome to Skybox Lofts</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+  <table role="presentation" bgcolor="#f5f5f5" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
     <tr>
-      <td align="center" style="padding: 40px 0;">
-        <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <td align="center" bgcolor="#f5f5f5" style="padding: 40px 0; background-color: #f5f5f5;">
+        <table role="presentation" bgcolor="#ffffff" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
           <tr>
-            <td style="padding: 40px 30px;">
+            <td bgcolor="#ffffff" style="padding: 40px 30px; background-color: #ffffff;">
               <div style="text-align: center; margin-bottom: 32px;">
                 <img src="https://skybox-lofts.com/text_logo.png" alt="Skybox Lofts" style="width: 280px; max-width: 100%; height: auto;" />
               </div>
@@ -63,12 +63,12 @@ export const signInEmail = (name: string, signInLink: string) => `
   <title>Sign In to Skybox Lofts</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+  <table role="presentation" bgcolor="#f5f5f5" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
     <tr>
-      <td align="center" style="padding: 40px 0;">
-        <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <td align="center" bgcolor="#f5f5f5" style="padding: 40px 0; background-color: #f5f5f5;">
+        <table role="presentation" bgcolor="#ffffff" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
           <tr>
-            <td style="padding: 40px 30px;">
+            <td bgcolor="#ffffff" style="padding: 40px 30px; background-color: #ffffff;">
               <div style="text-align: center; margin-bottom: 32px;">
                 <img src="https://skybox-lofts.com/text_logo.png" alt="Skybox Lofts" style="width: 280px; max-width: 100%; height: auto;" />
               </div>
