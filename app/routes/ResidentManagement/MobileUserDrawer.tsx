@@ -68,7 +68,11 @@ export function MobileUserDrawer({
           </Button>
         </SheetTrigger>
       )}
-      <SheetContent className="site-bg" side="bottom">
+      <SheetContent
+        className="site-bg"
+        side="bottom"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <SheetHeader>
           <SheetTitle>
             {editMode ? "Update Resident" : "Register Resident"}

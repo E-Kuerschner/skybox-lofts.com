@@ -18,24 +18,34 @@ export default function ResidentHome({ loaderData }: Route.ComponentProps) {
 
   const verified = params.get("verified");
   return (
-    <div className="flex flex-col md:flex-row gap-8">
+    <div className="flex flex-col gap-8">
+      {verified === "1" && (
+        <StatusBanner
+          variant="success"
+          message="Thank you! Your email has been verified."
+        />
+      )}
+      {/*<ContentCard*/}
+      {/*  className="flex-1"*/}
+      {/*  title="News & Messages"*/}
+      {/*  iconName="megaphone"*/}
+      {/*>*/}
+      {/*  {verified === "1" ? (*/}
+      {/*    <StatusBanner*/}
+      {/*      variant="success"*/}
+      {/*      message="Thank you! Your email has been verified."*/}
+      {/*    />*/}
+      {/*  ) : (*/}
+      {/*    <div className="border rounded-lg p-8 text-center text-muted-foreground bg-white">*/}
+      {/*      Nothing new right now, check back soon! ☀️*/}
+      {/*    </div>*/}
+      {/*  )}*/}
+      {/*</ContentCard>*/}
       <ContentCard
-        className="flex-1"
-        title="News & Messages"
-        iconName="megaphone"
+        className="flex-2 max-w-xl"
+        title="Contact Us"
+        iconName="mail"
       >
-        {verified === "1" ? (
-          <StatusBanner
-            variant="success"
-            message="Thank you! Your email has been verified."
-          />
-        ) : (
-          <div className="border rounded-lg p-8 text-center text-muted-foreground bg-white">
-            Nothing new right now, check back soon! ☀️
-          </div>
-        )}
-      </ContentCard>
-      <ContentCard className="flex-2" title="Contact Us" iconName="mail">
         <p className="text-muted-foreground mb-6">
           Have a question or concern? Email{" "}
           <span className="text-emerald-600">{loaderData.contactEmail}</span>,

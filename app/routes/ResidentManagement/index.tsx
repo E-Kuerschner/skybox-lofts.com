@@ -201,6 +201,8 @@ export default function ResidentManagement({
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isMobileCreateDrawerOpen, setIsMobileCreateDrawerOpen] =
+    useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [optimisticUsers, setOptimisticUsers] = useState(loaderData.users);
 
@@ -211,17 +213,24 @@ export default function ResidentManagement({
     }
   }, [loaderData.users, navigation.state]);
 
-  // Clear form and close dialogs/drawers after successful submission
+  // Close dialogs after successful submission
   useEffect(() => {
     if (navigation.state === "idle" && actionData?.success) {
+      setIsDialogOpen(false);
+      setIsMobileDrawerOpen(false);
+      setIsMobileCreateDrawerOpen(false);
+    }
+  }, [navigation.state, actionData?.success]);
+
+  // Clear form when all dialogs are closed
+  useEffect(() => {
+    if (!isDialogOpen && !isMobileDrawerOpen && !isMobileCreateDrawerOpen) {
       setNewUserName("");
       setNewUserEmail("");
       setNewUserRole("");
       setEditingUserId(null);
-      setIsDialogOpen(false);
-      setIsMobileDrawerOpen(false);
     }
-  }, [navigation.state, actionData?.success]);
+  }, [isDialogOpen, isMobileDrawerOpen, isMobileCreateDrawerOpen]);
 
   // Handle edit user (desktop - uses dialog)
   const handleEditUser = (user: {
@@ -316,18 +325,16 @@ export default function ResidentManagement({
       {actionData?.success && (
         <StatusBanner
           variant="success"
+          autoDismiss={3000}
           message={"Operation completed successfully"}
         />
       )}
 
       <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
         <p className="mb-8 text-muted-foreground">
-          In order to grant access to the protected pages of our website, new
-          residents must be officially registered below. Once their information
-          has been submitted, they will receive instructions for how to verify
-          their email address and sign in. Please double check all email
-          addresses before sending out invitations as the recipients will be
-          able to access our site.
+          Grant new residents access to the website by clicking the button
+          below. Please double-check all email addresses belong to actual
+          residents before submitting.
         </p>
         {/* Search and Register Button */}
         <div className="flex flex-row gap-3 items-center justify-between mb-4">
@@ -356,6 +363,8 @@ export default function ResidentManagement({
               onEmailChange={setNewUserEmail}
               onRoleChange={setNewUserRole}
               actionData={actionData}
+              open={isMobileCreateDrawerOpen}
+              onOpenChange={setIsMobileCreateDrawerOpen}
             />
           </div>
         </div>

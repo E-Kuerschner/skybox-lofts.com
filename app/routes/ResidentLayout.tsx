@@ -70,7 +70,7 @@ const SideBarContent = ({
         <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
         {userName && (
           <p className="md:hidden text-sm text-muted-foreground mb-2">
-            Hello, {userName}
+            Hello, <span className="text-emerald-500">{userName}</span>
           </p>
         )}
       </div>
@@ -192,11 +192,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
           isAdmin={isAdmin}
           userName={userName}
         />
-        <Button
-          className="mx-4 mb-4"
-          variant="secondary"
-          onClick={handleSignOut}
-        >
+        <Button className="mx-4 mb-8" variant="outline" onClick={handleSignOut}>
           Sign out
         </Button>
       </aside>
@@ -259,7 +255,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
             </div>
           </div>
         </header>
-        <main className="relative z-10 px-3 pt-3 pb-8 md:pt-8 md:px-8 site-bg grow">
+        <main className="relative z-10 p-3 pb-10 md:p-8 site-bg grow">
           <Outlet />
         </main>
       </div>

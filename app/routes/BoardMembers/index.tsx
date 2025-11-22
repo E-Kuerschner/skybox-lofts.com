@@ -136,6 +136,7 @@ export default function BoardMembers({
           className="mb-4"
           variant="success"
           message="Operation completed successfully"
+          autoDismiss={3000}
         />
       )}
 
