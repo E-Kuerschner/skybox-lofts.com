@@ -1,11 +1,11 @@
 import * as React from "react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "~/util/ui/utils";
 import { Card } from "./ui/card";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 interface ContentCardProps extends React.ComponentProps<typeof Card> {
   children: React.ReactNode;
-  iconName: IconName;
+  icon: LucideIcon;
   title: string;
 }
 
@@ -13,7 +13,7 @@ export function ContentCard({
   className,
   children,
   title,
-  iconName,
+  icon: Icon,
   ...props
 }: ContentCardProps) {
   return (
@@ -29,7 +29,7 @@ export function ContentCard({
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-amber-900/5 rounded-tr-full" />
 
       <div className="flex gap-2 items-center mb-4">
-        <DynamicIcon name={iconName} className="size-6" />
+        <Icon className="size-6" />
         <h2 className="text-xl font-semibold text-foreground">{title}</h2>
       </div>
       <div className="relative z-10">{children}</div>

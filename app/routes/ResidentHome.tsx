@@ -1,5 +1,6 @@
 import type { Route } from "./+types/ResidentHome";
 import { useSearchParams } from "react-router";
+import { Mail } from "lucide-react";
 import { ContentCard } from "~/components/ContentCard";
 import { ContactForm } from "~/components/ContactForm";
 import { isAuthenticated } from "~/util/authHelpers.server";
@@ -44,7 +45,7 @@ export default function ResidentHome({ loaderData }: Route.ComponentProps) {
       <ContentCard
         className="flex-2 max-w-xl"
         title="Contact Us"
-        iconName="mail"
+        icon={Mail}
       >
         <p className="text-muted-foreground mb-6">
           Have a question or concern? Email{" "}
