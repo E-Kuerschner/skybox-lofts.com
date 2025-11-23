@@ -106,3 +106,4 @@ Project requirements and specifications are documented in the `docs/` folder.
 - Assume that users of this app aren't very technical. This should always be taken into account when writing any user-facing, written content.
 - Prefer using react-router action functions over better-auth authClient methods
 - Prefer fetching the user session in the data loader function instead of using authClient in the components
+- Update @app/routes.ts whenever adding a new page to the app

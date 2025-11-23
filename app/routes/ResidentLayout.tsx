@@ -82,9 +82,14 @@ const SideBarContent = ({
         <LayoutNavLink to="/resident/documents">📄 Documents</LayoutNavLink>
         <LayoutNavLink to="/resident/board">👥 Board Members</LayoutNavLink>
         {isAdmin && (
-          <LayoutNavLink to="/resident/management">
-            ⚙️ Resident Management
-          </LayoutNavLink>
+          <>
+            <LayoutNavLink to="/resident/management">
+              ⚙️ Resident Management
+            </LayoutNavLink>
+            <LayoutNavLink to="/resident/activity">
+              📊 Activity Log
+            </LayoutNavLink>
+          </>
         )}
       </nav>
     </div>
@@ -133,6 +138,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
     if (lastSegment === "board") return "Board Members";
     if (lastSegment === "meeting-notes") return "Meeting Notes";
     if (lastSegment === "management") return "Resident Management";
+    if (lastSegment === "activity") return "Activity Log";
     if (lastSegment === "budget") return "Budget";
     return "Resident Info";
   }, [pathSegments]);

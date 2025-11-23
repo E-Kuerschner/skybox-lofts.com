@@ -1,11 +1,13 @@
 import type { Route } from "./+types/documentUpload";
 import { isAdmin } from "~/util/authHelpers.server";
+import { getDatabase } from "~/util/database.server";
+import { logActivity } from "~/util/activityLogger.server";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export async function action({ request, context }: Route.ActionArgs) {
   // Ensure user is admin
-  await isAdmin(request, context, { returnUnauthorized: true });
+  const session = await isAdmin(request, context, { returnUnauthorized: true });
 
   try {
     const formData = await request.formData();
@@ -61,6 +63,14 @@ export async function action({ request, context }: Route.ActionArgs) {
         contentType: file.type,
         contentDisposition: `attachment; filename="${encodeURIComponent(file.name)}"`,
       },
+    });
+
+    // Log the activity
+    const db = getDatabase(context);
+    await logActivity(db, session.user.id, "created", "document", null, {
+      filename: file.name,
+      category: normalizedCategory,
+      fileSize: file.size,
     });
 
     return {

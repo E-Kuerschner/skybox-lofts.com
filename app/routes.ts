@@ -22,6 +22,7 @@ export default [
         route("download", "routes/documentDownload.ts"),
       ]),
       route("management", "routes/ResidentManagement/index.tsx"),
+      route("activity", "routes/Activity/index.tsx"),
     ]),
   ]),
 ] satisfies RouteConfig;

@@ -4,6 +4,7 @@ import { isAuthenticated } from "~/util/authHelpers.server";
 import { boardMembers } from "../../../database/schema";
 import { eq } from "drizzle-orm";
 import { useState, useEffect } from "react";
+import { logActivity } from "~/util/activityLogger.server";
 import {
   Table,
   TableBody,
@@ -33,6 +34,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 async function handleDeleteBoardMember(
   boardMemberId: string,
   db: ReturnType<typeof getDatabase>,
+  actorUserId: string,
 ) {
   if (!boardMemberId) {
     return { error: "Board member ID is required" };
@@ -52,6 +54,13 @@ async function handleDeleteBoardMember(
     await db
       .delete(boardMembers)
       .where(eq(boardMembers.id, Number(boardMemberId)));
+
+    // Log the activity
+    await logActivity(db, actorUserId, "deleted", "board_member", boardMemberId, {
+      memberName: memberToDelete.name,
+      memberRole: memberToDelete.role,
+    });
+
     return { success: true, message: "Board member deleted successfully" };
   } catch (error) {
     return { error: "Failed to delete board member" };
@@ -62,16 +71,28 @@ async function handleCreateBoardMember(
   name: string,
   role: string,
   db: ReturnType<typeof getDatabase>,
+  actorUserId: string,
 ) {
   if (!name || !role) {
     return { error: "Name and position are required" };
   }
 
   try {
-    await db.insert(boardMembers).values({
-      name,
-      role,
+    const newMember = await db
+      .insert(boardMembers)
+      .values({
+        name,
+        role,
+      })
+      .returning()
+      .get();
+
+    // Log the activity
+    await logActivity(db, actorUserId, "created", "board_member", String(newMember.id), {
+      memberName: name,
+      memberRole: role,
     });
+
     return { success: true, message: "Board member added successfully" };
   } catch (error) {
     return { error: "Failed to create board member" };
@@ -92,13 +113,13 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   if (intent === "delete") {
     const boardMemberId = formData.get("boardMemberId") as string;
-    return handleDeleteBoardMember(boardMemberId, db);
+    return handleDeleteBoardMember(boardMemberId, db, session.user.id);
   }
 
   if (intent === "create") {
     const name = formData.get("name") as string;
     const role = formData.get("role") as string;
-    return handleCreateBoardMember(name, role, db);
+    return handleCreateBoardMember(name, role, db, session.user.id);
   }
 
   return { success: false, error: "Invalid action" };

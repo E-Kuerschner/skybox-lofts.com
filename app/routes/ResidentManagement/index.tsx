@@ -15,6 +15,7 @@ import { MobileUserDrawer } from "./MobileUserDrawer";
 import { StatusBanner } from "~/components/StatusBanner";
 import { SearchInput } from "~/components/SearchInput";
 import { fuzzyMatch } from "~/util/fuzzySearch";
+import { logActivity } from "~/util/activityLogger.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAdmin(request, context);
@@ -35,6 +36,7 @@ async function handleDeleteUser(
   db: ReturnType<typeof getDatabase>,
   auth: ReturnType<typeof getAuth>,
   request: Request,
+  actorUserId: string,
 ) {
   if (!userId) {
     return { error: "User ID is required" };
@@ -68,6 +70,11 @@ async function handleDeleteUser(
       body: { userId },
     });
 
+    // Log the activity
+    await logActivity(db, actorUserId, "deleted", "resident", userId, {
+      residentName: userToDelete.name || undefined,
+    });
+
     return { success: true, message: "Resident removed successfully" };
   } catch (error) {
     console.error("Error deleting user:", error);
@@ -81,6 +88,7 @@ async function handleCreateUser(
   role: string,
   db: ReturnType<typeof getDatabase>,
   auth: ReturnType<typeof getAuth>,
+  actorUserId: string,
 ) {
   if (!name || !email || !role) {
     return { error: "Name, email, and role are required" };
@@ -111,6 +119,13 @@ async function handleCreateUser(
       },
     });
 
+    // Log the activity
+    await logActivity(db, actorUserId, "created", "resident", newUser.id, {
+      residentName: name,
+      residentEmail: email,
+      role,
+    });
+
     return { success: true, message: "User created and invitation sent" };
   } catch (error) {
     console.error("Error creating user:", error);
@@ -124,6 +139,7 @@ async function handleUpdateUser(
   email: string,
   role: string,
   db: ReturnType<typeof getDatabase>,
+  actorUserId: string,
 ) {
   if (!userId || !name || !email || !role) {
     return { error: "User ID, name, email, and role are required" };
@@ -152,6 +168,13 @@ async function handleUpdateUser(
       })
       .where(eq(schema.users.id, userId));
 
+    // Log the activity
+    await logActivity(db, actorUserId, "updated", "resident", userId, {
+      residentName: name,
+      residentEmail: email,
+      role,
+    });
+
     return { success: true, message: "User updated successfully" };
   } catch (error) {
     console.error("Error updating user:", error);
@@ -160,7 +183,7 @@ async function handleUpdateUser(
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  await isAdmin(request, context, { returnUnauthorized: true });
+  const session = await isAdmin(request, context, { returnUnauthorized: true });
 
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
@@ -169,14 +192,14 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   if (intent === "delete") {
     const userId = formData.get("userId") as string;
-    return handleDeleteUser(userId, db, auth, request);
+    return handleDeleteUser(userId, db, auth, request, session.user.id);
   }
 
   if (intent === "create") {
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const role = formData.get("role") as string;
-    return handleCreateUser(name, email, role, db, getAuth(context));
+    return handleCreateUser(name, email, role, db, getAuth(context), session.user.id);
   }
 
   if (intent === "update") {
@@ -184,7 +207,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const role = formData.get("role") as string;
-    return handleUpdateUser(userId, name, email, role, db);
+    return handleUpdateUser(userId, name, email, role, db, session.user.id);
   }
 
   return { error: "Invalid intent" };
