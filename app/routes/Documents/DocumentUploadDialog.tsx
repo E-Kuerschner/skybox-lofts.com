@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useFetcher } from "react-router";
+import { useFetcher } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -25,12 +25,14 @@ type DocumentUploadDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   existingCategories: string[];
+  onUploadSuccess?: (message: string) => void;
 };
 
 export function DocumentUploadDialog({
   open,
   onOpenChange,
   existingCategories,
+  onUploadSuccess,
 }: DocumentUploadDialogProps) {
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state === "submitting";
@@ -63,9 +65,12 @@ export function DocumentUploadDialog({
   // Close dialog and reset form on successful upload
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data?.success) {
+      if (onUploadSuccess && fetcher.data.message) {
+        onUploadSuccess(fetcher.data.message);
+      }
       handleClose();
     }
-  }, [fetcher.state, fetcher.data]);
+  }, [fetcher.state, fetcher.data, onUploadSuccess]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>

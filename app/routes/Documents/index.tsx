@@ -1,5 +1,5 @@
 import type { Route } from "./+types/index";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useState, useEffect } from "react";
 import { Await, type AppLoadContext, useFetcher } from "react-router";
 import { FileIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { isAuthenticated } from "~/util/authHelpers.server";
@@ -15,6 +15,7 @@ import { fuzzyMatch } from "~/util/fuzzySearch";
 import { SearchInput } from "~/components/SearchInput";
 import { DocumentUploadDialog } from "./DocumentUploadDialog";
 import { NoContent } from "~/components/NoContent";
+import { StatusBanner } from "~/components/StatusBanner";
 
 async function fetchDocuments(prefix: string, context: AppLoadContext) {
   const files = await context.cloudflare.env.DOCUMENTS.list({
@@ -56,12 +57,21 @@ function FileList({
   files,
   isAdmin,
   searchQuery,
+  onDeleteSuccess,
 }: {
   files: { key: string; name: string }[];
   isAdmin: boolean;
   searchQuery?: string;
+  onDeleteSuccess?: (message: string) => void;
 }) {
   const fetcher = useFetcher();
+
+  // Call onDeleteSuccess when delete succeeds
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data?.success && onDeleteSuccess) {
+      onDeleteSuccess(fetcher.data.message);
+    }
+  }, [fetcher.state, fetcher.data, onDeleteSuccess]);
 
   // Filter files based on search query
   const filteredFiles = useMemo(() => {
@@ -131,15 +141,42 @@ const Fallback = (
 export default function Documents({ loaderData }: Route.ComponentProps) {
   const [isUploadDrawerOpen, setIsUploadDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successKey, setSuccessKey] = useState(0);
+
+  // Increment successKey when success message changes to remount StatusBanner
+  useEffect(() => {
+    if (successMessage) {
+      setSuccessKey((prev) => prev + 1);
+    }
+  }, [successMessage]);
+
+  const handleUploadSuccess = (message: string) => {
+    setSuccessMessage(message);
+  };
+
+  const handleDeleteSuccess = (message: string) => {
+    setSuccessMessage(message);
+  };
 
   return (
-    <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-        <p className="text-muted-foreground">
-          Building documents, meeting notes and financials are available to all
-          residents for download. Expand the sections below to see more.
-        </p>
-      </div>
+    <div className="flex flex-col gap-6">
+      {successMessage && (
+        <StatusBanner
+          key={successKey}
+          variant="success"
+          autoDismiss={3000}
+          message={successMessage}
+        />
+      )}
+
+      <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+          <p className="text-muted-foreground">
+            Building documents, meeting notes and financials are available to all
+            residents for download. Expand the sections below to see more.
+          </p>
+        </div>
 
       <div className="flex flex-col gap-2 md:flex-row items-center justify-between mb-4">
         <SearchInput
@@ -177,6 +214,7 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
               files={loaderData.buildingFiles}
               isAdmin={loaderData.isAdmin}
               searchQuery={searchQuery}
+              onDeleteSuccess={handleDeleteSuccess}
             />
           </AccordionContent>
         </AccordionItem>
@@ -194,6 +232,7 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
                     files={files}
                     isAdmin={loaderData.isAdmin}
                     searchQuery={searchQuery}
+                    onDeleteSuccess={handleDeleteSuccess}
                   />
                 )}
               </Await>
@@ -214,6 +253,7 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
                     files={files}
                     isAdmin={loaderData.isAdmin}
                     searchQuery={searchQuery}
+                    onDeleteSuccess={handleDeleteSuccess}
                   />
                 )}
               </Await>
@@ -222,14 +262,16 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
         </AccordionItem>
       </Accordion>
 
-      {/* Upload Drawer */}
-      {loaderData.isAdmin && (
-        <DocumentUploadDialog
-          open={isUploadDrawerOpen}
-          onOpenChange={setIsUploadDrawerOpen}
-          existingCategories={loaderData.existingCategories}
-        />
-      )}
+        {/* Upload Drawer */}
+        {loaderData.isAdmin && (
+          <DocumentUploadDialog
+            open={isUploadDrawerOpen}
+            onOpenChange={setIsUploadDrawerOpen}
+            existingCategories={loaderData.existingCategories}
+            onUploadSuccess={handleUploadSuccess}
+          />
+        )}
+      </div>
     </div>
   );
 }
