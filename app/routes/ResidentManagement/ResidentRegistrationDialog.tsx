@@ -4,22 +4,23 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { NewResidentForm } from "./NewResidentForm";
 import { StatusBanner } from "~/components/StatusBanner";
+import { NewResidentForm } from "./NewResidentForm";
 
 type ResidentRegistrationDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   name: string;
   email: string;
+  unitNumber: string;
   role: string;
   isFormValid: boolean;
   onNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
+  onUnitNumberChange: (value: string) => void;
   onRoleChange: (value: string) => void;
   actionData?: { success?: boolean; error?: string; message?: string };
   editMode?: boolean;
@@ -31,10 +32,12 @@ export function ResidentRegistrationDialog({
   onOpenChange,
   name,
   email,
+  unitNumber,
   role,
   isFormValid,
   onNameChange,
   onEmailChange,
+  onUnitNumberChange,
   onRoleChange,
   actionData,
   editMode = false,
@@ -88,10 +91,12 @@ export function ResidentRegistrationDialog({
           <NewResidentForm
             name={name}
             email={email}
+            unitNumber={unitNumber}
             role={role}
             isFormValid={isFormValid}
             onNameChange={onNameChange}
             onEmailChange={onEmailChange}
+            onUnitNumberChange={onUnitNumberChange}
             onRoleChange={onRoleChange}
             submitLabel={editMode ? "Save" : "Register"}
             vertical

@@ -7,6 +7,7 @@ type ResidentCardProps = {
     id: string;
     name: string | null;
     email: string;
+    unitNumber: number | null;
     role: string | null;
     emailVerified: boolean;
   };
@@ -15,6 +16,7 @@ type ResidentCardProps = {
     id: string;
     name: string | null;
     email: string;
+    unitNumber: number | null;
     role: string | null;
   }) => void;
 };
@@ -40,7 +42,12 @@ export function ResidentCard({ user, isAdmin, onEdit }: ResidentCardProps) {
             </span>
           )}
         </div>
-        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+          <span className="text-xs text-muted-foreground shrink-0">
+            • Unit {user.unitNumber ?? 0}
+          </span>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 shrink-0 ml-4">

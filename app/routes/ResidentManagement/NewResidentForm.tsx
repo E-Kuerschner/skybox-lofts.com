@@ -13,10 +13,12 @@ import { cn } from "~/util/ui/utils";
 type UserFormProps = {
   name: string;
   email: string;
+  unitNumber: string;
   role: string;
   isFormValid: boolean;
   onNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
+  onUnitNumberChange: (value: string) => void;
   onRoleChange: (value: string) => void;
   submitLabel?: string;
   className?: string;
@@ -26,10 +28,12 @@ type UserFormProps = {
 export function NewResidentForm({
   name,
   email,
+  unitNumber,
   role,
   isFormValid,
   onNameChange,
   onEmailChange,
+  onUnitNumberChange,
   onRoleChange,
   submitLabel = "Save",
   className,
@@ -81,6 +85,20 @@ export function NewResidentForm({
           className="bg-background"
           value={email}
           onChange={(e) => onEmailChange(e.target.value)}
+        />
+      </div>
+      <div className={vertical ? "w-full space-y-2" : "w-32"}>
+        {vertical && <Label htmlFor="user-unit">Unit Number</Label>}
+        <Input
+          id="user-unit"
+          name="unitNumber"
+          type="number"
+          placeholder="Unit"
+          required
+          min="0"
+          className="bg-background"
+          value={unitNumber}
+          onChange={(e) => onUnitNumberChange(e.target.value)}
         />
       </div>
       <div className={vertical ? "w-full space-y-2" : "w-40"}>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Form } from "react-router";
+import { UserPlusIcon } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   Sheet,
@@ -9,17 +10,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
-import { NewResidentForm } from "./NewResidentForm";
 import { StatusBanner } from "~/components/StatusBanner";
-import { UserPlusIcon } from "lucide-react";
+import { NewResidentForm } from "./NewResidentForm";
 
 type MobileUserDrawerProps = {
   name: string;
   email: string;
+  unitNumber: string;
   role: string;
   isFormValid: boolean;
   onNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
+  onUnitNumberChange: (value: string) => void;
   onRoleChange: (value: string) => void;
   actionData?: { success?: boolean; error?: string; message?: string };
   editMode?: boolean;
@@ -31,10 +33,12 @@ type MobileUserDrawerProps = {
 export function MobileUserDrawer({
   name,
   email,
+  unitNumber,
   role,
   isFormValid,
   onNameChange,
   onEmailChange,
+  onUnitNumberChange,
   onRoleChange,
   actionData,
   editMode = false,
@@ -106,10 +110,12 @@ export function MobileUserDrawer({
           <NewResidentForm
             name={name}
             email={email}
+            unitNumber={unitNumber}
             role={role}
             isFormValid={isFormValid}
             onNameChange={onNameChange}
             onEmailChange={onEmailChange}
+            onUnitNumberChange={onUnitNumberChange}
             onRoleChange={onRoleChange}
             submitLabel={editMode ? "Save" : "Submit"}
             vertical

@@ -7,6 +7,7 @@ type EntityType = "resident" | "document" | "board_member";
 interface ActivityMetadata {
   residentName?: string;
   residentEmail?: string;
+  unitNumber?: number;
   role?: string;
   filename?: string;
   category?: string;

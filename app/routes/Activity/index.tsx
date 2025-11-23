@@ -158,7 +158,9 @@ function formatDetails(
 
     switch (entityType) {
       case "resident":
-        return data.residentName || data.residentEmail || "-";
+        const residentName = data.residentName || data.residentEmail || "Unknown";
+        const unitInfo = data.unitNumber !== undefined ? ` (Unit ${data.unitNumber})` : "";
+        return `${residentName}${unitInfo}`;
       case "document":
         return `${data.filename || "Unknown"} (${data.category || "Unknown"})`;
       case "board_member":

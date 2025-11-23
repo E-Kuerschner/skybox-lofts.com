@@ -74,4 +74,13 @@ export const makeOptions = ({
         maxAge: 60 * 60 * 24 * 1, // one day
       },
     },
+    user: {
+      additionalFields: {
+        unitNumber: {
+          type: "number",
+          required: true,
+          defaultValue: 0,
+        },
+      },
+    },
   }) satisfies BetterAuthOptions;

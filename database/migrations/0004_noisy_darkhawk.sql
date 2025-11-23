@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `unit_number` integer DEFAULT 0 NOT NULL;
