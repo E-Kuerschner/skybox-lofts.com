@@ -144,14 +144,13 @@ async function handleCreateUser(
 async function handleUpdateUser(
   userId: string,
   name: string,
-  email: string,
   unitNumber: string,
   role: string,
   db: ReturnType<typeof getDatabase>,
   actorUserId: string,
 ) {
-  if (!userId || !name || !email || !unitNumber || !role) {
-    return { error: "User ID, name, email, unit number, and role are required" };
+  if (!userId || !name || !unitNumber || !role) {
+    return { error: "User ID, name, unit number, and role are required" };
   }
 
   const unitNum = Number(unitNumber);
@@ -171,12 +170,11 @@ async function handleUpdateUser(
       return { error: "User not found" };
     }
 
-    // Update user in database
+    // Update user in database (email is not updated - must use Better Auth APIs)
     await db
       .update(schema.users)
       .set({
         name,
-        email,
         unitNumber: unitNum,
         role,
         updatedAt: new Date(),
@@ -186,7 +184,6 @@ async function handleUpdateUser(
     // Log the activity
     await logActivity(db, actorUserId, "updated", "resident", userId, {
       residentName: name,
-      residentEmail: email,
       unitNumber: unitNum,
       role,
     });
@@ -194,7 +191,7 @@ async function handleUpdateUser(
     return { success: true, message: "User updated successfully" };
   } catch (error) {
     console.error("Error updating user:", error);
-    return { error: "Failed to update user. Email may already exist." };
+    return { error: "Failed to update user" };
   }
 }
 
@@ -222,10 +219,9 @@ export async function action({ request, context }: Route.ActionArgs) {
   if (intent === "update") {
     const userId = formData.get("userId") as string;
     const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
     const unitNumber = formData.get("unitNumber") as string;
     const role = formData.get("role") as string;
-    return handleUpdateUser(userId, name, email, unitNumber, role, db, session.user.id);
+    return handleUpdateUser(userId, name, unitNumber, role, db, session.user.id);
   }
 
   return { error: "Invalid intent" };
@@ -334,19 +330,17 @@ export default function ResidentManagement({
       const intent = navigation.formData.get("intent");
       const userId = navigation.formData.get("userId") as string;
       const name = navigation.formData.get("name") as string;
-      const email = navigation.formData.get("email") as string;
       const unitNumber = navigation.formData.get("unitNumber") as string;
       const role = navigation.formData.get("role") as string;
 
       if (intent === "update" && userId) {
-        // Optimistically update the user
+        // Optimistically update the user (email is not updated)
         setOptimisticUsers((prev) =>
           prev.map((user) =>
             user.id === userId
               ? {
                   ...user,
                   name,
-                  email,
                   unitNumber: Number(unitNumber),
                   role,
                   updatedAt: new Date(),

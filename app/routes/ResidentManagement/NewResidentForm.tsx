@@ -23,6 +23,7 @@ type UserFormProps = {
   submitLabel?: string;
   className?: string;
   vertical?: boolean;
+  editMode?: boolean;
 };
 
 export function NewResidentForm({
@@ -38,6 +39,7 @@ export function NewResidentForm({
   submitLabel = "Save",
   className,
   vertical = false,
+  editMode = false,
 }: UserFormProps) {
   const handleRoleChange = (value: string) => {
     if (value === "admin") {
@@ -74,17 +76,23 @@ export function NewResidentForm({
         />
       </div>
       <div className={vertical ? "w-full space-y-2" : "flex-1"}>
-        {vertical && <Label htmlFor="user-email">Email Address</Label>}
+        {vertical && (
+          <Label htmlFor="user-email" className={editMode ? "text-muted-foreground" : ""}>
+            Email Address {editMode && "(cannot be changed)"}
+          </Label>
+        )}
         <Input
           id="user-email"
           name="email"
           type="email"
           placeholder="Email Address"
-          required
+          required={!editMode}
           pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
-          className="bg-background"
+          className={cn("bg-background", editMode && "cursor-not-allowed opacity-60")}
           value={email}
           onChange={(e) => onEmailChange(e.target.value)}
+          disabled={editMode}
+          readOnly={editMode}
         />
       </div>
       <div className={vertical ? "w-full space-y-2" : "w-32"}>

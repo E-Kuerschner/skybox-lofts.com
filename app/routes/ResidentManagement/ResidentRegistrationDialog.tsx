@@ -100,6 +100,7 @@ export function ResidentRegistrationDialog({
             onRoleChange={onRoleChange}
             submitLabel={editMode ? "Save" : "Register"}
             vertical
+            editMode={editMode}
           />
         </Form>
       </DialogContent>

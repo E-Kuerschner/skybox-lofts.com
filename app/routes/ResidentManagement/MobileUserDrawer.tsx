@@ -119,6 +119,7 @@ export function MobileUserDrawer({
             onRoleChange={onRoleChange}
             submitLabel={editMode ? "Save" : "Submit"}
             vertical
+            editMode={editMode}
           />
         </Form>
       </SheetContent>
