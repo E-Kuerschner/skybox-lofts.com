@@ -11,12 +11,14 @@ import {
 import { cn } from "~/util/ui/utils";
 
 type UserFormProps = {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   unitNumber: string;
   role: string;
   isFormValid: boolean;
-  onNameChange: (value: string) => void;
+  onFirstNameChange: (value: string) => void;
+  onLastNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
   onUnitNumberChange: (value: string) => void;
   onRoleChange: (value: string) => void;
@@ -27,12 +29,14 @@ type UserFormProps = {
 };
 
 export function NewResidentForm({
-  name,
+  firstName,
+  lastName,
   email,
   unitNumber,
   role,
   isFormValid,
-  onNameChange,
+  onFirstNameChange,
+  onLastNameChange,
   onEmailChange,
   onUnitNumberChange,
   onRoleChange,
@@ -64,21 +68,43 @@ export function NewResidentForm({
     >
       <input type="hidden" name="intent" value="create" />
       <div className={vertical ? "w-full space-y-2" : "flex-1"}>
-        {vertical && <Label htmlFor="user-name">Full Name</Label>}
+        {vertical && (
+          <Label htmlFor="user-first-name">
+            First Name <span className="text-destructive">*</span>
+          </Label>
+        )}
         <Input
-          id="user-name"
-          name="name"
-          placeholder="Full Name"
+          id="user-first-name"
+          name="firstName"
+          placeholder="First Name"
           required
           className="bg-background"
-          value={name}
-          onChange={(e) => onNameChange(e.target.value)}
+          value={firstName}
+          onChange={(e) => onFirstNameChange(e.target.value)}
+        />
+      </div>
+      <div className={vertical ? "w-full space-y-2" : "flex-1"}>
+        {vertical && (
+          <Label htmlFor="user-last-name">
+            Last Name <span className="text-destructive">*</span>
+          </Label>
+        )}
+        <Input
+          id="user-last-name"
+          name="lastName"
+          placeholder="Last Name"
+          required
+          className="bg-background"
+          value={lastName}
+          onChange={(e) => onLastNameChange(e.target.value)}
         />
       </div>
       <div className={vertical ? "w-full space-y-2" : "flex-1"}>
         {vertical && (
           <Label htmlFor="user-email" className={editMode ? "text-muted-foreground" : ""}>
-            Email Address {editMode && "(cannot be changed)"}
+            Email Address{" "}
+            {!editMode && <span className="text-destructive">*</span>}
+            {editMode && "(cannot be changed)"}
           </Label>
         )}
         <Input
@@ -96,7 +122,11 @@ export function NewResidentForm({
         />
       </div>
       <div className={vertical ? "w-full space-y-2" : "w-32"}>
-        {vertical && <Label htmlFor="user-unit">Unit Number</Label>}
+        {vertical && (
+          <Label htmlFor="user-unit">
+            Unit Number <span className="text-destructive">*</span>
+          </Label>
+        )}
         <Input
           id="user-unit"
           name="unitNumber"
@@ -110,7 +140,11 @@ export function NewResidentForm({
         />
       </div>
       <div className={vertical ? "w-full space-y-2" : "w-40"}>
-        {vertical && <Label htmlFor="user-role">Role</Label>}
+        {vertical && (
+          <Label htmlFor="user-role">
+            Role <span className="text-destructive">*</span>
+          </Label>
+        )}
         <Select
           name="role"
           required

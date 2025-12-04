@@ -1,5 +1,6 @@
 import type { BetterAuthOptions } from "better-auth";
 import { anonymous, admin, magicLink } from "better-auth/plugins";
+import type { CustomUserFields } from "./types";
 
 export type MagicLinkFunction = Parameters<
   typeof magicLink
@@ -30,12 +31,13 @@ export const defaultSendMagicLink: MagicLinkFunction = async ({
 
 export const defaultSendVerificationEmail: SendVerificationEmailFunction =
   async ({ user, url }) => {
+    const customUser = user as typeof user & CustomUserFields;
     console.log(`
       ========================================
       VERIFICATION EMAIL
       ========================================
       To: ${user.email}
-      Name: ${user.name}
+      Name: ${customUser.firstName} ${customUser.lastName}
       Verification URL: ${url}
       ========================================s
     `);
@@ -80,6 +82,14 @@ export const makeOptions = ({
           type: "number",
           required: true,
           defaultValue: 0,
+        },
+        firstName: {
+          type: "string",
+          required: false,
+        },
+        lastName: {
+          type: "string",
+          required: false,
         },
       },
     },

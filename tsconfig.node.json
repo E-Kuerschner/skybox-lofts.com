@@ -7,7 +7,8 @@
     "better-auth-config.ts",
     "app/auth/options.ts",
     "app/email/templates.ts",
-    "scripts/**/*.ts"
+    "scripts/**/*.ts",
+    "app/auth/types.ts"
   ],
   "compilerOptions": {
     "composite": true,

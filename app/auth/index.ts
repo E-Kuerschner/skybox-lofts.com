@@ -13,6 +13,7 @@ import {
   defaultSendMagicLink,
   defaultSendVerificationEmail,
 } from "./options";
+import type { CustomUserFields } from "./types";
 
 export const USER_NOT_FOUND = "User not found";
 
@@ -32,7 +33,11 @@ export function getAuth(ctx: AppLoadContext) {
         throw new Error(USER_NOT_FOUND);
       }
 
-      const message = signInEmail(existingUser.name, url);
+      const customUser = existingUser as typeof existingUser & CustomUserFields;
+      const message = signInEmail(
+        customUser.firstName || existingUser.name,
+        url,
+      );
       await sendEmail(
         ctx,
         email,
@@ -47,7 +52,8 @@ export function getAuth(ctx: AppLoadContext) {
     url,
   }) => {
     if (import.meta.env.PROD) {
-      const message = welcomeEmail(user.name, url);
+      const customUser = user as typeof user & CustomUserFields;
+      const message = welcomeEmail(customUser.firstName || user.name, url);
       await sendEmail(ctx, user.email, "Welcome to Skybox Lofts!", message);
     }
   };

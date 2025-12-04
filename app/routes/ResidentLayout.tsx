@@ -107,7 +107,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   if (emailTrackerExists) {
     return new Response(
       JSON.stringify({
-        userName: session.user.name,
+        userName: session.user.firstName || session.user.name,
         isAdmin: session.user.role === "admin",
       }),
       {
@@ -120,7 +120,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   }
 
   return {
-    userName: session.user.name,
+    userName: session.user.firstName || session.user.name,
     isAdmin: session.user.role === "admin",
   };
 }

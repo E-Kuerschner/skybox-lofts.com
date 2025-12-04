@@ -14,12 +14,14 @@ import { StatusBanner } from "~/components/StatusBanner";
 import { NewResidentForm } from "./NewResidentForm";
 
 type MobileUserDrawerProps = {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   unitNumber: string;
   role: string;
   isFormValid: boolean;
-  onNameChange: (value: string) => void;
+  onFirstNameChange: (value: string) => void;
+  onLastNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
   onUnitNumberChange: (value: string) => void;
   onRoleChange: (value: string) => void;
@@ -31,12 +33,14 @@ type MobileUserDrawerProps = {
 };
 
 export function MobileUserDrawer({
-  name,
+  firstName,
+  lastName,
   email,
   unitNumber,
   role,
   isFormValid,
-  onNameChange,
+  onFirstNameChange,
+  onLastNameChange,
   onEmailChange,
   onUnitNumberChange,
   onRoleChange,
@@ -108,12 +112,14 @@ export function MobileUserDrawer({
             <input type="hidden" name="userId" value={userId} />
           )}
           <NewResidentForm
-            name={name}
+            firstName={firstName}
+            lastName={lastName}
             email={email}
             unitNumber={unitNumber}
             role={role}
             isFormValid={isFormValid}
-            onNameChange={onNameChange}
+            onFirstNameChange={onFirstNameChange}
+            onLastNameChange={onLastNameChange}
             onEmailChange={onEmailChange}
             onUnitNumberChange={onUnitNumberChange}
             onRoleChange={onRoleChange}

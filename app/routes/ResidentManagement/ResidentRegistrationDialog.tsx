@@ -13,12 +13,14 @@ import { NewResidentForm } from "./NewResidentForm";
 type ResidentRegistrationDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   unitNumber: string;
   role: string;
   isFormValid: boolean;
-  onNameChange: (value: string) => void;
+  onFirstNameChange: (value: string) => void;
+  onLastNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
   onUnitNumberChange: (value: string) => void;
   onRoleChange: (value: string) => void;
@@ -30,12 +32,14 @@ type ResidentRegistrationDialogProps = {
 export function ResidentRegistrationDialog({
   open,
   onOpenChange,
-  name,
+  firstName,
+  lastName,
   email,
   unitNumber,
   role,
   isFormValid,
-  onNameChange,
+  onFirstNameChange,
+  onLastNameChange,
   onEmailChange,
   onUnitNumberChange,
   onRoleChange,
@@ -89,12 +93,14 @@ export function ResidentRegistrationDialog({
             <input type="hidden" name="userId" value={userId} />
           )}
           <NewResidentForm
-            name={name}
+            firstName={firstName}
+            lastName={lastName}
             email={email}
             unitNumber={unitNumber}
             role={role}
             isFormValid={isFormValid}
-            onNameChange={onNameChange}
+            onFirstNameChange={onFirstNameChange}
+            onLastNameChange={onLastNameChange}
             onEmailChange={onEmailChange}
             onUnitNumberChange={onUnitNumberChange}
             onRoleChange={onRoleChange}

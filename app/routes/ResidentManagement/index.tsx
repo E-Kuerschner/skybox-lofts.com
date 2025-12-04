@@ -83,7 +83,8 @@ async function handleDeleteUser(
 }
 
 async function handleCreateUser(
-  name: string,
+  firstName: string,
+  lastName: string,
   email: string,
   unitNumber: string,
   role: string,
@@ -91,14 +92,17 @@ async function handleCreateUser(
   auth: ReturnType<typeof getAuth>,
   actorUserId: string,
 ) {
-  if (!name || !email || !unitNumber || !role) {
-    return { error: "Name, email, unit number, and role are required" };
+  if (!firstName || !lastName || !email || !unitNumber || !role) {
+    return { error: "First name, last name, email, unit number, and role are required" };
   }
 
   const unitNum = Number(unitNumber);
   if (isNaN(unitNum) || unitNum < 0) {
     return { error: "Unit number must be a non-negative number" };
   }
+
+  // Compute full name for Better Auth compatibility
+  const name = `${firstName} ${lastName}`;
 
   try {
     // Insert new user into database
@@ -107,6 +111,8 @@ async function handleCreateUser(
       .values({
         id: crypto.randomUUID(),
         name,
+        firstName,
+        lastName,
         email,
         unitNumber: unitNum,
         role,
@@ -143,20 +149,24 @@ async function handleCreateUser(
 
 async function handleUpdateUser(
   userId: string,
-  name: string,
+  firstName: string,
+  lastName: string,
   unitNumber: string,
   role: string,
   db: ReturnType<typeof getDatabase>,
   actorUserId: string,
 ) {
-  if (!userId || !name || !unitNumber || !role) {
-    return { error: "User ID, name, unit number, and role are required" };
+  if (!userId || !firstName || !lastName || !unitNumber || !role) {
+    return { error: "User ID, first name, last name, unit number, and role are required" };
   }
 
   const unitNum = Number(unitNumber);
   if (isNaN(unitNum) || unitNum < 0) {
     return { error: "Unit number must be a non-negative number" };
   }
+
+  // Compute full name for Better Auth compatibility
+  const name = `${firstName} ${lastName}`;
 
   try {
     // Check if user exists
@@ -175,6 +185,8 @@ async function handleUpdateUser(
       .update(schema.users)
       .set({
         name,
+        firstName,
+        lastName,
         unitNumber: unitNum,
         role,
         updatedAt: new Date(),
@@ -209,19 +221,21 @@ export async function action({ request, context }: Route.ActionArgs) {
   }
 
   if (intent === "create") {
-    const name = formData.get("name") as string;
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
     const email = formData.get("email") as string;
     const unitNumber = formData.get("unitNumber") as string;
     const role = formData.get("role") as string;
-    return handleCreateUser(name, email, unitNumber, role, db, getAuth(context), session.user.id);
+    return handleCreateUser(firstName, lastName, email, unitNumber, role, db, getAuth(context), session.user.id);
   }
 
   if (intent === "update") {
     const userId = formData.get("userId") as string;
-    const name = formData.get("name") as string;
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
     const unitNumber = formData.get("unitNumber") as string;
     const role = formData.get("role") as string;
-    return handleUpdateUser(userId, name, unitNumber, role, db, session.user.id);
+    return handleUpdateUser(userId, firstName, lastName, unitNumber, role, db, session.user.id);
   }
 
   return { error: "Invalid intent" };
@@ -232,7 +246,8 @@ export default function ResidentManagement({
   actionData,
 }: Route.ComponentProps) {
   const navigation = useNavigation();
-  const [newUserName, setNewUserName] = useState("");
+  const [newUserFirstName, setNewUserFirstName] = useState("");
+  const [newUserLastName, setNewUserLastName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserUnitNumber, setNewUserUnitNumber] = useState("");
   const [newUserRole, setNewUserRole] = useState("");
@@ -265,7 +280,8 @@ export default function ResidentManagement({
   // Clear form when all dialogs are closed
   useEffect(() => {
     if (!isDialogOpen && !isMobileDrawerOpen && !isMobileCreateDrawerOpen) {
-      setNewUserName("");
+      setNewUserFirstName("");
+      setNewUserLastName("");
       setNewUserEmail("");
       setNewUserUnitNumber("");
       setNewUserRole("");
@@ -276,13 +292,15 @@ export default function ResidentManagement({
   // Handle edit user (desktop - uses dialog)
   const handleEditUser = (user: {
     id: string;
-    name: string | null;
+    firstName: string | null;
+    lastName: string | null;
     email: string;
     unitNumber: number | null;
     role: string | null;
   }) => {
     setEditingUserId(user.id);
-    setNewUserName(user.name || "");
+    setNewUserFirstName(user.firstName || "");
+    setNewUserLastName(user.lastName || "");
     setNewUserEmail(user.email);
     setNewUserUnitNumber(user.unitNumber?.toString() || "");
     setNewUserRole(user.role || "");
@@ -292,13 +310,15 @@ export default function ResidentManagement({
   // Handle edit user (mobile - uses drawer)
   const handleEditUserMobile = (user: {
     id: string;
-    name: string | null;
+    firstName: string | null;
+    lastName: string | null;
     email: string;
     unitNumber: number | null;
     role: string | null;
   }) => {
     setEditingUserId(user.id);
-    setNewUserName(user.name || "");
+    setNewUserFirstName(user.firstName || "");
+    setNewUserLastName(user.lastName || "");
     setNewUserEmail(user.email);
     setNewUserUnitNumber(user.unitNumber?.toString() || "");
     setNewUserRole(user.role || "");
@@ -308,7 +328,8 @@ export default function ResidentManagement({
   // Handle new user
   const handleNewUser = () => {
     setEditingUserId(null);
-    setNewUserName("");
+    setNewUserFirstName("");
+    setNewUserLastName("");
     setNewUserEmail("");
     setNewUserUnitNumber("");
     setNewUserRole("");
@@ -316,7 +337,8 @@ export default function ResidentManagement({
   };
 
   const isFormValid = Boolean(
-    newUserName.trim() &&
+    newUserFirstName.trim() &&
+      newUserLastName.trim() &&
       newUserEmail.trim() &&
       newUserUnitNumber.trim() &&
       !isNaN(Number(newUserUnitNumber)) &&
@@ -329,7 +351,8 @@ export default function ResidentManagement({
     if (navigation.state === "submitting" && navigation.formData) {
       const intent = navigation.formData.get("intent");
       const userId = navigation.formData.get("userId") as string;
-      const name = navigation.formData.get("name") as string;
+      const firstName = navigation.formData.get("firstName") as string;
+      const lastName = navigation.formData.get("lastName") as string;
       const unitNumber = navigation.formData.get("unitNumber") as string;
       const role = navigation.formData.get("role") as string;
 
@@ -340,7 +363,9 @@ export default function ResidentManagement({
             user.id === userId
               ? {
                   ...user,
-                  name,
+                  name: `${firstName} ${lastName}`,
+                  firstName,
+                  lastName,
                   unitNumber: Number(unitNumber),
                   role,
                   updatedAt: new Date(),
@@ -369,6 +394,8 @@ export default function ResidentManagement({
     }
     return optimisticUsers.filter(
       (user) =>
+        fuzzyMatch(searchQuery, user.firstName || "") ||
+        fuzzyMatch(searchQuery, user.lastName || "") ||
         fuzzyMatch(searchQuery, user.name || "") ||
         fuzzyMatch(searchQuery, user.email || ""),
     );
@@ -413,12 +440,14 @@ export default function ResidentManagement({
           {/* Mobile Add User Button with Drawer */}
           <div className="md:hidden">
             <MobileUserDrawer
-              name={newUserName}
+              firstName={newUserFirstName}
+              lastName={newUserLastName}
               email={newUserEmail}
               unitNumber={newUserUnitNumber}
               role={newUserRole}
               isFormValid={isFormValid}
-              onNameChange={setNewUserName}
+              onFirstNameChange={setNewUserFirstName}
+              onLastNameChange={setNewUserLastName}
               onEmailChange={setNewUserEmail}
               onUnitNumberChange={setNewUserUnitNumber}
               onRoleChange={setNewUserRole}
@@ -467,12 +496,14 @@ export default function ResidentManagement({
         <ResidentRegistrationDialog
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
-          name={newUserName}
+          firstName={newUserFirstName}
+          lastName={newUserLastName}
           email={newUserEmail}
           unitNumber={newUserUnitNumber}
           role={newUserRole}
           isFormValid={isFormValid}
-          onNameChange={setNewUserName}
+          onFirstNameChange={setNewUserFirstName}
+          onLastNameChange={setNewUserLastName}
           onEmailChange={setNewUserEmail}
           onUnitNumberChange={setNewUserUnitNumber}
           onRoleChange={setNewUserRole}
@@ -485,12 +516,14 @@ export default function ResidentManagement({
       {/* Mobile Edit Drawer (only shown on mobile for editing) */}
       <div className="md:hidden">
         <MobileUserDrawer
-          name={newUserName}
+          firstName={newUserFirstName}
+          lastName={newUserLastName}
           email={newUserEmail}
           unitNumber={newUserUnitNumber}
           role={newUserRole}
           isFormValid={isFormValid}
-          onNameChange={setNewUserName}
+          onFirstNameChange={setNewUserFirstName}
+          onLastNameChange={setNewUserLastName}
           onEmailChange={setNewUserEmail}
           onUnitNumberChange={setNewUserUnitNumber}
           onRoleChange={setNewUserRole}

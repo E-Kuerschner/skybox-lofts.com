@@ -6,6 +6,8 @@ type ResidentCardProps = {
   user: {
     id: string;
     name: string | null;
+    firstName: string | null;
+    lastName: string | null;
     email: string;
     unitNumber: number | null;
     role: string | null;
@@ -14,7 +16,8 @@ type ResidentCardProps = {
   isAdmin: boolean;
   onEdit?: (user: {
     id: string;
-    name: string | null;
+    firstName: string | null;
+    lastName: string | null;
     email: string;
     unitNumber: number | null;
     role: string | null;
