@@ -43,6 +43,13 @@
       "when": 1764825436881,
       "tag": "0005_giant_energizer",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1764988150084,
+      "tag": "0006_resident-to-owner-role",
+      "breakpoints": true
     }
   ]
 }

@@ -101,7 +101,10 @@ export function NewResidentForm({
       </div>
       <div className={vertical ? "w-full space-y-2" : "flex-1"}>
         {vertical && (
-          <Label htmlFor="user-email" className={editMode ? "text-muted-foreground" : ""}>
+          <Label
+            htmlFor="user-email"
+            className={editMode ? "text-muted-foreground" : ""}
+          >
             Email Address{" "}
             {!editMode && <span className="text-destructive">*</span>}
             {editMode && "(cannot be changed)"}
@@ -114,7 +117,10 @@ export function NewResidentForm({
           placeholder="Email Address"
           required={!editMode}
           pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
-          className={cn("bg-background", editMode && "cursor-not-allowed opacity-60")}
+          className={cn(
+            "bg-background",
+            editMode && "cursor-not-allowed opacity-60",
+          )}
           value={email}
           onChange={(e) => onEmailChange(e.target.value)}
           disabled={editMode}
@@ -156,7 +162,8 @@ export function NewResidentForm({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="resident">Resident</SelectItem>
+            <SelectItem value="owner">Owner</SelectItem>
+            <SelectItem value="renter">Renter</SelectItem>
           </SelectContent>
         </Select>
       </div>
