@@ -8,9 +8,12 @@
       "mcp__jetbrains__find_files_by_name_keyword",
       "mcp__MCP_DOCKER__fetch",
       "WebSearch",
-      "mcp__MCP_DOCKER__search_cloudflare_documentation"
+      "mcp__MCP_DOCKER__search_cloudflare_documentation",
+      "Bash(bun run db:seed:local)",
+      "Bash(bun run db:generate)",
+      "Bash(bun run typecheck)"
     ],
-    "deny": [],
+    "deny": ["Bash(bun run db:migrate)", "Bash(bun run deploy)"],
     "ask": []
   }
 }
