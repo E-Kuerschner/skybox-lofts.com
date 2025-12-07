@@ -1,10 +1,10 @@
 import type { Route } from "./+types/index";
 import { getDatabase } from "~/util/database.server";
 import { isAuthenticated } from "~/util/authHelpers.server";
-import { boardMembers } from "../../../database/schema";
+import * as schema from "../../../database/schema";
 import { eq } from "drizzle-orm";
 import { useState, useEffect } from "react";
-import { logActivity } from "~/util/activityLogger.server";
+import { createActivityLogData } from "~/util/activityLogger.server";
 import {
   Table,
   TableBody,
@@ -24,7 +24,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const session = await isAuthenticated(request, context);
   const db = getDatabase(context);
 
-  const boardMemberData = await db.select().from(boardMembers);
+  const boardMemberData = await db.select().from(schema.boardMembers);
   return {
     boardMemberData,
     isAdmin: session.user.role === "admin",
@@ -43,8 +43,8 @@ async function handleDeleteBoardMember(
   try {
     const memberToDelete = await db
       .select()
-      .from(boardMembers)
-      .where(eq(boardMembers.id, Number(boardMemberId)))
+      .from(schema.boardMembers)
+      .where(eq(schema.boardMembers.id, Number(boardMemberId)))
       .get();
 
     if (!memberToDelete) {
@@ -52,14 +52,16 @@ async function handleDeleteBoardMember(
     }
 
     await db
-      .delete(boardMembers)
-      .where(eq(boardMembers.id, Number(boardMemberId)));
+      .delete(schema.boardMembers)
+      .where(eq(schema.boardMembers.id, Number(boardMemberId)));
 
     // Log the activity
-    await logActivity(db, actorUserId, "deleted", "board_member", boardMemberId, {
-      memberName: memberToDelete.name,
-      memberRole: memberToDelete.role,
-    });
+    await db.insert(schema.activityLogs).values(
+      createActivityLogData(actorUserId, "deleted", "board_member", boardMemberId, {
+        memberName: memberToDelete.name,
+        memberRole: memberToDelete.role,
+      })
+    );
 
     return { success: true, message: "Board member deleted successfully" };
   } catch (error) {
@@ -79,7 +81,7 @@ async function handleCreateBoardMember(
 
   try {
     const newMember = await db
-      .insert(boardMembers)
+      .insert(schema.boardMembers)
       .values({
         name,
         role,
@@ -88,10 +90,12 @@ async function handleCreateBoardMember(
       .get();
 
     // Log the activity
-    await logActivity(db, actorUserId, "created", "board_member", String(newMember.id), {
-      memberName: name,
-      memberRole: role,
-    });
+    await db.insert(schema.activityLogs).values(
+      createActivityLogData(actorUserId, "created", "board_member", String(newMember.id), {
+        memberName: name,
+        memberRole: role,
+      })
+    );
 
     return { success: true, message: "Board member added successfully" };
   } catch (error) {

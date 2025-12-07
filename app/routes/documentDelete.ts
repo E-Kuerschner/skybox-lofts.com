@@ -1,7 +1,8 @@
 import type { Route } from "./+types/documentDelete";
 import { isAdmin } from "~/util/authHelpers.server";
 import { getDatabase } from "~/util/database.server";
-import { logActivity } from "~/util/activityLogger.server";
+import { createActivityLogData } from "~/util/activityLogger.server";
+import * as schema from "../../database/schema";
 
 export async function action({ request, context }: Route.ActionArgs) {
   // Ensure user is admin
@@ -29,10 +30,12 @@ export async function action({ request, context }: Route.ActionArgs) {
 
     // Log the activity
     const db = getDatabase(context);
-    await logActivity(db, session.user.id, "deleted", "document", null, {
-      filename,
-      category,
-    });
+    await db.insert(schema.activityLogs).values(
+      createActivityLogData(session.user.id, "deleted", "document", null, {
+        filename,
+        category,
+      })
+    );
 
     return {
       success: true,

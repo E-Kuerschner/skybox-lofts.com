@@ -8,14 +8,14 @@ import { getDatabase } from "~/util/database.server";
 import { isAdmin } from "~/util/authHelpers.server";
 import { Button } from "~/components/ui/button";
 import { NoContent } from "~/components/NoContent";
+import { SearchInput } from "~/components/SearchInput";
+import { fuzzyMatch } from "~/util/fuzzySearch";
+import { createActivityLogData } from "~/util/activityLogger.server";
+import { StatusBanner } from "~/components/StatusBanner";
 import * as schema from "../../../database/schema";
 import { ResidentCard } from "./ResidentCard";
 import { ResidentRegistrationDialog } from "./ResidentRegistrationDialog";
 import { MobileUserDrawer } from "./MobileUserDrawer";
-import { StatusBanner } from "~/components/StatusBanner";
-import { SearchInput } from "~/components/SearchInput";
-import { fuzzyMatch } from "~/util/fuzzySearch";
-import { logActivity } from "~/util/activityLogger.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAdmin(request, context);
@@ -70,10 +70,12 @@ async function handleDeleteUser(
       body: { userId },
     });
 
-    // Log the activity
-    await logActivity(db, actorUserId, "deleted", "resident", userId, {
-      residentName: userToDelete.name || undefined,
-    });
+    // Log the activity after user deletion
+    await db.insert(schema.activityLogs).values(
+      createActivityLogData(actorUserId, "deleted", "resident", userId, {
+        residentName: userToDelete.name || undefined,
+      }),
+    );
 
     return { success: true, message: "Resident removed successfully" };
   } catch (error) {
@@ -93,7 +95,9 @@ async function handleCreateUser(
   actorUserId: string,
 ) {
   if (!firstName || !lastName || !email || !unitNumber || !role) {
-    return { error: "First name, last name, email, unit number, and role are required" };
+    return {
+      error: "First name, last name, email, unit number, and role are required",
+    };
   }
 
   const unitNum = Number(unitNumber);
@@ -124,20 +128,22 @@ async function handleCreateUser(
       .returning()
       .get();
 
+    // Log the activity
+    await db.insert(schema.activityLogs).values(
+      createActivityLogData(actorUserId, "created", "resident", newUser.id, {
+        residentName: name,
+        residentEmail: email,
+        unitNumber: unitNum,
+        role,
+      }),
+    );
+
     // Send verification email
     await auth.api.sendVerificationEmail({
       body: {
         email,
         callbackURL: "/resident?verified=1",
       },
-    });
-
-    // Log the activity
-    await logActivity(db, actorUserId, "created", "resident", newUser.id, {
-      residentName: name,
-      residentEmail: email,
-      unitNumber: unitNum,
-      role,
     });
 
     return { success: true, message: "User created and invitation sent" };
@@ -157,7 +163,10 @@ async function handleUpdateUser(
   actorUserId: string,
 ) {
   if (!userId || !firstName || !lastName || !unitNumber || !role) {
-    return { error: "User ID, first name, last name, unit number, and role are required" };
+    return {
+      error:
+        "User ID, first name, last name, unit number, and role are required",
+    };
   }
 
   const unitNum = Number(unitNumber);
@@ -194,11 +203,13 @@ async function handleUpdateUser(
       .where(eq(schema.users.id, userId));
 
     // Log the activity
-    await logActivity(db, actorUserId, "updated", "resident", userId, {
-      residentName: name,
-      unitNumber: unitNum,
-      role,
-    });
+    await db.insert(schema.activityLogs).values(
+      createActivityLogData(actorUserId, "updated", "resident", userId, {
+        residentName: name,
+        unitNumber: unitNum,
+        role,
+      }),
+    );
 
     return { success: true, message: "User updated successfully" };
   } catch (error) {
@@ -226,7 +237,16 @@ export async function action({ request, context }: Route.ActionArgs) {
     const email = formData.get("email") as string;
     const unitNumber = formData.get("unitNumber") as string;
     const role = formData.get("role") as string;
-    return handleCreateUser(firstName, lastName, email, unitNumber, role, db, getAuth(context), session.user.id);
+    return handleCreateUser(
+      firstName,
+      lastName,
+      email,
+      unitNumber,
+      role,
+      db,
+      getAuth(context),
+      session.user.id,
+    );
   }
 
   if (intent === "update") {
@@ -235,7 +255,15 @@ export async function action({ request, context }: Route.ActionArgs) {
     const lastName = formData.get("lastName") as string;
     const unitNumber = formData.get("unitNumber") as string;
     const role = formData.get("role") as string;
-    return handleUpdateUser(userId, firstName, lastName, unitNumber, role, db, session.user.id);
+    return handleUpdateUser(
+      userId,
+      firstName,
+      lastName,
+      unitNumber,
+      role,
+      db,
+      session.user.id,
+    );
   }
 
   return { error: "Invalid intent" };

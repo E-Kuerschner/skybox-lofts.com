@@ -1,7 +1,8 @@
 import type { Route } from "./+types/documentUpload";
 import { isAdmin } from "~/util/authHelpers.server";
 import { getDatabase } from "~/util/database.server";
-import { logActivity } from "~/util/activityLogger.server";
+import { createActivityLogData } from "~/util/activityLogger.server";
+import * as schema from "../../database/schema";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -67,11 +68,13 @@ export async function action({ request, context }: Route.ActionArgs) {
 
     // Log the activity
     const db = getDatabase(context);
-    await logActivity(db, session.user.id, "created", "document", null, {
-      filename: file.name,
-      category: normalizedCategory,
-      fileSize: file.size,
-    });
+    await db.insert(schema.activityLogs).values(
+      createActivityLogData(session.user.id, "created", "document", null, {
+        filename: file.name,
+        category: normalizedCategory,
+        fileSize: file.size,
+      })
+    );
 
     return {
       success: true,
