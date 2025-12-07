@@ -3,15 +3,13 @@
     "allow": [
       "WebFetch(domain:developers.cloudflare.com)",
       "WebFetch(domain:www.better-auth.com)",
-      "mcp__jetbrains__get_file_text_by_path",
-      "mcp__jetbrains__search_in_files_by_text",
-      "mcp__jetbrains__find_files_by_name_keyword",
+      "mcp__MCP_DOCKER__search_cloudflare_documentation",
       "mcp__MCP_DOCKER__fetch",
       "WebSearch",
-      "mcp__MCP_DOCKER__search_cloudflare_documentation",
       "Bash(bun run db:seed:local)",
       "Bash(bun run db:generate)",
-      "Bash(bun run typecheck)"
+      "Bash(bun run typecheck)",
+      "Bash(grep:*)"
     ],
     "deny": ["Bash(bun run db:migrate)", "Bash(bun run deploy)"],
     "ask": []
