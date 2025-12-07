@@ -97,3 +97,20 @@ Project requirements and specifications are documented in the `docs/` folder.
 - Prefer fetching the user session in the data loader function instead of using authClient in the components
 - Update @app/routes.ts whenever adding a new page to the app
 - Ask clarifying questions when working on a complex task
+- Check environments with `import.meta.env.DEV` API, NEVER process.env.NODE_ENV
+- Use the dev-server-debugger sub-agent to help debug complex new features in the browser
+
+### Email Testing & Debugging
+When testing features with the dev server that send emails:
+- All auth-related emails (magic links, verification emails) are logged to the dev server's stdout via `console.log`
+- To view email logs as an AI agent:
+  1. Check if dev server is running: `ps aux | grep "bun run dev" | grep -v grep`
+  2. If running in background, find the shell ID using `/tasks` command
+  3. Use `BashOutput` tool with the shell ID to read recent server output
+  4. Alternatively, start the dev server in background and monitor output: `bun run dev` with `run_in_background: true`
+- Email logs are formatted with clear headers showing:
+  - Email type (MAGIC LINK EMAIL or VERIFICATION EMAIL)
+  - Recipient email address
+  - Verification/magic link URLs
+  - User details (for verification emails)
+- Server logs are written to stdout in real-time as emails are sent
