@@ -10,8 +10,9 @@ mkdirSync(tempDir, { recursive: true });
 
 // Sample data
 const sampleName = "John Smith";
-const sampleVerificationLink = "https://skybox-lofts.com/verify?token=sample-verification-token";
-const sampleSignInLink = "https://skybox-lofts.com/signin?token=sample-magic-link-token";
+const sampleVerificationLink = "https://skybox-lofts.com/resident/login";
+const sampleSignInLink =
+  "https://skybox-lofts.com/signin?token=sample-magic-link-token";
 
 // Generate welcome email sample
 const welcomeHtml = welcomeEmail(sampleName, sampleVerificationLink);

@@ -1,10 +1,8 @@
 import type { Route } from "./+types/ResidentHome";
-import { useSearchParams } from "react-router";
 import { Mail } from "lucide-react";
 import { ContentCard } from "~/components/ContentCard";
 import { ContactForm } from "~/components/ContactForm";
 import { isAuthenticated } from "~/util/authHelpers.server";
-import { StatusBanner } from "~/components/StatusBanner";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAuthenticated(request, context);
@@ -15,17 +13,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export default function ResidentHome({ loaderData }: Route.ComponentProps) {
-  const [params] = useSearchParams();
-
-  const verified = params.get("verified");
   return (
     <div className="flex flex-col gap-8">
-      {verified === "1" && (
-        <StatusBanner
-          variant="success"
-          message="Thank you! Your email has been verified."
-        />
-      )}
       {/*<ContentCard*/}
       {/*  className="flex-1"*/}
       {/*  title="News & Messages"*/}

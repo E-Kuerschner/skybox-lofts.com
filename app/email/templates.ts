@@ -1,4 +1,4 @@
-export const welcomeEmail = (name: string, verificationLink: string) => `
+export const welcomeEmail = (name: string, loginPageUrl: string) => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,13 +27,13 @@ export const welcomeEmail = (name: string, verificationLink: string) => `
               </p>
 
               <p style="margin: 0 0 24px; font-size: 16px; line-height: 24px; color: #525252;">
-                Please click the button below to verify your email address. Once you are verified, you will be able to log into your account at any time by visiting the Skybox Lofts website.
+                Click the button below to access your account. You can sign in at any time by visiting the Skybox Lofts website.
               </p>
 
               <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 32px 0;">
                 <tr>
                   <td align="center">
-                    <a href="${verificationLink}" style="display: inline-block; padding: 12px 32px; font-size: 16px; font-weight: 600; color: #ffffff; background-color: #059669; text-decoration: none; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);">Verify Email Address</a>
+                    <a href="${loginPageUrl}" style="display: inline-block; padding: 12px 32px; font-size: 16px; font-weight: 600; color: #ffffff; background-color: #059669; text-decoration: none; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);">Sign In Now</a>
                   </td>
                 </tr>
               </table>
@@ -42,7 +42,7 @@ export const welcomeEmail = (name: string, verificationLink: string) => `
                 Or copy and paste this link into your browser:
               </p>
               <p style="margin: 0 0 24px; font-size: 14px; line-height: 20px; color: #059669; word-break: break-all;">
-                ${verificationLink}
+                ${loginPageUrl}
               </p>
             </td>
           </tr>
