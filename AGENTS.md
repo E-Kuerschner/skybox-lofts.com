@@ -27,6 +27,8 @@ bun run cf-typegen
 bun run auth:generate          # Generate Better Auth schema
 bun run db:generate            # Generate database migrations (includes auth schema)
 bun run db:migrate:local       # Run migrations against local D1
+drizzle-kit generate --custom --name=seed-users # generate a one-off custom database migration
+
 
 # Add shadcn/ui components
 bunx shadcn@latest add <component-name>
@@ -66,6 +68,8 @@ TailwindCSS v4 is configured via Vite plugin with CSS variables for theming.
 ### Authentication
 The project uses Better Auth for authentication. Auth schema generation is integrated with database migrations via `bun run db:generate`.
 
+Custom fields on the `users` table MUST ALWAYS be added via the `additionalFields` object in `auth/options.ts` file and NEVER added directly via a custom migration script or by editing the schema files.
+
 ### Database
 Uses Drizzle ORM with Cloudflare D1 (SQLite). Database schema is defined in `database/schema.ts`.
 
@@ -82,7 +86,6 @@ Project requirements and specifications are documented in the `docs/` folder.
 - Uses Bun as the package manager and runtime
 - Cloudflare types are auto-generated via `wrangler types` on postinstall
 - React Router types are generated during typecheck
-- The project uses modern React 19 and React Router 7 patterns
 - TailwindCSS v4 is configured via Vite plugin (not a config file)
 - When adding shadcn components, they will be installed with all necessary dependencies automatically
 - ALWAYS use Tailwind theme variables (from app.css) instead of raw color utility classes e.g. text-muted-foreground over text-neutral-600
@@ -93,3 +96,4 @@ Project requirements and specifications are documented in the `docs/` folder.
 - Prefer using react-router action functions over better-auth authClient methods
 - Prefer fetching the user session in the data loader function instead of using authClient in the components
 - Update @app/routes.ts whenever adding a new page to the app
+- Ask clarifying questions when working on a complex task
