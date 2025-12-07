@@ -4,14 +4,12 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { getDatabase } from "~/util/database.server";
 import { sendEmail } from "~/email/sendEmail.server";
-import { welcomeEmail, signInEmail } from "~/email/templates";
+import { signInEmail } from "~/email/templates";
 import * as schema from "../../database/schema";
 import {
   makeOptions,
   type MagicLinkFunction,
-  type SendVerificationEmailFunction,
   defaultSendMagicLink,
-  defaultSendVerificationEmail,
 } from "./options";
 import type { CustomUserFields } from "./types";
 
@@ -47,17 +45,6 @@ export function getAuth(ctx: AppLoadContext) {
     }
   };
 
-  const sendVerificationEmail: SendVerificationEmailFunction = async ({
-    user,
-    url,
-  }) => {
-    if (import.meta.env.PROD) {
-      const customUser = user as typeof user & CustomUserFields;
-      const message = welcomeEmail(customUser.firstName || user.name, url);
-      await sendEmail(ctx, user.email, "Welcome to Skybox Lofts!", message);
-    }
-  };
-
   const auth = betterAuth({
     ...makeOptions({
       sendMagicLink: (args) => {
@@ -66,13 +53,6 @@ export function getAuth(ctx: AppLoadContext) {
         }
 
         return sendMagicLink(args);
-      },
-      sendVerificationEmail: async (args) => {
-        if (import.meta.env.DEV) {
-          defaultSendVerificationEmail(args);
-        }
-
-        return sendVerificationEmail(args);
       },
     }),
     secret: ctx.cloudflare.env.BETTER_AUTH_SECRET,

@@ -1,18 +1,12 @@
 import type { BetterAuthOptions } from "better-auth";
 import { anonymous, admin, magicLink } from "better-auth/plugins";
-import type { CustomUserFields } from "./types";
 
 export type MagicLinkFunction = Parameters<
   typeof magicLink
 >[number]["sendMagicLink"];
 
-export type SendVerificationEmailFunction = NonNullable<
-  NonNullable<BetterAuthOptions["emailVerification"]>["sendVerificationEmail"]
->;
-
 type Options = {
   sendMagicLink?: MagicLinkFunction;
-  sendVerificationEmail?: SendVerificationEmailFunction;
 };
 
 export const defaultSendMagicLink: MagicLinkFunction = async ({
@@ -29,34 +23,14 @@ export const defaultSendMagicLink: MagicLinkFunction = async ({
   `);
 };
 
-export const defaultSendVerificationEmail: SendVerificationEmailFunction =
-  async ({ user, url }) => {
-    const customUser = user as typeof user & CustomUserFields;
-    console.log(`
-      ========================================
-      VERIFICATION EMAIL
-      ========================================
-      To: ${user.email}
-      Name: ${customUser.firstName} ${customUser.lastName}
-      Verification URL: ${url}
-      ========================================s
-    `);
-  };
-
 export const makeOptions = ({
   sendMagicLink = defaultSendMagicLink,
-  sendVerificationEmail = defaultSendVerificationEmail,
 }: Options) =>
   ({
     // TODO move to env vars?
     baseURL: import.meta.env.DEV
       ? "http://localhost:5173"
       : "https://skybox-lofts.com",
-    emailVerification: {
-      autoSignInAfterVerification: true,
-      sendOnSignUp: false, // We'll manually trigger for invited users
-      sendVerificationEmail,
-    },
     plugins: [
       admin(),
       anonymous({

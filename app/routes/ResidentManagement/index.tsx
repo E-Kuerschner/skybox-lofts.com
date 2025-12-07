@@ -6,6 +6,7 @@ import { useNavigation } from "react-router";
 import { getAuth } from "~/auth";
 import { getDatabase } from "~/util/database.server";
 import { isAdmin } from "~/util/authHelpers.server";
+import { sendInviteEmail } from "~/email/sendInviteEmail.server";
 import { Button } from "~/components/ui/button";
 import { NoContent } from "~/components/NoContent";
 import { SearchInput } from "~/components/SearchInput";
@@ -91,7 +92,7 @@ async function handleCreateUser(
   unitNumber: string,
   role: string,
   db: ReturnType<typeof getDatabase>,
-  auth: ReturnType<typeof getAuth>,
+  context: Route.ActionArgs["context"],
   actorUserId: string,
 ) {
   if (!firstName || !lastName || !email || !unitNumber || !role) {
@@ -138,13 +139,8 @@ async function handleCreateUser(
       }),
     );
 
-    // Send verification email
-    await auth.api.sendVerificationEmail({
-      body: {
-        email,
-        callbackURL: "/resident?verified=1",
-      },
-    });
+    // Send invite email
+    await sendInviteEmail(context, email, firstName, name);
 
     return { success: true, message: "User created and invitation sent" };
   } catch (error) {
@@ -244,7 +240,7 @@ export async function action({ request, context }: Route.ActionArgs) {
       unitNumber,
       role,
       db,
-      getAuth(context),
+      context,
       session.user.id,
     );
   }

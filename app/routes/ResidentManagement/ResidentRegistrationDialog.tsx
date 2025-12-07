@@ -68,8 +68,7 @@ export function ResidentRegistrationDialog({
           {!editMode && (
             <DialogDescription>
               Enter the resident's information below. They will receive a
-              welcome email with a link to verify their email and set up their
-              account.
+              welcome email with instructions to sign in and access their account.
             </DialogDescription>
           )}
         </DialogHeader>
