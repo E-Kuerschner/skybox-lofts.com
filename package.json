@@ -15,7 +15,7 @@
     "db:migrate": "bun --env-file=.dev.vars drizzle-kit --config database/drizzle.config.ts migrate",
     "db:migrate:local": "wrangler d1 migrations apply app --local",
     "db:seed": "bun --env-file=.dev.vars ./scripts/seedDefaultUser.ts --remote",
-    "db:seed:local": "bun ./scripts/seedDefaultUser.ts --remote --local"
+    "db:reset:local": "rm -rf .wrangler/state/v3/d1 && bun run db:migrate:local && bun ./scripts/seedDefaultUser.ts --local"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.12",
