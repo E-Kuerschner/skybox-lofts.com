@@ -275,24 +275,16 @@ export default function BoardMembers({
         <Table>
           <TableHeader>
             <TableRow className="*:font-bold px-4">
-              <TableHead>Name</TableHead>
               <TableHead>Position</TableHead>
-              {editMode && (
-                <TableHead className="text-right">Assign Resident</TableHead>
-              )}
+              <TableHead>{editMode ? "Assign Resident" : "Name"}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loaderData.boardMemberData.map((member: { id: number; name: string | null; role: string; userId: string | null }) => (
               <TableRow key={member.id}>
-                <TableCell>
-                  {member.name || (
-                    <span className="text-muted-foreground italic">Vacant</span>
-                  )}
-                </TableCell>
                 <TableCell>{member.role}</TableCell>
-                {editMode && (
-                  <TableCell className="text-right">
+                <TableCell>
+                  {editMode ? (
                     <BoardPositionAssignment
                       boardMemberId={member.id}
                       currentUserId={member.userId}
@@ -300,8 +292,12 @@ export default function BoardMembers({
                       verifiedResidents={loaderData.verifiedResidents}
                       onAssignmentChange={handleAssignmentChange}
                     />
-                  </TableCell>
-                )}
+                  ) : (
+                    member.name || (
+                      <span className="text-muted-foreground italic">Vacant</span>
+                    )
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
