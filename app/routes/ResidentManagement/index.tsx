@@ -42,7 +42,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     .from(schema.users)
     .leftJoin(
       schema.boardMembers,
-      eq(schema.users.id, schema.boardMembers.userId)
+      eq(schema.users.id, schema.boardMembers.userId),
     )
     .where(eq(schema.users.isAnonymous, false))
     .all()
@@ -50,7 +50,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       results.map((row) => ({
         ...row,
         isBoardMember: row.boardPosition !== null,
-      }))
+      })),
     );
 
   return { users: usersWithBoardInfo };
@@ -92,7 +92,8 @@ async function handleDeleteUser(
 
     if (boardPosition) {
       return {
-        error: "Cannot delete user who is on the board. Please remove them from their board position first.",
+        error:
+          "Cannot delete user who is on the board. Please remove them from their board position first.",
       };
     }
 
@@ -315,8 +316,6 @@ export default function ResidentManagement({
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-  const [isMobileCreateDrawerOpen, setIsMobileCreateDrawerOpen] =
-    useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [optimisticUsers, setOptimisticUsers] = useState(loaderData.users);
   const [successKey, setSuccessKey] = useState(0);
@@ -333,14 +332,13 @@ export default function ResidentManagement({
     if (navigation.state === "idle" && actionData?.success) {
       setIsDialogOpen(false);
       setIsMobileDrawerOpen(false);
-      setIsMobileCreateDrawerOpen(false);
       setSuccessKey((prev) => prev + 1);
     }
   }, [navigation.state, actionData?.success]);
 
   // Clear form when all dialogs are closed
   useEffect(() => {
-    if (!isDialogOpen && !isMobileDrawerOpen && !isMobileCreateDrawerOpen) {
+    if (!isDialogOpen && !isMobileDrawerOpen) {
       setNewUserFirstName("");
       setNewUserLastName("");
       setNewUserEmail("");
@@ -348,7 +346,7 @@ export default function ResidentManagement({
       setNewUserRole("");
       setEditingUserId(null);
     }
-  }, [isDialogOpen, isMobileDrawerOpen, isMobileCreateDrawerOpen]);
+  }, [isDialogOpen, isMobileDrawerOpen]);
 
   // Handle edit user (desktop - uses dialog)
   const handleEditUser = (user: {
@@ -395,6 +393,16 @@ export default function ResidentManagement({
     setNewUserUnitNumber("");
     setNewUserRole("");
     setIsDialogOpen(true);
+  };
+
+  const handleNewUserMobile = () => {
+    setEditingUserId(null);
+    setNewUserFirstName("");
+    setNewUserLastName("");
+    setNewUserEmail("");
+    setNewUserUnitNumber("");
+    setNewUserRole("");
+    setIsMobileDrawerOpen(true);
   };
 
   const isFormValid = Boolean(
@@ -498,25 +506,14 @@ export default function ResidentManagement({
             <UserPlusIcon className="size-4 mr-2" />
             Invite Resident
           </Button>
-          {/* Mobile Add User Button with Drawer */}
-          <div className="md:hidden">
-            <MobileUserDrawer
-              firstName={newUserFirstName}
-              lastName={newUserLastName}
-              email={newUserEmail}
-              unitNumber={newUserUnitNumber}
-              role={newUserRole}
-              isFormValid={isFormValid}
-              onFirstNameChange={setNewUserFirstName}
-              onLastNameChange={setNewUserLastName}
-              onEmailChange={setNewUserEmail}
-              onUnitNumberChange={setNewUserUnitNumber}
-              onRoleChange={setNewUserRole}
-              actionData={actionData}
-              open={isMobileCreateDrawerOpen}
-              onOpenChange={setIsMobileCreateDrawerOpen}
-            />
-          </div>
+          <Button
+            onClick={handleNewUserMobile}
+            className="md:hidden"
+            size="icon"
+            variant="secondary"
+          >
+            <UserPlusIcon className="size-4" />
+          </Button>
         </div>
 
         {/* Resident Cards - Desktop (uses dialog for edit) */}
@@ -589,7 +586,7 @@ export default function ResidentManagement({
           onUnitNumberChange={setNewUserUnitNumber}
           onRoleChange={setNewUserRole}
           actionData={actionData}
-          editMode={true}
+          editMode={editingUserId !== null}
           userId={editingUserId || undefined}
           open={isMobileDrawerOpen}
           onOpenChange={setIsMobileDrawerOpen}

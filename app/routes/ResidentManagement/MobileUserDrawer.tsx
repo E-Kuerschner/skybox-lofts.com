@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
 import { Form } from "react-router";
-import { UserPlusIcon } from "lucide-react";
-import { Button } from "~/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "~/components/ui/sheet";
 import { StatusBanner } from "~/components/StatusBanner";
 import { NewResidentForm } from "./NewResidentForm";
@@ -69,13 +66,6 @@ export function MobileUserDrawer({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      {!editMode && (
-        <SheetTrigger asChild>
-          <Button size="icon" variant="secondary">
-            <UserPlusIcon className="size-4" />
-          </Button>
-        </SheetTrigger>
-      )}
       <SheetContent
         className="site-bg"
         side="bottom"
@@ -88,7 +78,8 @@ export function MobileUserDrawer({
           {!editMode && (
             <SheetDescription>
               Enter the resident's information below. They will receive a
-              welcome email with instructions to sign in and access their account.
+              welcome email with instructions to sign in and access their
+              account.
             </SheetDescription>
           )}
         </SheetHeader>

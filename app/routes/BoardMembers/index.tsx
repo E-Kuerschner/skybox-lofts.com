@@ -18,6 +18,7 @@ import { Form } from "react-router";
 import { Edit3Icon } from "lucide-react";
 import { BoardPositionAssignment } from "./BoardPositionAssignment";
 import { AssignmentConfirmDialog } from "./AssignmentConfirmDialog";
+import { AssignmentConfirmDrawer } from "./AssignmentConfirmDrawer";
 import { StatusBanner } from "~/components/StatusBanner";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -299,18 +300,35 @@ export default function BoardMembers({
         </Table>
       </div>
 
-      {/* Assignment Confirmation Dialog */}
-      {selectedPosition && (
-        <AssignmentConfirmDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          boardMemberId={selectedPosition.id}
-          positionTitle={selectedPosition.title}
-          assignedUserId={selectedPosition.userId}
-          assignedUserName={selectedPosition.userName}
-          isUnassignment={selectedPosition.userId === null}
-        />
-      )}
+      {/* Desktop Registration Dialog (hidden on mobile) */}
+      <div className="hidden md:block">
+        {selectedPosition && (
+          <AssignmentConfirmDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            boardMemberId={selectedPosition.id}
+            positionTitle={selectedPosition.title}
+            assignedUserId={selectedPosition.userId}
+            assignedUserName={selectedPosition.userName}
+            isUnassignment={selectedPosition.userId === null}
+          />
+        )}
+      </div>
+
+      {/* Mobile Drawer (only shown on mobile) */}
+      <div className="md:hidden">
+        {selectedPosition && (
+          <AssignmentConfirmDrawer
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            boardMemberId={selectedPosition.id}
+            positionTitle={selectedPosition.title}
+            assignedUserId={selectedPosition.userId}
+            assignedUserName={selectedPosition.userName}
+            isUnassignment={selectedPosition.userId === null}
+          />
+        )}
+      </div>
     </div>
   );
 }

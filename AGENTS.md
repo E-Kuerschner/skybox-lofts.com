@@ -100,6 +100,7 @@ Project requirements and specifications are documented in the `docs/` folder.
 - Check environments with `import.meta.env.DEV` API, NEVER process.env.NODE_ENV
 - Use the dev-server-debugger sub-agent to help debug complex new features in the browser
 - NEVER manually create database migrations. ALWAYS relaying on the database migration generator script
+- Always use `type` over `interface` for Typescript types
 
 ### Email Testing & Debugging
 When testing features with the dev server that send emails:
