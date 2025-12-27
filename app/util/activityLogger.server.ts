@@ -11,6 +11,12 @@ interface ActivityMetadata {
   fileSize?: number;
   memberName?: string;
   memberRole?: string;
+  // Board assignment fields
+  position?: string;
+  previousUserId?: string;
+  assignedUserId?: string;
+  assignedUserName?: string;
+  note?: string;
 }
 
 export function createActivityLogData(

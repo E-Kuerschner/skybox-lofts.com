@@ -3,7 +3,7 @@ import { getDatabase } from "~/util/database.server";
 import { isAuthenticated } from "~/util/authHelpers.server";
 import * as schema from "../../../database/schema";
 import { eq } from "drizzle-orm";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createActivityLogData } from "~/util/activityLogger.server";
 import {
   Table,
@@ -15,137 +15,220 @@ import {
 } from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
 import { Form } from "react-router";
-import { Trash2Icon, Edit3Icon } from "lucide-react";
-import NewBoardMemberForm from "./NewBoardMemberForm";
-import MobileBoardMemberDrawer from "./MobileBoardMemberDrawer";
+import { Edit3Icon } from "lucide-react";
+import { BoardPositionAssignment } from "./BoardPositionAssignment";
+import { BoardAssignmentForm } from "./BoardAssignmentForm";
+import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
 import { StatusBanner } from "~/components/StatusBanner";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const session = await isAuthenticated(request, context);
   const db = getDatabase(context);
 
-  const boardMemberData = await db.select().from(schema.boardMembers);
+  // Fetch all board members (with nullable userId and name)
+  const boardMemberData = await db
+    .select()
+    .from(schema.boardMembers)
+    .all();
+
+  // Fetch all email-verified residents for the assignment combobox
+  // Note: emailVerified is a boolean in SQLite (0 or 1), so we check for truthy values
+  const allUsers = await db
+    .select({
+      id: schema.users.id,
+      name: schema.users.name,
+      email: schema.users.email,
+      emailVerified: schema.users.emailVerified,
+    })
+    .from(schema.users)
+    .all();
+
+  const verifiedResidents = allUsers.filter((user) => user.emailVerified);
+
   return {
     boardMemberData,
+    verifiedResidents,
     isAdmin: session.user.role === "admin",
   };
 }
 
-async function handleDeleteBoardMember(
+async function handleAssignBoardPosition(
   boardMemberId: string,
+  userId: string | null,
   db: ReturnType<typeof getDatabase>,
   actorUserId: string,
 ) {
   if (!boardMemberId) {
-    return { error: "Board member ID is required" };
+    return { error: "Board position ID is required" };
   }
 
   try {
-    const memberToDelete = await db
+    const position = await db
       .select()
       .from(schema.boardMembers)
       .where(eq(schema.boardMembers.id, Number(boardMemberId)))
       .get();
 
-    if (!memberToDelete) {
-      return { error: "Board member not found" };
+    if (!position) {
+      return { error: "Board position not found" };
     }
 
-    await db
-      .delete(schema.boardMembers)
-      .where(eq(schema.boardMembers.id, Number(boardMemberId)));
+    // Handle unassignment (make vacant)
+    if (!userId) {
+      const previousUserId = position.userId;
 
-    // Log the activity
-    await db.insert(schema.activityLogs).values(
-      createActivityLogData(actorUserId, "deleted", "board_member", boardMemberId, {
-        memberName: memberToDelete.name,
-        memberRole: memberToDelete.role,
-      })
-    );
+      // Set position to vacant
+      await db
+        .update(schema.boardMembers)
+        .set({
+          userId: null,
+          name: null,
+        })
+        .where(eq(schema.boardMembers.id, Number(boardMemberId)));
 
-    return { success: true, message: "Board member deleted successfully" };
-  } catch (error) {
-    return { error: "Failed to delete board member" };
-  }
-}
+      // Downgrade previous user to owner
+      if (previousUserId) {
+        await db
+          .update(schema.users)
+          .set({ role: "owner" })
+          .where(eq(schema.users.id, previousUserId));
 
-async function handleCreateBoardMember(
-  name: string,
-  role: string,
-  db: ReturnType<typeof getDatabase>,
-  actorUserId: string,
-) {
-  if (!name || !role) {
-    return { error: "Name and position are required" };
-  }
+        // Log the unassignment
+        await db.insert(schema.activityLogs).values(
+          createActivityLogData(actorUserId, "updated", "board_member", boardMemberId, {
+            position: position.role,
+            previousUserId,
+            note: "unassigned",
+          })
+        );
+      }
 
-  try {
-    const newMember = await db
-      .insert(schema.boardMembers)
-      .values({
-        name,
-        role,
-      })
-      .returning()
+      return { success: true, message: "Board position is now vacant" };
+    }
+
+    // Handle assignment
+    // Check if user exists and is verified
+    const user = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.id, userId))
       .get();
 
-    // Log the activity
+    if (!user) {
+      return { error: "User not found" };
+    }
+
+    if (!user.emailVerified) {
+      return { error: "User must have a verified email to be assigned to a board position" };
+    }
+
+    // Check if user already has a board position (one position per user)
+    const existingPosition = await db
+      .select()
+      .from(schema.boardMembers)
+      .where(eq(schema.boardMembers.userId, userId))
+      .get();
+
+    if (existingPosition) {
+      return {
+        error: `${user.name} is already assigned to ${existingPosition.role}. Users can only hold one board position at a time.`,
+      };
+    }
+
+    // If position already has someone, downgrade them to owner
+    if (position.userId) {
+      await db
+        .update(schema.users)
+        .set({ role: "owner" })
+        .where(eq(schema.users.id, position.userId));
+    }
+
+    // Assign user to position
+    await db
+      .update(schema.boardMembers)
+      .set({
+        userId: userId,
+        name: user.name,
+      })
+      .where(eq(schema.boardMembers.id, Number(boardMemberId)));
+
+    // Upgrade user to admin if not already
+    if (user.role !== "admin") {
+      await db
+        .update(schema.users)
+        .set({ role: "admin" })
+        .where(eq(schema.users.id, userId));
+    }
+
+    // Log the assignment
     await db.insert(schema.activityLogs).values(
-      createActivityLogData(actorUserId, "created", "board_member", String(newMember.id), {
-        memberName: name,
-        memberRole: role,
+      createActivityLogData(actorUserId, "updated", "board_member", boardMemberId, {
+        position: position.role,
+        assignedUserId: userId,
+        assignedUserName: user.name,
+        note: "assigned",
       })
     );
 
-    return { success: true, message: "Board member added successfully" };
+    return { success: true, message: `${user.name} assigned to ${position.role}` };
   } catch (error) {
-    return { error: "Failed to create board member" };
+    console.error("Error assigning board position:", error);
+    return { error: "Failed to assign board position" };
   }
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
   const session = await isAuthenticated(request, context);
 
-  // Only admins can create or delete board members
+  // Admin-only protection
   if (session.user.role !== "admin") {
-    return { success: false, error: "Unauthorized" };
+    return { error: "Permission denied. Only admins can modify board positions." };
   }
 
   const db = getDatabase(context);
   const formData = await request.formData();
   const intent = formData.get("intent");
 
-  if (intent === "delete") {
+  if (intent === "assign") {
     const boardMemberId = formData.get("boardMemberId") as string;
-    return handleDeleteBoardMember(boardMemberId, db, session.user.id);
+    const userId = formData.get("userId") as string | null;
+    return handleAssignBoardPosition(boardMemberId, userId, db, session.user.id);
   }
 
-  if (intent === "create") {
-    const name = formData.get("name") as string;
-    const role = formData.get("role") as string;
-    return handleCreateBoardMember(name, role, db, session.user.id);
-  }
-
-  return { success: false, error: "Invalid action" };
+  return { error: "Invalid action" };
 }
 
 export default function BoardMembers({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const [newMemberName, setNewMemberName] = useState("");
-  const [newMemberRole, setNewMemberRole] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState<{
+    id: number;
+    title: string;
+    userId: string | null;
+    userName: string | null;
+  } | null>(null);
 
-  // Clear form after successful submission
-  useEffect(() => {
-    if (actionData?.success) {
-      setNewMemberName("");
-      setNewMemberRole("");
-    }
-  }, [actionData?.success]);
+  const handleAssignmentChange = (
+    boardMemberId: number,
+    userId: string | null,
+    userName: string | null,
+  ) => {
+    const position = loaderData.boardMemberData.find(
+      (m: { id: number; role: string }) => m.id === boardMemberId
+    );
+    if (!position) return;
 
-  const isFormValid = Boolean(newMemberName.trim() && newMemberRole.trim());
+    setSelectedPosition({
+      id: boardMemberId,
+      title: position.role,
+      userId,
+      userName,
+    });
+    setDialogOpen(true);
+  };
 
   return (
     <div className="flex flex-col">
@@ -156,11 +239,11 @@ export default function BoardMembers({
           message={actionData.error}
         />
       )}
-      {actionData?.success && (
+      {actionData && "success" in actionData && actionData.success && (
         <StatusBanner
           className="mb-4"
           variant="success"
-          message="Operation completed successfully"
+          message={"message" in actionData ? actionData.message : "Operation completed successfully"}
           autoDismiss={3000}
         />
       )}
@@ -168,11 +251,11 @@ export default function BoardMembers({
       <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
           <p className="text-muted-foreground">
-            Serving on the HOA board is voluntary. If you are interesting in
+            Serving on the HOA board is voluntary. If you are interested in
             helping our community, please contact any of the current board
             members.
           </p>
-          {/* Admin Upload Button */}
+          {/* Admin Edit Button */}
           {loaderData.isAdmin && (
             <Button
               variant={editMode ? "outline" : "secondary"}
@@ -192,82 +275,55 @@ export default function BoardMembers({
         <Table>
           <TableHeader>
             <TableRow className="*:font-bold px-4">
-              <TableHead>Name</TableHead>
               <TableHead>Position</TableHead>
-              {editMode && (
-                <TableHead className="text-right">Actions</TableHead>
-              )}
+              <TableHead>{editMode ? "Assign Resident" : "Name"}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {/* New Board Member Row - Desktop Only - Admin Only */}
-            {editMode && (
-              <TableRow className="bg-muted hover:bg-muted hidden md:table-row">
-                <TableCell className="py-4" colSpan={3}>
-                  <Form method="post">
-                    <NewBoardMemberForm
-                      name={newMemberName}
-                      role={newMemberRole}
-                      isFormValid={isFormValid}
-                      onNameChange={setNewMemberName}
-                      onRoleChange={setNewMemberRole}
-                      submitLabel="Add"
-                    />
-                  </Form>
-                </TableCell>
-              </TableRow>
-            )}
-            {loaderData.boardMemberData.map((member) => (
+            {loaderData.boardMemberData.map((member: { id: number; name: string | null; role: string; userId: string | null }) => (
               <TableRow key={member.id}>
-                <TableCell>{member.name}</TableCell>
                 <TableCell>{member.role}</TableCell>
-                {editMode && (
-                  <TableCell className="text-right">
-                    <Form method="post">
-                      <input type="hidden" name="intent" value="delete" />
-                      <input
-                        type="hidden"
-                        name="boardMemberId"
-                        value={member.id}
-                      />
-                      <Button
-                        type="submit"
-                        variant="ghost"
-                        size="icon"
-                        className="hover:text-destructive"
-                        onClick={(e) => {
-                          if (
-                            !confirm(
-                              `Are you sure you want to remove ${member.name} from the board?`,
-                            )
-                          ) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        <Trash2Icon className="size-4" />
-                      </Button>
-                    </Form>
-                  </TableCell>
-                )}
+                <TableCell>
+                  {editMode ? (
+                    <BoardPositionAssignment
+                      boardMemberId={member.id}
+                      currentUserId={member.userId}
+                      currentUserName={member.name}
+                      verifiedResidents={loaderData.verifiedResidents}
+                      onAssignmentChange={handleAssignmentChange}
+                    />
+                  ) : (
+                    member.name || (
+                      <span className="text-muted-foreground italic">Vacant</span>
+                    )
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
 
-      {/* Mobile Add Board Member Button with Drawer - Admin Only */}
-      {editMode && (
-        <div className="md:hidden mt-4">
-          <MobileBoardMemberDrawer
-            name={newMemberName}
-            role={newMemberRole}
-            isFormValid={isFormValid}
-            onNameChange={setNewMemberName}
-            onRoleChange={setNewMemberRole}
-            actionData={actionData}
+      {/* Assignment Confirmation Overlay (dialog on desktop, drawer on mobile) */}
+      {selectedPosition && (
+        <ResponsiveOverlay
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          title={
+            selectedPosition.userId === null
+              ? "Remove Board Member?"
+              : "Assign Board Member?"
+          }
+        >
+          <BoardAssignmentForm
+            boardMemberId={selectedPosition.id}
+            positionTitle={selectedPosition.title}
+            assignedUserId={selectedPosition.userId}
+            assignedUserName={selectedPosition.userName}
+            isUnassignment={selectedPosition.userId === null}
+            onCancel={() => setDialogOpen(false)}
           />
-        </div>
+        </ResponsiveOverlay>
       )}
     </div>
   );

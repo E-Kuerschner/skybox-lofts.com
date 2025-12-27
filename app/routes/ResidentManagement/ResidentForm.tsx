@@ -10,7 +10,7 @@ import {
 } from "~/components/ui/select";
 import { cn } from "~/util/ui/utils";
 
-type UserFormProps = {
+type ResidentFormProps = {
   firstName: string;
   lastName: string;
   email: string;
@@ -28,7 +28,7 @@ type UserFormProps = {
   editMode?: boolean;
 };
 
-export function NewResidentForm({
+export function ResidentForm({
   firstName,
   lastName,
   email,
@@ -44,7 +44,7 @@ export function NewResidentForm({
   className,
   vertical = false,
   editMode = false,
-}: UserFormProps) {
+}: ResidentFormProps) {
   const handleRoleChange = (value: string) => {
     if (value === "admin") {
       const confirmed = window.confirm(
