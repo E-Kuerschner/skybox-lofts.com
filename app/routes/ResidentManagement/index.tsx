@@ -21,15 +21,39 @@ import { MobileUserDrawer } from "./MobileUserDrawer";
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAdmin(request, context);
 
-  // Fetch all users from database, excluding anonymous users
   const db = getDatabase(context);
-  const users = await db
-    .select()
-    .from(schema.users)
-    .where(eq(schema.users.isAnonymous, false))
-    .all();
 
-  return { users };
+  // Fetch all users with their board positions in a single query using LEFT JOIN
+  const usersWithBoardInfo = await db
+    .select({
+      id: schema.users.id,
+      name: schema.users.name,
+      firstName: schema.users.firstName,
+      lastName: schema.users.lastName,
+      email: schema.users.email,
+      emailVerified: schema.users.emailVerified,
+      unitNumber: schema.users.unitNumber,
+      role: schema.users.role,
+      isAnonymous: schema.users.isAnonymous,
+      createdAt: schema.users.createdAt,
+      updatedAt: schema.users.updatedAt,
+      boardPosition: schema.boardMembers.role,
+    })
+    .from(schema.users)
+    .leftJoin(
+      schema.boardMembers,
+      eq(schema.users.id, schema.boardMembers.userId)
+    )
+    .where(eq(schema.users.isAnonymous, false))
+    .all()
+    .then((results) =>
+      results.map((row) => ({
+        ...row,
+        isBoardMember: row.boardPosition !== null,
+      }))
+    );
+
+  return { users: usersWithBoardInfo };
 }
 
 async function handleDeleteUser(
@@ -57,6 +81,19 @@ async function handleDeleteUser(
 
     if (userToDelete.role === "admin") {
       return { error: "Cannot delete admin users" };
+    }
+
+    // Check if user is on the board
+    const boardPosition = await db
+      .select()
+      .from(schema.boardMembers)
+      .where(eq(schema.boardMembers.userId, userId))
+      .get();
+
+    if (boardPosition) {
+      return {
+        error: "Cannot delete user who is on the board. Please remove them from their board position first.",
+      };
     }
 
     // First, revoke all active sessions for the user

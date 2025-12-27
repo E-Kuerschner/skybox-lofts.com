@@ -99,6 +99,7 @@ Project requirements and specifications are documented in the `docs/` folder.
 - Ask clarifying questions when working on a complex task
 - Check environments with `import.meta.env.DEV` API, NEVER process.env.NODE_ENV
 - Use the dev-server-debugger sub-agent to help debug complex new features in the browser
+- NEVER manually create database migrations. ALWAYS relaying on the database migration generator script
 
 ### Email Testing & Debugging
 When testing features with the dev server that send emails:

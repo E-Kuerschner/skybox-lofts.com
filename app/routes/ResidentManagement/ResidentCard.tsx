@@ -12,6 +12,8 @@ type ResidentCardProps = {
     unitNumber: number | null;
     role: string | null;
     emailVerified: boolean;
+    isBoardMember?: boolean;
+    boardPosition?: string | null;
   };
   isAdmin: boolean;
   onEdit?: (user: {
@@ -33,7 +35,7 @@ export function ResidentCard({ user, isAdmin, onEdit }: ResidentCardProps) {
         className="flex-1 min-w-0 cursor-pointer"
         onClick={() => onEdit?.(user)}
       >
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline gap-2 flex-wrap">
           <h3 className="font-medium text-foreground truncate">
             {user.name || "Unnamed User"}
           </h3>
@@ -42,6 +44,11 @@ export function ResidentCard({ user, isAdmin, onEdit }: ResidentCardProps) {
           ) : (
             <span className="text-xs text-muted-foreground shrink-0">
               Pending
+            </span>
+          )}
+          {user.isBoardMember && user.boardPosition && (
+            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full shrink-0">
+              Board: {user.boardPosition}
             </span>
           )}
         </div>
