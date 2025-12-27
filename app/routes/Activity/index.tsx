@@ -164,7 +164,12 @@ function formatDetails(
       case "document":
         return `${data.filename || "Unknown"} (${data.category || "Unknown"})`;
       case "board_member":
-        return `${data.memberName || "Unknown"} - ${data.memberRole || "Unknown"}`;
+        const position = data.position || "Unknown";
+        if (data.note === "unassigned") {
+          return `${position} - Made vacant`;
+        }
+        const assignedName = data.assignedUserName || "Unknown";
+        return `${assignedName} - ${position}`;
       default:
         return "-";
     }

@@ -2,7 +2,7 @@ import type { Route } from "./+types/index";
 import { eq } from "drizzle-orm";
 import { useState, useEffect, useMemo } from "react";
 import { UserPlusIcon } from "lucide-react";
-import { useNavigation } from "react-router";
+import { Form, useNavigation } from "react-router";
 import { getAuth } from "~/auth";
 import { getDatabase } from "~/util/database.server";
 import { isAdmin } from "~/util/authHelpers.server";
@@ -10,13 +10,13 @@ import { sendInviteEmail } from "~/email/sendInviteEmail.server";
 import { Button } from "~/components/ui/button";
 import { NoContent } from "~/components/NoContent";
 import { SearchInput } from "~/components/SearchInput";
+import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
 import { fuzzyMatch } from "~/util/fuzzySearch";
 import { createActivityLogData } from "~/util/activityLogger.server";
 import { StatusBanner } from "~/components/StatusBanner";
 import * as schema from "../../../database/schema";
 import { ResidentCard } from "./ResidentCard";
-import { ResidentRegistrationDialog } from "./ResidentRegistrationDialog";
-import { MobileUserDrawer } from "./MobileUserDrawer";
+import { ResidentForm } from "./ResidentForm";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAdmin(request, context);
@@ -314,8 +314,7 @@ export default function ResidentManagement({
   const [newUserUnitNumber, setNewUserUnitNumber] = useState("");
   const [newUserRole, setNewUserRole] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [optimisticUsers, setOptimisticUsers] = useState(loaderData.users);
   const [successKey, setSuccessKey] = useState(0);
@@ -327,28 +326,30 @@ export default function ResidentManagement({
     }
   }, [loaderData.users, navigation.state]);
 
-  // Close dialogs after successful submission and increment success key
+  // Close overlay after successful submission and increment success key
   useEffect(() => {
     if (navigation.state === "idle" && actionData?.success) {
-      setIsDialogOpen(false);
-      setIsMobileDrawerOpen(false);
+      setIsOverlayOpen(false);
       setSuccessKey((prev) => prev + 1);
     }
   }, [navigation.state, actionData?.success]);
 
-  // Clear form when all dialogs are closed
-  useEffect(() => {
-    if (!isDialogOpen && !isMobileDrawerOpen) {
-      setNewUserFirstName("");
-      setNewUserLastName("");
-      setNewUserEmail("");
-      setNewUserUnitNumber("");
-      setNewUserRole("");
-      setEditingUserId(null);
+  // Clear form when overlay is closed (delayed to avoid animation issues)
+  const handleOverlayOpenChange = (open: boolean) => {
+    setIsOverlayOpen(open);
+    if (!open) {
+      setTimeout(() => {
+        setNewUserFirstName("");
+        setNewUserLastName("");
+        setNewUserEmail("");
+        setNewUserUnitNumber("");
+        setNewUserRole("");
+        setEditingUserId(null);
+      }, 150);
     }
-  }, [isDialogOpen, isMobileDrawerOpen]);
+  };
 
-  // Handle edit user (desktop - uses dialog)
+  // Handle edit user
   const handleEditUser = (user: {
     id: string;
     firstName: string | null;
@@ -363,25 +364,7 @@ export default function ResidentManagement({
     setNewUserEmail(user.email);
     setNewUserUnitNumber(user.unitNumber?.toString() || "");
     setNewUserRole(user.role || "");
-    setIsDialogOpen(true);
-  };
-
-  // Handle edit user (mobile - uses drawer)
-  const handleEditUserMobile = (user: {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string;
-    unitNumber: number | null;
-    role: string | null;
-  }) => {
-    setEditingUserId(user.id);
-    setNewUserFirstName(user.firstName || "");
-    setNewUserLastName(user.lastName || "");
-    setNewUserEmail(user.email);
-    setNewUserUnitNumber(user.unitNumber?.toString() || "");
-    setNewUserRole(user.role || "");
-    setIsMobileDrawerOpen(true);
+    setIsOverlayOpen(true);
   };
 
   // Handle new user
@@ -392,17 +375,7 @@ export default function ResidentManagement({
     setNewUserEmail("");
     setNewUserUnitNumber("");
     setNewUserRole("");
-    setIsDialogOpen(true);
-  };
-
-  const handleNewUserMobile = () => {
-    setEditingUserId(null);
-    setNewUserFirstName("");
-    setNewUserLastName("");
-    setNewUserEmail("");
-    setNewUserUnitNumber("");
-    setNewUserRole("");
-    setIsMobileDrawerOpen(true);
+    setIsOverlayOpen(true);
   };
 
   const isFormValid = Boolean(
@@ -498,6 +471,7 @@ export default function ResidentManagement({
             placeholder="Name or email..."
             className="max-w-md"
           />
+          {/* desktop button */}
           <Button
             variant="secondary"
             onClick={handleNewUser}
@@ -506,8 +480,9 @@ export default function ResidentManagement({
             <UserPlusIcon className="size-4 mr-2" />
             Invite Resident
           </Button>
+          {/* mobile button */}
           <Button
-            onClick={handleNewUserMobile}
+            onClick={handleNewUser}
             className="md:hidden"
             size="icon"
             variant="secondary"
@@ -516,8 +491,8 @@ export default function ResidentManagement({
           </Button>
         </div>
 
-        {/* Resident Cards - Desktop (uses dialog for edit) */}
-        <div className="space-y-2 hidden md:block">
+        {/* Resident Cards */}
+        <div className="space-y-2">
           {filteredUsers.length === 0 ? (
             <NoContent message="No residents found" />
           ) : (
@@ -531,67 +506,53 @@ export default function ResidentManagement({
             ))
           )}
         </div>
+      </div>
 
-        {/* Resident Cards - Mobile (uses drawer for edit) */}
-        <div className="space-y-2 md:hidden">
-          {filteredUsers.length === 0 ? (
-            <NoContent message="No residents found" />
-          ) : (
-            filteredUsers.map((user) => (
-              <ResidentCard
-                key={user.id}
-                user={user}
-                isAdmin={true}
-                onEdit={handleEditUserMobile}
-              />
-            ))
+      {/* Registration/Edit Overlay (dialog on desktop, drawer on mobile) */}
+      <ResponsiveOverlay
+        open={isOverlayOpen}
+        onOpenChange={handleOverlayOpenChange}
+        title={editingUserId ? "Update Resident" : "Register New Resident"}
+        description={
+          editingUserId
+            ? undefined
+            : "Enter the resident's information below. They will receive a welcome email with instructions to sign in and access their account."
+        }
+      >
+        {actionData?.error && (
+          <StatusBanner
+            variant="error"
+            message={actionData.error}
+            className="mt-4"
+          />
+        )}
+        <Form method="post" className="mt-4">
+          <input
+            type="hidden"
+            name="intent"
+            value={editingUserId ? "update" : "create"}
+          />
+          {editingUserId && (
+            <input type="hidden" name="userId" value={editingUserId} />
           )}
-        </div>
-      </div>
-
-      {/* Desktop Registration Dialog (hidden on mobile) */}
-      <div className="hidden md:block">
-        <ResidentRegistrationDialog
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          firstName={newUserFirstName}
-          lastName={newUserLastName}
-          email={newUserEmail}
-          unitNumber={newUserUnitNumber}
-          role={newUserRole}
-          isFormValid={isFormValid}
-          onFirstNameChange={setNewUserFirstName}
-          onLastNameChange={setNewUserLastName}
-          onEmailChange={setNewUserEmail}
-          onUnitNumberChange={setNewUserUnitNumber}
-          onRoleChange={setNewUserRole}
-          actionData={actionData}
-          editMode={editingUserId !== null}
-          userId={editingUserId || undefined}
-        />
-      </div>
-
-      {/* Mobile Edit Drawer (only shown on mobile for editing) */}
-      <div className="md:hidden">
-        <MobileUserDrawer
-          firstName={newUserFirstName}
-          lastName={newUserLastName}
-          email={newUserEmail}
-          unitNumber={newUserUnitNumber}
-          role={newUserRole}
-          isFormValid={isFormValid}
-          onFirstNameChange={setNewUserFirstName}
-          onLastNameChange={setNewUserLastName}
-          onEmailChange={setNewUserEmail}
-          onUnitNumberChange={setNewUserUnitNumber}
-          onRoleChange={setNewUserRole}
-          actionData={actionData}
-          editMode={editingUserId !== null}
-          userId={editingUserId || undefined}
-          open={isMobileDrawerOpen}
-          onOpenChange={setIsMobileDrawerOpen}
-        />
-      </div>
+          <ResidentForm
+            firstName={newUserFirstName}
+            lastName={newUserLastName}
+            email={newUserEmail}
+            unitNumber={newUserUnitNumber}
+            role={newUserRole}
+            isFormValid={isFormValid}
+            onFirstNameChange={setNewUserFirstName}
+            onLastNameChange={setNewUserLastName}
+            onEmailChange={setNewUserEmail}
+            onUnitNumberChange={setNewUserUnitNumber}
+            onRoleChange={setNewUserRole}
+            submitLabel={editingUserId ? "Save" : "Register"}
+            vertical
+            editMode={editingUserId !== null}
+          />
+        </Form>
+      </ResponsiveOverlay>
     </div>
   );
 }

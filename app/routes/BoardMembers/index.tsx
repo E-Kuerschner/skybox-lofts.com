@@ -17,8 +17,8 @@ import { Button } from "~/components/ui/button";
 import { Form } from "react-router";
 import { Edit3Icon } from "lucide-react";
 import { BoardPositionAssignment } from "./BoardPositionAssignment";
-import { AssignmentConfirmDialog } from "./AssignmentConfirmDialog";
-import { AssignmentConfirmDrawer } from "./AssignmentConfirmDrawer";
+import { BoardAssignmentForm } from "./BoardAssignmentForm";
+import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
 import { StatusBanner } from "~/components/StatusBanner";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -133,6 +133,14 @@ async function handleAssignBoardPosition(
       return {
         error: `${user.name} is already assigned to ${existingPosition.role}. Users can only hold one board position at a time.`,
       };
+    }
+
+    // If position already has someone, downgrade them to owner
+    if (position.userId) {
+      await db
+        .update(schema.users)
+        .set({ role: "owner" })
+        .where(eq(schema.users.id, position.userId));
     }
 
     // Assign user to position
@@ -300,35 +308,27 @@ export default function BoardMembers({
         </Table>
       </div>
 
-      {/* Desktop Registration Dialog (hidden on mobile) */}
-      <div className="hidden md:block">
-        {selectedPosition && (
-          <AssignmentConfirmDialog
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
+      {/* Assignment Confirmation Overlay (dialog on desktop, drawer on mobile) */}
+      {selectedPosition && (
+        <ResponsiveOverlay
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          title={
+            selectedPosition.userId === null
+              ? "Remove Board Member?"
+              : "Assign Board Member?"
+          }
+        >
+          <BoardAssignmentForm
             boardMemberId={selectedPosition.id}
             positionTitle={selectedPosition.title}
             assignedUserId={selectedPosition.userId}
             assignedUserName={selectedPosition.userName}
             isUnassignment={selectedPosition.userId === null}
+            onCancel={() => setDialogOpen(false)}
           />
-        )}
-      </div>
-
-      {/* Mobile Drawer (only shown on mobile) */}
-      <div className="md:hidden">
-        {selectedPosition && (
-          <AssignmentConfirmDrawer
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-            boardMemberId={selectedPosition.id}
-            positionTitle={selectedPosition.title}
-            assignedUserId={selectedPosition.userId}
-            assignedUserName={selectedPosition.userName}
-            isUnassignment={selectedPosition.userId === null}
-          />
-        )}
-      </div>
+        </ResponsiveOverlay>
+      )}
     </div>
   );
 }
