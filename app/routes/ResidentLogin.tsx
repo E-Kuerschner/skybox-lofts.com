@@ -89,6 +89,10 @@ export async function action({ request, context }: Route.ActionArgs) {
             "Only pre-registered accounts may sign in. Please contact an administrator for assistance.",
         };
       }
+      console.error("Magic link sign-in error:", error);
+      return {
+        error: "Something went wrong. Please try again.",
+      };
     }
   } else {
     throw new Error(`Unknown login method: ${loginMethod}`);
