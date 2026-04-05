@@ -173,7 +173,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
   }
 
   return (
-    <div className="relative md:flex h-full">
+    <div className="relative md:flex min-h-dvh">
       <aside className="hidden md:block w-64 shrink-0 border-e border-stone-200 bg-white">
         <SideBarContent isAdmin={isAdmin} userName={userName} />
       </aside>
@@ -204,7 +204,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
       </aside>
       <div
         className={cn(
-          "relative z-0 md:flex-grow flex flex-col h-full site-bg",
+          "relative z-0 md:flex-grow flex flex-col site-bg",
           {
             "overflow-hidden": isOpen,
           },
