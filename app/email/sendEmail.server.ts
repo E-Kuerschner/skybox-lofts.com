@@ -1,27 +1,28 @@
-import type { AppLoadContext } from "react-router";
 import { Resend } from "resend";
+import type { EmailTemplate } from "./emailTemplate";
 
-export const sendEmail = async (
-  ctx: AppLoadContext,
+export type { EmailTemplate };
+
+export async function sendEmail(
+  env: Env,
   to: string,
-  emailSubject: string,
-  emailBody: string,
-) => {
-  const resend = new Resend(ctx.cloudflare.env.RESEND_KEY);
+  subject: string,
+  template: EmailTemplate,
+) {
+  if (import.meta.env.DEV) {
+    console.log(template.debugMessage);
+    return;
+  }
 
-  const { data, error } = await resend.emails.send({
+  const resend = new Resend(env.RESEND_KEY);
+  const { error } = await resend.emails.send({
     from: "no-reply@skybox-lofts.com",
     to: [to],
-    subject: emailSubject,
-    // text: emailBody,
-    html: emailBody,
+    subject,
+    html: template.html,
   });
 
   if (error) {
     console.error("Resend error:", error);
-    return false;
   }
-
-  console.log("Email sent:", data);
-  return true;
-};
+}
