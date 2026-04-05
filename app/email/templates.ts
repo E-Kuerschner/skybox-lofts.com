@@ -1,4 +1,7 @@
-export const welcomeEmail = (name: string, loginPageUrl: string) => `
+import type { EmailTemplate } from "./emailTemplate";
+
+export const welcomeEmail = (name: string, loginPageUrl: string): EmailTemplate => ({
+  html: `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,9 +55,19 @@ export const welcomeEmail = (name: string, loginPageUrl: string) => `
   </table>
 </body>
 </html>
-`;
+`,
+  debugMessage: `
+========================================
+INVITE EMAIL
+========================================
+Name: ${name}
+Login URL: ${loginPageUrl}
+========================================
+  `,
+});
 
-export const signInEmail = (name: string, signInLink: string) => `
+export const signInEmail = (name: string, signInLink: string): EmailTemplate => ({
+  html: `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -104,4 +117,13 @@ export const signInEmail = (name: string, signInLink: string) => `
   </table>
 </body>
 </html>
-`;
+`,
+  debugMessage: `
+========================================
+MAGIC LINK EMAIL
+========================================
+Name: ${name}
+Sign-In URL: ${signInLink}
+========================================
+  `,
+});

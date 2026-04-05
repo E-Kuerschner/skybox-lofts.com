@@ -178,7 +178,7 @@ async function handleCreateUser(
     );
 
     // Send invite email
-    await sendInviteEmail(context, email, firstName, name);
+    await sendInviteEmail(context.cloudflare.env, email, firstName, name);
 
     return { success: true, message: "User created and invitation sent" };
   } catch (error) {
