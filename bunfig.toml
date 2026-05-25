@@ -1,0 +1,3 @@
+[test]
+# Runs before each test file — sets up MSW server lifecycle
+preload = ["./tests/setup.ts"]
