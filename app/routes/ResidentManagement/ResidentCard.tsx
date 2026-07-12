@@ -40,7 +40,7 @@ export function ResidentCard({ user, isAdmin, onEdit }: ResidentCardProps) {
             {user.name || "Unnamed User"}
           </h3>
           {user.emailVerified ? (
-            <span className="text-xs text-emerald-600 shrink-0">Verified</span>
+            <span className="text-xs text-success shrink-0">Verified</span>
           ) : (
             <span className="text-xs text-muted-foreground shrink-0">
               Pending

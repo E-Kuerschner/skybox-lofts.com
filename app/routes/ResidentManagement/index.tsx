@@ -9,6 +9,7 @@ import { isAdmin } from "~/util/authHelpers.server";
 import { sendInviteEmail } from "~/email/sendInviteEmail.server";
 import { Button } from "~/components/ui/button";
 import { NoContent } from "~/components/NoContent";
+import { Panel } from "~/components/Panel";
 import { SearchInput } from "~/components/SearchInput";
 import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
 import { fuzzyMatch } from "~/util/fuzzySearch";
@@ -457,7 +458,7 @@ export default function ResidentManagement({
         />
       )}
 
-      <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
+      <Panel>
         <p className="mb-8 text-muted-foreground">
           Grant new residents access to the website by clicking the button
           below. Please double-check all email addresses belong to actual
@@ -506,7 +507,7 @@ export default function ResidentManagement({
             ))
           )}
         </div>
-      </div>
+      </Panel>
 
       {/* Registration/Edit Overlay (dialog on desktop, drawer on mobile) */}
       <ResponsiveOverlay

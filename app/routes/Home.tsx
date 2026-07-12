@@ -20,7 +20,7 @@ export default function Home() {
         </div>
 
         {/* Right Column - Content */}
-        <div className="w-full md:w-1/2 bg-gradient-to-br from-stone-50 to-stone-100 flex flex-col">
+        <div className="w-full md:w-1/2 site-bg flex flex-col">
           <main className="flex flex-col justify-center w-full px-8 md:px-12 lg:px-16 py-6 md:py-16 grow">
             <div className="max-w-xl mx-auto space-y-6">
               <h1 className="text-3xl md:text-5xl font-bold text-foreground tracking-tight">

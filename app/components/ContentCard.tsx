@@ -19,14 +19,14 @@ export function ContentCard({
   return (
     <Card
       className={cn(
-        "rounded-2xl shadow-xl p-4 md:p-6 border-2 border-[#2d5016]/10 relative overflow-hidden site-bg",
+        "p-4 md:p-6 border-2 border-primary/10 relative overflow-hidden site-bg",
         className,
       )}
       {...props}
     >
       {/* Decorative corner accents */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-[#2d5016]/5 rounded-bl-full" />
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-amber-900/5 rounded-tr-full" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full" />
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-secondary/5 rounded-tr-full" />
 
       <div className="flex gap-2 items-center mb-4">
         <Icon className="size-6" />

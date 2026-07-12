@@ -15,6 +15,7 @@ import { fuzzyMatch } from "~/util/fuzzySearch";
 import { SearchInput } from "~/components/SearchInput";
 import { DocumentUploadDialog } from "./DocumentUploadDialog";
 import { NoContent } from "~/components/NoContent";
+import { Panel } from "~/components/Panel";
 import { StatusBanner } from "~/components/StatusBanner";
 
 async function fetchDocuments(prefix: string, context: AppLoadContext) {
@@ -170,7 +171,7 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
         />
       )}
 
-      <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
+      <Panel>
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
           <p className="text-muted-foreground">
             Building documents, meeting notes and financials are available to all
@@ -271,7 +272,7 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
             onUploadSuccess={handleUploadSuccess}
           />
         )}
-      </div>
+      </Panel>
     </div>
   );
 }

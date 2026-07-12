@@ -34,7 +34,7 @@ export function PasswordEntryForm({ magicLinkEmailSent }: Props) {
     loginMethod === "full" && navigation.state === "idle" && magicLinkEmailSent;
 
   return (
-    <Card className="max-w-md md:shadow-xl min-w-full md:mx-auto md:min-w-[500px] min-h-[550px] ">
+    <Card className="max-w-md md:shadow-lg min-w-full md:mx-auto md:min-w-[500px] min-h-[550px]">
       <CardHeader>
         <a href="/" aria-label="Go home" className="w-fit m-auto mb-8">
           <img

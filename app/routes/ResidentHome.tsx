@@ -38,7 +38,7 @@ export default function ResidentHome({ loaderData }: Route.ComponentProps) {
       >
         <p className="text-muted-foreground mb-6">
           Have a question or concern? Email{" "}
-          <span className="text-emerald-600">{loaderData.contactEmail}</span>,
+          <span className="text-primary">{loaderData.contactEmail}</span>,
           or submit it using the form below. We will get back to you as soon as
           possible.
         </p>

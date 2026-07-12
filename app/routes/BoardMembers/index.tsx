@@ -19,6 +19,7 @@ import { Edit3Icon } from "lucide-react";
 import { BoardPositionAssignment } from "./BoardPositionAssignment";
 import { BoardAssignmentForm } from "./BoardAssignmentForm";
 import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
+import { Panel } from "~/components/Panel";
 import { StatusBanner } from "~/components/StatusBanner";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -248,7 +249,7 @@ export default function BoardMembers({
         />
       )}
 
-      <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
+      <Panel>
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
           <p className="text-muted-foreground">
             Serving on the HOA board is voluntary. If you are interested in
@@ -302,7 +303,7 @@ export default function BoardMembers({
             ))}
           </TableBody>
         </Table>
-      </div>
+      </Panel>
 
       {/* Assignment Confirmation Overlay (dialog on desktop, drawer on mobile) */}
       {selectedPosition && (

@@ -22,7 +22,7 @@ export function SearchInput({
   return (
     <InputGroup
       className={cn(
-        "bg-white rounded-full shadow-sm hover:shadow-none",
+        "bg-card rounded-full shadow-sm hover:shadow-none",
         className,
       )}
     >

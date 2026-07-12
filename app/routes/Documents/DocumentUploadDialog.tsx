@@ -107,7 +107,7 @@ export function DocumentUploadDialog({
                 onValueChange={setSelectedCategory}
                 disabled={isSubmitting}
               >
-                <SelectTrigger id="category-select" className="bg-white">
+                <SelectTrigger id="category-select" className="bg-card">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -153,7 +153,7 @@ export function DocumentUploadDialog({
                 id="file"
                 name="file"
                 type="file"
-                className={cn("bg-white", [selectedFile && "text-emerald-500"])}
+                className={cn("bg-card", [selectedFile && "text-primary"])}
                 onChange={handleFileChange}
                 disabled={isSubmitting}
                 required

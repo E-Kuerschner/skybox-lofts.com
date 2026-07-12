@@ -31,8 +31,8 @@ const LayoutNavLink = ({ children, ...props }: LayoutNavLinkProps) => {
   return (
     <NavLink
       className={({ isActive }) =>
-        cn("hover:text-emerald-600 py-6 w-full", {
-          "text-emerald-600": isActive,
+        cn("hover:text-primary py-6 w-full", {
+          "text-primary": isActive,
         })
       }
       {...props}
@@ -70,12 +70,12 @@ const SideBarContent = ({
         <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
         {userName && (
           <p className="md:hidden text-sm text-muted-foreground mb-2">
-            Hello, <span className="text-emerald-500">{userName}</span>
+            Hello, <span className="text-primary">{userName}</span>
           </p>
         )}
       </div>
-      <hr className="border-1 border-slate-200" />
-      <nav className="flex flex-col items-start *:hover:translate-x-2 *:transition-transform *:hover:scale-105 *:active:scale-[0.9] *:active:text-emerald-600">
+      <hr />
+      <nav className="flex flex-col items-start *:hover:translate-x-2 *:transition-transform *:hover:scale-105 *:active:scale-[0.9] *:active:text-primary">
         <LayoutNavLink end to="/resident">
           🏠 Resident Home
         </LayoutNavLink>
@@ -174,7 +174,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="relative md:flex min-h-dvh">
-      <aside className="hidden md:block w-64 shrink-0 border-e border-stone-200 bg-white">
+      <aside className="hidden md:block w-64 shrink-0 border-e bg-card">
         <SideBarContent isAdmin={isAdmin} userName={userName} />
       </aside>
       {/* overlay fixed behind the collapsible, mobile sidebar */}
@@ -239,7 +239,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
                 >
                   <Menu className="size-4" />
                 </Button>
-                <h1 className="text-2xl md:text-4xl md:mb-4 text-green-900 md:text-white font-semibold md:text-shadow-lg/50">
+                <h1 className="text-2xl md:text-4xl md:mb-4 text-primary md:text-white font-semibold md:text-shadow-lg/50">
                   {pageTitle}
                 </h1>
               </div>
@@ -249,7 +249,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
                   <span className="hidden md:inline text-foreground md:text-white md:text-shadow-lg/50">
                     Hello,{" "}
                     <span
-                      className="text-emerald-300 hover:text-emerald-500 hover:underline cursor-pointer"
+                      className="text-primary-light hover:text-primary-light/80 hover:underline cursor-pointer"
                       aria-label="Sign out"
                       onClick={handleDesktopSignOut}
                     >

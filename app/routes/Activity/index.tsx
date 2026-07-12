@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { NoContent } from "~/components/NoContent";
+import { Panel } from "~/components/Panel";
 import { activityLogs, users } from "../../../database/schema";
 
 const ITEMS_PER_PAGE = 50;
@@ -217,7 +218,7 @@ export default function Activity({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
+      <Panel>
         <p className="mb-8 text-muted-foreground">
           View all activity performed by admins on the platform. This includes
           creating, updating, and deleting residents, documents, and board
@@ -304,7 +305,7 @@ export default function Activity({ loaderData }: Route.ComponentProps) {
                           activity.action === "deleted"
                             ? "text-destructive"
                             : activity.action === "created"
-                              ? "text-emerald-600"
+                              ? "text-success"
                               : ""
                         }
                       >
@@ -365,7 +366,7 @@ export default function Activity({ loaderData }: Route.ComponentProps) {
             </div>
           </div>
         )}
-      </div>
+      </Panel>
     </div>
   );
 }

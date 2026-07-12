@@ -42,10 +42,9 @@ export function StatusBanner({
     <div
       className={cn(
         "rounded-md p-4 text-sm border transition-opacity duration-300",
-        variant === "success" &&
-          "bg-emerald-50 text-emerald-700 border-emerald-200",
+        variant === "success" && "bg-success/10 text-success border-success/40",
         variant === "error" &&
-          "bg-destructive/10 text-destructive border-destructive",
+          "bg-destructive/10 text-destructive border-destructive/40",
         isExiting && "opacity-0",
         className,
       )}

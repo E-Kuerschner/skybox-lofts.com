@@ -8,7 +8,7 @@ export function LoadingSpinner({ className }: Props) {
   return (
     <div
       className={cn(
-        "h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-emerald-600",
+        "h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary",
         className,
       )}
     />
