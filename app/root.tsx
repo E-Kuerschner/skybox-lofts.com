@@ -41,6 +41,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <Meta />
         <Links />
+        {import.meta.env.DEV && (
+          <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+        )}
       </head>
       <body>
         {children}
