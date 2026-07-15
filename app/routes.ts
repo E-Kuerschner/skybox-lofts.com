@@ -23,6 +23,7 @@ export default [
       ]),
       route("management", "routes/ResidentManagement/index.tsx"),
       route("activity", "routes/Activity/index.tsx"),
+      route("preferences", "routes/Preferences/index.tsx"),
     ]),
   ]),
 ] satisfies RouteConfig;

@@ -46,4 +46,10 @@ export const userAdditionalFields = {
     type: "string",
     required: false,
   },
+  // Email preference: general communications (announcements, new site features, etc.)
+  receivesGeneralEmails: {
+    type: "boolean",
+    required: true,
+    defaultValue: true,
+  },
 } as const;

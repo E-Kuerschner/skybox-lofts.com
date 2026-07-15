@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
+  Link,
   Outlet,
   useLocation,
   useRevalidator,
@@ -8,7 +9,23 @@ import {
   createCookie,
 } from "react-router";
 import type { Route } from "./+types/ResidentLayout";
-import { Menu } from "lucide-react";
+import {
+  ChartColumn,
+  FileText,
+  Home,
+  LogOut,
+  Menu,
+  Settings,
+  UserCog,
+  Users,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { WrigleyClock } from "~/components/WrigleyClock";
 import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
 import { Button } from "~/components/ui/button";
@@ -25,9 +42,11 @@ const emailTrackerCookie = createCookie("email-tracker", {
 
 type LayoutNavLinkProps = Omit<NavLinkProps, "children"> & {
   children: string;
+  // icons inherit the link's text color so they match hover/active states
+  icon: ReactNode;
 };
 
-const LayoutNavLink = ({ children, ...props }: LayoutNavLinkProps) => {
+const LayoutNavLink = ({ children, icon, ...props }: LayoutNavLinkProps) => {
   return (
     <NavLink
       className={({ isActive }) =>
@@ -39,6 +58,7 @@ const LayoutNavLink = ({ children, ...props }: LayoutNavLinkProps) => {
     >
       {({ isPending }) => (
         <span className="flex items-center gap-3">
+          {icon}
           <span>{children}</span>
           {isPending && <LoadingSpinner className="inline size-4" />}
         </span>
@@ -70,24 +90,43 @@ const SideBarContent = ({
         <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
         {userName && (
           <p className="md:hidden text-sm text-muted-foreground mb-2">
-            Hello, <span className="text-emerald-500">{userName}</span>
+            Hello,{" "}
+            <Link
+              to="/resident/preferences"
+              className="text-emerald-500 hover:underline"
+            >
+              {userName}
+            </Link>
           </p>
         )}
       </div>
       <hr className="border-1 border-slate-200" />
       <nav className="flex flex-col items-start *:hover:translate-x-2 *:transition-transform *:hover:scale-105 *:active:scale-[0.9] *:active:text-emerald-600">
-        <LayoutNavLink end to="/resident">
-          🏠 Resident Home
+        <LayoutNavLink end to="/resident" icon={<Home className="size-4" />}>
+          Resident Home
         </LayoutNavLink>
-        <LayoutNavLink to="/resident/documents">📄 Documents</LayoutNavLink>
-        <LayoutNavLink to="/resident/board">👥 Board Members</LayoutNavLink>
+        <LayoutNavLink
+          to="/resident/documents"
+          icon={<FileText className="size-4" />}
+        >
+          Documents
+        </LayoutNavLink>
+        <LayoutNavLink to="/resident/board" icon={<Users className="size-4" />}>
+          Board Members
+        </LayoutNavLink>
         {isAdmin && (
           <>
-            <LayoutNavLink to="/resident/management">
-              ⚙️ Resident Management
+            <LayoutNavLink
+              to="/resident/management"
+              icon={<UserCog className="size-4" />}
+            >
+              Resident Management
             </LayoutNavLink>
-            <LayoutNavLink to="/resident/activity">
-              📊 Activity Log
+            <LayoutNavLink
+              to="/resident/activity"
+              icon={<ChartColumn className="size-4" />}
+            >
+              Activity Log
             </LayoutNavLink>
           </>
         )}
@@ -140,6 +179,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
     if (lastSegment === "management") return "Resident Management";
     if (lastSegment === "activity") return "Activity Log";
     if (lastSegment === "budget") return "Budget";
+    if (lastSegment === "preferences") return "My Preferences";
     return "Resident Info";
   }, [pathSegments]);
 
@@ -151,13 +191,6 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
         },
       },
     });
-  };
-
-  const handleDesktopSignOut = async () => {
-    const confirmSignout = confirm("Would you like to sign out?");
-    if (confirmSignout) {
-      await handleSignOut();
-    }
   };
 
   const [isOpen, setIsOpen] = useState(false);
@@ -203,12 +236,9 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
         </Button>
       </aside>
       <div
-        className={cn(
-          "relative z-0 md:flex-grow flex flex-col site-bg",
-          {
-            "overflow-hidden": isOpen,
-          },
-        )}
+        className={cn("relative z-0 md:flex-grow flex flex-col site-bg", {
+          "overflow-hidden": isOpen,
+        })}
       >
         <header className="flex flex-col">
           <a
@@ -248,13 +278,38 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
                 {userName && (
                   <span className="hidden md:inline text-foreground md:text-white md:text-shadow-lg/50">
                     Hello,{" "}
-                    <span
-                      className="text-emerald-300 hover:text-emerald-500 hover:underline cursor-pointer"
-                      aria-label="Sign out"
-                      onClick={handleDesktopSignOut}
-                    >
-                      {userName}
-                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        className="text-emerald-300 hover:text-emerald-500 hover:underline cursor-pointer"
+                        aria-label="Open account menu"
+                      >
+                        {userName}
+                      </DropdownMenuTrigger>
+                      {/* sideOffset matches the header's pb-4 so the menu's top edge sits on the header/content border */}
+                      <DropdownMenuContent
+                        align="end"
+                        sideOffset={16}
+                        className="rounded-t-none border-t-0"
+                      >
+                        <DropdownMenuItem
+                          asChild
+                          className="text-base cursor-pointer focus:bg-transparent focus:text-emerald-600"
+                        >
+                          <Link to="/resident/preferences">
+                            <Settings className="size-4 text-current" />
+                            My preferences
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={handleSignOut}
+                          className="text-base cursor-pointer focus:bg-transparent focus:text-emerald-600"
+                        >
+                          <LogOut className="size-4 text-current" />
+                          Sign out
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </span>
                 )}
               </div>
