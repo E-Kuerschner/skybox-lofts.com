@@ -1,16 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import { useFetcher } from "react-router";
+import { useMemo, useState } from "react";
 import { PlusIcon } from "lucide-react";
 import type { Route } from "./+types/index";
 import { isAuthenticated } from "~/util/authHelpers.server";
 import { getDatabase } from "~/util/database.server";
 import { getGoogleMapsApiKey } from "~/util/googleMaps.server";
 import { runAdminAction } from "~/util/crud/adminAction.server";
-import { isActionResult } from "~/util/crud/actionResult";
 import { fuzzyMatch } from "~/util/fuzzySearch";
 import { cn } from "~/util/ui/utils";
 import { AdminOnly } from "~/components/AdminOnly";
-import { ActionStatusBanner } from "~/components/ActionStatusBanner";
+import { useStatusBanner } from "~/components/crud/ActionStatusBanner";
+import { ConfirmActionDialog } from "~/components/crud/ConfirmActionDialog";
 import { NoContent } from "~/components/NoContent";
 import { SearchInput } from "~/components/SearchInput";
 import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
@@ -73,8 +72,7 @@ function matchesSearch(contractor: ContractorListing, query: string): boolean {
 
 export default function Contractors({ loaderData }: Route.ComponentProps) {
   const { contractors, services, googleMapsApiKey } = loaderData;
-  const fetcher = useFetcher();
-  const isSaving = fetcher.state !== "idle";
+  const { banner, showSuccess } = useStatusBanner();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
@@ -87,21 +85,6 @@ export default function Contractors({ loaderData }: Route.ComponentProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [contractorToDelete, setContractorToDelete] =
     useState<ContractorListing | null>(null);
-  // Keeps a stale banner from a previous save out of a freshly opened form
-  const [hasSubmittedFromForm, setHasSubmittedFromForm] = useState(false);
-
-  useEffect(() => {
-    if (fetcher.state === "submitting") setHasSubmittedFromForm(true);
-  }, [fetcher.state]);
-
-  // Close whichever overlay was submitting once the save succeeds
-  useEffect(() => {
-    if (fetcher.state !== "idle") return;
-    if (!isActionResult(fetcher.data) || !fetcher.data.success) return;
-    setIsFormOpen(false);
-    setContractorToDelete(null);
-    setDetailContractor(null);
-  }, [fetcher.state, fetcher.data]);
 
   const servicesWithCounts: ServiceWithCount[] = useMemo(() => {
     return services
@@ -167,13 +150,11 @@ export default function Contractors({ loaderData }: Route.ComponentProps) {
 
   const openAddForm = () => {
     setFormContractor(null);
-    setHasSubmittedFromForm(false);
     setIsFormOpen(true);
   };
 
   const openEditForm = (contractor: ContractorListing) => {
     setFormContractor(contractor);
-    setHasSubmittedFromForm(false);
     setDetailContractor(null);
     setIsFormOpen(true);
   };
@@ -182,7 +163,7 @@ export default function Contractors({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      {!isFormOpen && <ActionStatusBanner result={fetcher.data} />}
+      {banner}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="rounded-xl border-1 bg-white px-4 pb-8 pt-4 shadow-md">
@@ -314,52 +295,30 @@ export default function Contractors({ loaderData }: Route.ComponentProps) {
         onOpenChange={setIsFormOpen}
         contractor={formContractor}
         services={services}
-        fetcher={fetcher}
-        result={hasSubmittedFromForm ? fetcher.data : undefined}
+        onSuccess={showSuccess}
       />
 
-      <ResponsiveOverlay
-        open={contractorToDelete !== null}
-        onOpenChange={(open) => !open && setContractorToDelete(null)}
-        title="Remove this contractor?"
-      >
-        {contractorToDelete && (
-          <fetcher.Form method="post" className="space-y-4 pt-2">
-            <input type="hidden" name="intent" value="delete" />
-            <input
-              type="hidden"
-              name="contractorId"
-              value={contractorToDelete.id}
-            />
-            <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">
-                {contractorToDelete.businessName}
-              </span>{" "}
-              will no longer show up for residents, and any photos on the
-              listing will be deleted. This can't be undone.
-            </p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => setContractorToDelete(null)}
-                disabled={isSaving}
-              >
-                Keep it
-              </Button>
-              <Button
-                type="submit"
-                variant="destructive"
-                className="flex-1"
-                disabled={isSaving}
-              >
-                {isSaving ? "Removing..." : "Remove contractor"}
-              </Button>
-            </div>
-          </fetcher.Form>
-        )}
-      </ResponsiveOverlay>
+      {contractorToDelete && (
+        <ConfirmActionDialog
+          open
+          onOpenChange={(open) => !open && setContractorToDelete(null)}
+          title="Remove this contractor?"
+          intent="delete"
+          recordId={contractorToDelete.id}
+          confirmLabel="Remove contractor"
+          pendingLabel="Removing..."
+          cancelLabel="Keep it"
+          destructive
+          onSuccess={showSuccess}
+        >
+          <span className="font-medium text-foreground">
+            {contractorToDelete.businessName}
+          </span>{" "}
+          will no longer show up for residents, and any photos on the listing
+          will be deleted. This can't be undone.
+        </ConfirmActionDialog>
+      )}
+
     </div>
   );
 }
