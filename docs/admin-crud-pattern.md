@@ -1,211 +1,205 @@
-# A single pattern for admin-gated CRUD
+# How admins change things: a shared interaction pattern
 
-**Status:** proposal. The primitives described here exist in the tree and the
-contractors feature is built on them. Nothing else has been migrated yet — the
-follow-up work is listed at the end.
+**Status:** proposal. The contractors feature is built on it. Nothing else has
+been migrated — follow-up work is listed at the end.
 
-## Why this document exists
-
-Three features in the app let an admin create, update or delete something that
-residents can see: **documents**, **board members** and **resident management**.
-All three solved the same problem — "how do we let admins change this without
-letting residents change it" — and all three solved it differently. Contractors
-would have been the fourth. This settles on one answer so it doesn't become the
-fifth.
-
-The scope here is deliberately narrow: **authorization and the interface
-affordances around it**. Layout is not standardized and should not be — see
-[What this pattern does *not* cover](#what-this-pattern-does-not-cover).
+This is about **interaction design**, not architecture. The question it answers
+is: when a page is read by residents and occasionally edited by an admin, how do
+the editing controls appear, behave, and confirm? A short appendix covers the
+server-side helpers, because one of the rules below has a server half.
 
 ## Where we are today
 
+Three features let an admin change something residents can see, and each answers
+the question differently.
+
 | | Documents | Board members | Resident management |
 | --- | --- | --- | --- |
-| Where mutations live | Two top-level resource routes (`/documentUpload`, `/documentDelete`) | The page's own `action`, dispatched on `intent` | The page's own `action`, dispatched on `intent` |
-| Server check | `isAdmin(…, { returnUnauthorized: true })` → throws 403 | Inline `session.user.role !== "admin"` → returns `{ error }` | `isAdmin()` in the **loader** → redirects to `/resident` |
-| What a non-admin sees on refusal | A blank 403 error screen | A friendly banner | Silently bounced off the page |
-| How admin controls appear | Always visible when `isAdmin` | Behind a "Make changes" toggle | The whole page is admin-only, so no gating |
-| Result shape | `{ success, message }` / `{ success, error }` | `{ success, message }` / `{ error }` | `{ success, message }` / `{ error }` |
-| How results are shown | Local state + a `key` counter to restart the auto-dismiss timer | Two `<StatusBanner>`s and an `"success" in actionData` narrowing | Local state + `useEffect` |
+| Getting to the controls | Always visible | Press **"Make changes"** first | Always visible |
+| Create affordance | "Upload Document" button, top right — `hidden md:flex`, so it silently doesn't exist on a phone | n/a | "Invite resident" button |
+| Per-item control | A bare 🗑 icon next to the file's own download link | The row's text turns into a combobox | Inline on the card |
+| Destructive confirm | `window.confirm()` — browser chrome, not the app | An in-app overlay | An in-app overlay |
+| Exiting | n/a | Press **"Done"** | n/a |
 
-### What that costs us
+### What's wrong with each
 
-1. **The same situation produces three different experiences.** A resident who
-   ends up posting to an admin-only endpoint gets a blank 403 on documents, a
-   readable explanation on board members, and a silent redirect on residents.
-   Only one of those is acceptable for an audience we've agreed is
-   non-technical.
-2. **`isAdmin` is re-derived in every loader.** Each page has to remember to
-   return it, and each component has to remember to thread it down. Forget it in
-   the loader and the control disappears for real admins; forget the check in
-   the action and the control works for everyone.
-3. **Two different admin affordances.** Documents shows its controls all the
-   time; board members hides them behind a toggle. An admin has to learn each
-   page separately, and always-visible destructive controls are a mis-tap risk
-   on mobile.
-4. **Three result shapes mean three lots of banner glue.** Every page reinvents
-   "show the message, restart the dismiss timer, narrow the union".
-5. **No rule for where a mutation lives.** Documents put them in top-level
-   resource routes; the others used the page's action. Both work; having both
-   means every new feature re-litigates it.
+**The edit mode (board members).** You named this one and I think the instinct
+is right. Three specific things make it feel off:
+
+1. **"Done" is a lie.** Nothing was batched. Each assignment already saved the
+   moment it was confirmed. The button says "commit your changes" and actually
+   means "hide the controls again" — so the one moment the page feels like it
+   should reassure you, it's describing something that already happened.
+2. **It's a mode**, and modes have to be remembered. You come back to the tab
+   five minutes later and the page looks different from how you left it with no
+   explanation of why.
+3. **It's page-wide state for a per-item intention.** You wanted to change *the
+   Treasurer*. You had to change *the page*. On a three-row table the cost is
+   small; on a card grid the switch is at the top and the card you want is three
+   screens down.
+
+**The bare trash icon (documents).** A destructive, unlabeled control sitting
+directly beside the link a resident taps to download the file. On a phone those
+are a thumb-width apart. `window.confirm()` is the only thing between a mis-tap
+and a deleted building document, and it's a browser dialog that looks nothing
+like the rest of the site — which trains people to dismiss it without reading.
+
+**The invisible upload button (documents).** `hidden md:flex` means an admin on
+a phone gets no button and no explanation. From their side the feature is just
+missing.
+
+**Resident management is fine.** It's an admin-only page, so there are no
+residents to protect and nothing to hide.
 
 ## The pattern
 
-Six rules. The first four are the ones that matter.
+### Rule 1 — No modes. Admin controls are always visible to admins.
 
-### 1. One result shape
+If you can do it, you can see it. No switch to find, no state to remember, no
+extra press before every action.
 
-`app/util/crud/actionResult.ts`
+The objection to this is clutter, and it's a real one — but clutter comes from
+*scattering* controls through the content, not from their existence. Rule 2
+handles that.
 
-```ts
-type ActionResult =
-  | { success: true; message: string }
-  | { success: false; error: string };
-```
+*Narrow exception:* a flow where several changes are genuinely batched and
+committed together (reordering a list, a multi-step form) does need a mode,
+because there really is something to save and to cancel. None of our features
+are that today.
 
-Every create/update/delete returns this. Nothing else. Messages are written for
-residents, not for us: say what happened and what to do next.
+### Rule 2 — An item's controls live in one separated area of that item.
 
-### 2. One server guard: `runAdminAction`
+A card gets a quiet row across its bottom. A table row gets a trailing cell. Not
+interleaved with the content, and never adjacent to something a resident taps on
+purpose.
 
-`app/util/crud/adminAction.server.ts`
+This is what buys back the tidiness the mode was protecting: the read view stays
+readable because the controls are in a predictable gutter, not sprinkled beside
+the things they act on.
 
-```ts
-export async function action({ request, context }: Route.ActionArgs) {
-  return runAdminAction(
-    { request, context },
-    { create: createContractor, update: updateContractor, delete: deleteContractor },
-  );
-}
-```
+`<AdminItemActions>` in `app/components/AdminOnly.tsx` is that area.
 
-It handles the three refusal cases the same way everywhere:
+### Rule 3 — Label controls with words, not icons alone.
 
-- **Not signed in** → 401, caught by the route error boundary. There's no
-  friendly copy for someone with no session; they need to log in.
-- **Signed in, not an admin** → a normal `ActionResult` error the page renders
-  in plain language. This is the case that actually matters, because most people
-  using the site are residents.
-- **Anything unexpected** → logged with the intent name for us, generic apology
-  for them.
+"Edit" and "Remove", not ✏️ and 🗑. Our admins are volunteer board members, not
+people who have absorbed the meaning of a `⋮`. An unlabeled destructive icon is
+the worst case of all — the control that most needs to be understood is the one
+carrying the least information.
 
-Handlers are keyed by the form's `intent` field and receive `{ request, context,
-formData, session, db }`, so a handler is just business logic.
+(I considered a `⋮` overflow menu per item, the convention in Notion/Drive/Linear.
+Rejected for this audience: it hides the actions behind a glyph you have to
+already know, and adds a press to reach a two-item menu.)
 
-### 3. Mutations live in the feature's own route action
+### Rule 4 — One create affordance, in the page header, never hidden by breakpoint.
 
-Dispatched by `intent`. Resource routes are reserved for things that genuinely
-aren't form posts — streaming a file back (`documentDownload`,
-`contractorPhoto`). This keeps a feature's server logic in one place and means
-`useFetcher()` posts to the current route with no `action` prop to keep in sync.
+Labeled with the noun — "Add contractor", "Upload document" — not "Add" or "+".
+If something genuinely can't work on a phone, say so in place of the button
+instead of removing it silently.
 
-### 4. One admin affordance: the edit-mode toggle
+### Rule 5 — Destructive actions always confirm in the app, naming the thing.
 
-`app/components/AdminEditing.tsx` provides `AdminEditingProvider`,
-`AdminEditToggle`, `AdminOnly` and `useIsAdmin()`.
+An in-app overlay (`ResponsiveOverlay` — dialog on desktop, sheet on mobile),
+never `window.confirm()`. Name the item, say what else goes with it, and label
+the buttons with verbs: "Remove contractor" / "Keep it", not "OK" / "Cancel".
 
-```tsx
-<AdminEditingProvider>
-  …
-  <AdminEditToggle />          {/* "Make changes" / "Done" — renders nothing for residents */}
-  <AdminOnly>
-    <Button onClick={openEditForm}>Edit</Button>
-  </AdminOnly>
-</AdminEditingProvider>
-```
+### Rule 6 — Feedback appears in one place, in one style.
 
-Residents always see a clean, read-only page. An admin sees one button; only
-after pressing it do edit and delete controls appear.
+One banner at the top of the page for every outcome. Success dismisses itself;
+errors stay, because an error is still something the person has to act on.
+`<ActionStatusBanner>`.
 
-Why this rather than always-visible controls:
+### Rule 7 — A resident who trips an admin action gets a sentence, not an error screen.
 
-- On every shared page the majority of viewers are residents, so read-only is
-  the right default state.
-- It puts a deliberate step in front of destructive controls, which matters most
-  on a phone where an "Edit" and a "Remove" button sit a thumb-width apart.
-- It's one switch to learn, in the same place, on every page — which is exactly
-  what lets pages look completely different from each other without the admin
-  having to relearn anything. Board members already works this way; this makes
-  it the rule rather than one page's choice.
-
-**The exception:** a page that is *entirely* admin-only (resident management,
-activity log) has no residents to protect and needs no toggle. Gate those in the
-loader with `isAdmin()` and let every control be visible. The toggle is for
-**mixed-audience pages** only.
-
-### 5. One source of client-side admin truth
-
-`useIsAdmin()` reads `isAdmin` from the resident layout's loader data. Page
-loaders stop returning it, and components stop threading it through props. There
-is one place to get it wrong instead of one per feature.
-
-### 6. One feedback component
-
-`<ActionStatusBanner result={fetcher.data} />` renders any `ActionResult`.
-Success auto-dismisses; errors stay, because an error is still something the
-person needs to act on.
+This is the rule with a server half. Today the same situation produces a blank
+403 on documents, a readable banner on board members, and a silent bounce off
+the page on residents. It should always be the readable banner. Being signed out
+is different and should send you to sign in.
 
 ## What this pattern does *not* cover
 
-Worth stating plainly, because the point is that features should be free to look
-different:
+Deliberately, because features should look different from each other:
 
-- **Layout and visual design.** Cards, tables, accordions, grids, maps — all
-  fair game. Contractors is a filterable card grid with a map; documents is an
-  accordion of file lists. They share no design and shouldn't.
-- **How editing is presented.** Inline editing, a dialog, a drawer, a separate
-  page — whatever suits the data. Only the *entry point* (the toggle) is fixed.
-- **Validation rules, copy, or data modelling.** Per feature.
-- **Whether a feature needs an edit mode at all.** Admin-only pages don't.
+- **Layout and visual design.** Cards, tables, accordions, grids, maps. Contractors
+  is a filterable card grid with a map; documents is an accordion of file lists.
+  They share no design and shouldn't.
+- **How editing itself is presented** — inline, dialog, drawer, separate page.
+  Only the *entry point* is standardized.
+- **Validation, copy, data modelling.** Per feature.
 
-## What contractors already does
+## What contractors does
 
-Built on all six rules, so it needs no follow-up refactor:
+- "Add contractor" sits in the page header, always visible to admins, labeled.
+- Every card carries an `<AdminItemActions>` row with **Edit** and **Remove**,
+  always visible to admins, separated by a divider from the card's content and
+  from the card's own tap target.
+- Removing opens an overlay naming the business and warning that its photos go
+  too.
+- One `<ActionStatusBanner>` at the top of the page.
+- A non-admin who posts to the action gets a sentence explaining it's
+  admin-only; a signed-out request gets a 401.
 
-- `app/routes/Contractors/index.tsx` — loader returns no `isAdmin`; action is a
-  three-line `runAdminAction` dispatch.
-- `app/routes/Contractors/contractors.server.ts` — handlers return
-  `ActionResult` and nothing else.
-- The page is wrapped in `AdminEditingProvider`; "Add contractor" and the per-card
-  Edit/Remove buttons sit inside `<AdminOnly>`.
-- Feedback goes through `<ActionStatusBanner>`.
-- `/resident/contractors/photo` is a resource route because it streams bytes,
-  not because it mutates anything.
+There is no edit mode. An earlier draft of this document proposed one and
+contractors was built on it; both were changed after the mode was (rightly)
+called awkward.
 
 ## Follow-up work
 
-Not done here, roughly in order of value-to-risk. Each is independently
-shippable.
+Each is independently shippable.
 
-1. **Board members** — closest to the pattern already. Replace the inline role
-   check with `runAdminAction`, normalize the two result shapes to
-   `ActionResult`, swap the hand-rolled edit toggle for `AdminEditToggle`, and
-   drop `isAdmin` from the loader in favour of `useIsAdmin()`. Low risk.
-2. **Documents** — the bigger change. Move `/documentUpload` and
-   `/documentDelete` into an `intent`-dispatched action on
-   `/resident/documents`; keep `/resident/documents/download` as a resource
-   route. Put the upload button and the per-file delete buttons behind
-   `AdminOnly`. While in there, decide what to do about the upload button being
-   `hidden md:flex` — either make uploading work on mobile or tell the admin why
-   it's unavailable rather than hiding it silently.
-3. **Resident management** — keep the loader-level `isAdmin()` gate (it's an
-   admin-only page, the exception above). Adopt `ActionResult` and
-   `ActionStatusBanner` so the feedback code matches everywhere else.
-4. **Remove `isAdmin` from page loaders** once `useIsAdmin()` is in use, so
-   there's only one place it comes from.
-5. **Consider logging activity inside `runAdminAction`.** Right now each handler
-   inserts its own `activityLogs` row and it's easy to forget one. The wrapper
-   knows the intent, the session and the outcome; it could log automatically if
-   handlers returned the entity type and id. Worth doing once a fourth feature
-   needs it — the `EntityType` union in `activityLogger.server.ts` is already
-   growing by hand.
+1. **Documents** — the most user-visible win. Replace the bare 🗑 with a labeled
+   "Remove" in a trailing control group, swap `window.confirm()` for the in-app
+   overlay, and either make mobile upload work or explain its absence instead of
+   `hidden md:flex`.
+2. **Board members** — drop "Make changes"/"Done". Give each row a trailing
+   "Change" control that opens the existing assignment overlay directly. The
+   combobox moves into the overlay rather than replacing the row's text, so the
+   table stays readable at all times.
+3. **Resident management** — no interaction changes needed; align its feedback on
+   `<ActionStatusBanner>` for consistency.
+4. **Normalize the refusal path** (Rule 7) across all three.
 
 ## Open questions
 
-- Should a non-admin see admin controls **disabled with an explanation**, rather
-  than hidden? Hidden is cleaner and is what this proposes, but disabled makes
-  it discoverable that changes are possible at all.
-- Should `runAdminAction` support non-admin intents on the same route (e.g. a
-  resident-submitted suggestion), or should those get their own action?
-- Do we want optimistic UI on any of these? None of them have it today and the
-  operations are fast enough that it may not be worth the complexity.
+- Should a resident see admin controls **disabled with an explanation** rather
+  than hidden? Hidden is what this proposes, but disabled makes it discoverable
+  that changes are possible and who to ask.
+- Board members' combobox-in-the-row is the one place where read and edit
+  representations genuinely differ. Moving it into an overlay is my
+  recommendation, but it's the weakest fit for these rules and worth a look
+  together.
+
+---
+
+## Appendix: the server-side helpers
+
+Rule 7 needs consistent server behaviour, so there are two small helpers. They
+are a **convenience, not a mandate** — the rule is the behaviour, not the helper.
+
+**`ActionResult`** (`app/util/crud/actionResult.ts`) — the shape a mutation
+returns: `{ success: true, message } | { success: false, error }`. This exists so
+`<ActionStatusBanner>` can render any outcome without per-page glue.
+
+**`runAdminAction`** (`app/util/crud/adminAction.server.ts`) — about thirty lines
+that do exactly four things: check the session, map "signed in but not an admin"
+to a readable `ActionResult`, look up a handler by the form's `intent`, and
+catch-and-log anything unexpected.
+
+**It does not centralize business logic.** Contractors' handlers are ordinary
+per-resource functions — `createContractor`, `updateContractor`,
+`deleteContractor` in `contractors.server.ts` — each with its own validation,
+service resolution, R2 handling and activity logging. The wrapper never sees any
+of it; it hands the handler `{ request, context, formData, session, db }` and
+returns whatever comes back. Bespoke logic per resource is the expected case.
+
+**When not to use it.** Write the action directly and call `isAdmin()` yourself
+if you need to:
+
+- return something that isn't an `ActionResult` (a redirect, a file, a specific
+  status code);
+- serve both admin and resident intents from one route, since the wrapper
+  rejects the whole request for non-admins;
+- handle the request body yourself — it calls `request.formData()` eagerly, so
+  streaming or manual parsing doesn't fit.
+
+In those cases keep Rule 7's *behaviour* (401 signed out, readable message for a
+non-admin, logged generic message for a crash) and skip the helper.

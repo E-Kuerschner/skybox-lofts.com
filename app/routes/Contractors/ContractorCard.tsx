@@ -1,6 +1,6 @@
 import { ImageIcon, MailIcon, MapPinIcon, PhoneIcon } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { AdminOnly } from "~/components/AdminEditing";
+import { AdminItemActions } from "~/components/AdminOnly";
 import { contractorPhotoUrl } from "~/util/contractorPhotoUrl";
 import { cn } from "~/util/ui/utils";
 import { ServiceBadges } from "./ServiceFilterChips";
@@ -92,26 +92,24 @@ export function ContractorCard({
           )}
         </div>
 
-        <AdminOnly>
-          <div className="flex gap-2 border-t pt-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => onEdit(contractor)}
-            >
-              Edit
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => onDelete(contractor)}
-            >
-              Remove
-            </Button>
-          </div>
-        </AdminOnly>
+        <AdminItemActions>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => onEdit(contractor)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => onDelete(contractor)}
+          >
+            Remove
+          </Button>
+        </AdminItemActions>
       </div>
     </article>
   );

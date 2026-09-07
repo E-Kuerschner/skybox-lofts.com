@@ -2,8 +2,10 @@
 
 A directory of contractors the building has vetted, at `/resident/contractors`.
 Every signed-in resident can browse it; only admins can add, edit or remove
-listings. It follows the pattern in
-[admin-crud-pattern.md](./admin-crud-pattern.md).
+listings. The admin controls follow the interaction pattern in
+[admin-crud-pattern.md](./admin-crud-pattern.md): no edit mode, "Add contractor"
+in the page header, and a labeled Edit/Remove row on each card — all visible to
+admins at all times, all hidden from residents.
 
 ## What a listing holds
 
