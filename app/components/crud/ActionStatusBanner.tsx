@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { StatusBanner } from "~/components/StatusBanner";
 import { isActionResult } from "~/util/crud/actionResult";
 
@@ -40,4 +40,33 @@ export function ActionStatusBanner({
       className={className}
     />
   );
+}
+
+/**
+ * A page-level place to announce the outcome of a change.
+ *
+ * The CRUD dialogs close themselves on success, so the confirmation has to land
+ * somewhere that outlives them. Errors stay inside the dialog, next to the form
+ * that caused them; only successes bubble up here.
+ */
+export function useStatusBanner() {
+  const [message, setMessage] = useState<string | null>(null);
+  // A new key remounts the banner so its auto-dismiss timer starts over
+  const [renderKey, setRenderKey] = useState(0);
+
+  const showSuccess = useCallback((text: string) => {
+    setMessage(text);
+    setRenderKey((key) => key + 1);
+  }, []);
+
+  const banner = message ? (
+    <StatusBanner
+      key={renderKey}
+      variant="success"
+      message={message}
+      autoDismiss={4000}
+    />
+  ) : null;
+
+  return { banner, showSuccess };
 }

@@ -418,7 +418,7 @@ export async function updateContractor({
   context,
   session,
 }: AdminActionArgs): Promise<ActionResult> {
-  const contractorId = Number(formData.get("contractorId"));
+  const contractorId = Number(formData.get("recordId"));
   if (!Number.isInteger(contractorId) || contractorId <= 0) {
     return actionError("We couldn't tell which contractor to update.");
   }
@@ -504,7 +504,7 @@ export async function deleteContractor({
   context,
   session,
 }: AdminActionArgs): Promise<ActionResult> {
-  const contractorId = Number(formData.get("contractorId"));
+  const contractorId = Number(formData.get("recordId"));
   if (!Number.isInteger(contractorId) || contractorId <= 0) {
     return actionError("We couldn't tell which contractor to remove.");
   }

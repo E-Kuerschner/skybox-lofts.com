@@ -96,19 +96,31 @@ Labeled with the noun — "Add contractor", "Upload document" — not "Add" or "
 If something genuinely can't work on a phone, say so in place of the button
 instead of removing it silently.
 
-### Rule 5 — Destructive actions always confirm in the app, naming the thing.
+### Rule 5 — Creating and editing always happen in a modal.
 
-An in-app overlay (`ResponsiveOverlay` — dialog on desktop, sheet on mobile),
-never `window.confirm()`. Name the item, say what else goes with it, and label
-the buttons with verbs: "Remove contractor" / "Keep it", not "OK" / "Cancel".
+Never an inline row that turns into inputs, never a separate page. One place to
+look, one shape to learn, and the list stays on screen behind it so you keep
+your bearings.
 
-### Rule 6 — Feedback appears in one place, in one style.
+This is the rule with the most leverage, because we already have several of
+these forms and will keep adding them. `<CrudFormDialog>` exists so a feature
+only writes the part that is actually its own — the fields. See
+[the appendix](#appendix-the-shared-components).
+
+### Rule 6 — Destructive actions always confirm in the app, naming the thing.
+
+An in-app overlay, never `window.confirm()` — browser chrome the site has no
+control over, which people learn to dismiss without reading. Name the item, say
+what else goes with it, and label the buttons with verbs: "Remove contractor" /
+"Keep it", not "OK" / "Cancel". `<ConfirmActionDialog>` does this.
+
+### Rule 7 — Feedback appears in one place, in one style.
 
 One banner at the top of the page for every outcome. Success dismisses itself;
 errors stay, because an error is still something the person has to act on.
 `<ActionStatusBanner>`.
 
-### Rule 7 — A resident who trips an admin action gets a sentence, not an error screen.
+### Rule 8 — A resident who trips an admin action gets a sentence, not an error screen.
 
 This is the rule with a server half. Today the same situation produces a blank
 403 on documents, a readable banner on board members, and a silent bounce off
@@ -132,8 +144,8 @@ Deliberately, because features should look different from each other:
 - Every card carries an `<AdminItemActions>` row with **Edit** and **Remove**,
   always visible to admins, separated by a divider from the card's content and
   from the card's own tap target.
-- Removing opens an overlay naming the business and warning that its photos go
-  too.
+- Adding and editing both happen in a `<CrudFormDialog>`; removing opens a
+  `<ConfirmActionDialog>` naming the business and warning that its photos go too.
 - One `<ActionStatusBanner>` at the top of the page.
 - A non-admin who posts to the action gets a sentence explaining it's
   admin-only; a signed-out request gets a 401.
@@ -147,22 +159,25 @@ called awkward.
 Each is independently shippable.
 
 1. **Documents** — the most user-visible win. Replace the bare 🗑 with a labeled
-   "Remove" in a trailing control group, swap `window.confirm()` for the in-app
-   overlay, and either make mobile upload work or explain its absence instead of
-   `hidden md:flex`.
+   "Remove" in a trailing control group, swap `window.confirm()` for
+   `<ConfirmActionDialog>`, move the upload form into a `<CrudFormDialog>`, and
+   either make mobile upload work or explain its absence instead of
+   `hidden md:flex`. Its two resource routes would fold into an
+   `intent`-dispatched action on `/resident/documents`.
 2. **Board members** — drop "Make changes"/"Done". Give each row a trailing
-   "Change" control that opens the existing assignment overlay directly. The
-   combobox moves into the overlay rather than replacing the row's text, so the
-   table stays readable at all times.
+   "Change" control that opens a `<CrudFormDialog>` directly. The combobox moves
+   into the modal rather than replacing the row's text, so the table stays
+   readable at all times.
 3. **Resident management** — no interaction changes needed; align its feedback on
    `<ActionStatusBanner>` for consistency.
-4. **Normalize the refusal path** (Rule 7) across all three.
+4. **Normalize the refusal path** (Rule 8) across all three.
 
 ## Open questions
 
-- Should a resident see admin controls **disabled with an explanation** rather
-  than hidden? Hidden is what this proposes, but disabled makes it discoverable
-  that changes are possible and who to ask.
+**Decided:** residents do not see admin controls in any form — not disabled,
+not greyed out. They are not rendered. A control you cannot use is noise on a
+page you are trying to read.
+
 - Board members' combobox-in-the-row is the one place where read and edit
   representations genuinely differ. Moving it into an overlay is my
   recommendation, but it's the weakest fit for these rules and worth a look
@@ -170,9 +185,68 @@ Each is independently shippable.
 
 ---
 
+## Appendix: the shared components
+
+Everything here lives in `app/components/crud/`. The point is that a new CRUD
+feature writes its *fields* and its *server handlers*, and nothing else.
+
+### `<CrudFormDialog>` — the create/edit modal
+
+```tsx
+<CrudFormDialog
+  open={open}
+  onOpenChange={setOpen}
+  mode={record ? "edit" : "create"}
+  entityName="contractor"
+  recordId={record?.id}
+  hasFileUploads
+  onSuccess={showSuccess}
+  submitDisabled={!isComplete}
+>
+  {/* just the fields */}
+</CrudFormDialog>
+```
+
+It owns everything that was being rewritten per feature:
+
+| It handles | So a feature never writes |
+| --- | --- |
+| Responsive shell (dialog on desktop, sheet on mobile) | `ResponsiveOverlay` wiring, titles, descriptions |
+| The `intent` and `recordId` hidden fields | Per-feature field names |
+| Its own `useFetcher` | Threading a fetcher down and working out which overlay a result belongs to |
+| Errors inside the form, successes handed up via `onSuccess` as it closes | Close-on-success effects |
+| Ignoring a result from before it opened | The "stale banner on reopen" bug, per feature |
+| Disabling the form while saving, via a `fieldset` | `disabled={isSubmitting}` on **every** input |
+| Remounting on a different `recordId` | Resetting uncontrolled fields by hand |
+| Cancel / submit footer with pending copy | Button rows and "Saving…" labels |
+
+Two details worth knowing. **Disabling is done with a wrapping `<fieldset>`**,
+which disables every control inside it for free — that alone removed a
+`disabled` prop from a dozen inputs in the contractor form. And **the form is
+keyed on `recordId`**, so opening it on a different record remounts it and the
+browser resets `defaultValue` fields; only state a feature holds in React needs
+resetting by hand.
+
+### `<ConfirmActionDialog>` — the yes/no sibling
+
+Same lifecycle, for deletes. Exists so nothing reaches for `window.confirm()`.
+
+### `useStatusBanner()`
+
+The dialogs close themselves on success, so the confirmation needs somewhere to
+land. `const { banner, showSuccess } = useStatusBanner()` — render `{banner}` at
+the top of the page and pass `showSuccess` as `onSuccess`.
+
+### The form contract
+
+Every CRUD form posts `intent` (`create` | `update` | `delete`) and, when
+editing or deleting, `recordId`. Handlers read those two names, not
+`contractorId` or `documentKey`, so a handler written for one feature reads the
+same as the next.
+
 ## Appendix: the server-side helpers
 
-Rule 7 needs consistent server behaviour, so there are two small helpers. They
+Rule 8 needs consistent server behaviour, so there are two small helpers. They
 are a **convenience, not a mandate** — the rule is the behaviour, not the helper.
 
 **`ActionResult`** (`app/util/crud/actionResult.ts`) — the shape a mutation
@@ -201,5 +275,5 @@ if you need to:
 - handle the request body yourself — it calls `request.formData()` eagerly, so
   streaming or manual parsing doesn't fit.
 
-In those cases keep Rule 7's *behaviour* (401 signed out, readable message for a
+In those cases keep Rule 8's *behaviour* (401 signed out, readable message for a
 non-admin, logged generic message for a crash) and skip the helper.
