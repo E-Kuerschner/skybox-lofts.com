@@ -15,9 +15,10 @@ export function makeTestContext(): AppLoadContext {
         CLOUDFLARE_DATABASE_ID: "test-db-id",
         ENVIRONMENT: "test",
         // These bindings are never accessed in tests — the DB mock intercepts
-        // getDatabase() before APP is used, and DOCUMENTS/ASSETS aren't touched
-        // by the login flow.
+        // getDatabase() before APP is used, and the R2/ASSETS bindings aren't
+        // touched by the login flow.
         DOCUMENTS: {} as R2Bucket,
+        CONTRACTOR_PHOTOS: {} as R2Bucket,
         APP: {} as D1Database,
         ASSETS: {} as Fetcher,
       } satisfies Env,

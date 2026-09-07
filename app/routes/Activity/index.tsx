@@ -137,6 +137,8 @@ function formatEntityType(entityType: string): string {
       return "Document";
     case "board_member":
       return "Board Member";
+    case "contractor":
+      return "Contractor";
     default:
       return entityType;
   }
@@ -170,6 +172,8 @@ function formatDetails(
         }
         const assignedName = data.assignedUserName || "Unknown";
         return `${assignedName} - ${position}`;
+      case "contractor":
+        return data.contractorName || "Unknown";
       default:
         return "-";
     }
@@ -220,8 +224,8 @@ export default function Activity({ loaderData }: Route.ComponentProps) {
       <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
         <p className="mb-8 text-muted-foreground">
           View all activity performed by admins on the platform. This includes
-          creating, updating, and deleting residents, documents, and board
-          members.
+          creating, updating, and deleting residents, documents, board
+          members, and contractors.
         </p>
 
         {/* Filters */}
@@ -248,6 +252,7 @@ export default function Activity({ loaderData }: Route.ComponentProps) {
               <SelectItem value="resident">Resident</SelectItem>
               <SelectItem value="document">Document</SelectItem>
               <SelectItem value="board_member">Board Member</SelectItem>
+              <SelectItem value="contractor">Contractor</SelectItem>
             </SelectContent>
           </Select>
           <Select value={actionFilter} onValueChange={setActionFilter}>

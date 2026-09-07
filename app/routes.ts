@@ -21,6 +21,10 @@ export default [
         index("routes/Documents/index.tsx"),
         route("download", "routes/documentDownload.ts"),
       ]),
+      ...prefix("contractors", [
+        index("routes/Contractors/index.tsx"),
+        route("photo", "routes/contractorPhoto.ts"),
+      ]),
       route("management", "routes/ResidentManagement/index.tsx"),
       route("activity", "routes/Activity/index.tsx"),
     ]),
