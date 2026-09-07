@@ -9,11 +9,7 @@ import { runAdminAction } from "~/util/crud/adminAction.server";
 import { isActionResult } from "~/util/crud/actionResult";
 import { fuzzyMatch } from "~/util/fuzzySearch";
 import { cn } from "~/util/ui/utils";
-import {
-  AdminEditingProvider,
-  AdminEditToggle,
-  AdminOnly,
-} from "~/components/AdminEditing";
+import { AdminOnly } from "~/components/AdminOnly";
 import { ActionStatusBanner } from "~/components/ActionStatusBanner";
 import { NoContent } from "~/components/NoContent";
 import { SearchInput } from "~/components/SearchInput";
@@ -75,11 +71,8 @@ function matchesSearch(contractor: ContractorListing, query: string): boolean {
   );
 }
 
-function ContractorsPage({
-  contractors,
-  services,
-  googleMapsApiKey,
-}: Route.ComponentProps["loaderData"]) {
+export default function Contractors({ loaderData }: Route.ComponentProps) {
+  const { contractors, services, googleMapsApiKey } = loaderData;
   const fetcher = useFetcher();
   const isSaving = fetcher.state !== "idle";
 
@@ -200,15 +193,12 @@ function ContractorsPage({
               touch with them directly — the building doesn't arrange or pay for
               the work.
             </p>
-            <div className="flex shrink-0 flex-col gap-2 sm:flex-row md:items-start">
-              <AdminEditToggle />
-              <AdminOnly>
-                <Button variant="cta" onClick={openAddForm}>
-                  <PlusIcon className="mr-2 size-4" />
-                  Add contractor
-                </Button>
-              </AdminOnly>
-            </div>
+            <AdminOnly>
+              <Button variant="cta" className="shrink-0" onClick={openAddForm}>
+                <PlusIcon className="mr-2 size-4" />
+                Add contractor
+              </Button>
+            </AdminOnly>
           </div>
 
           {hasAnyContractors ? (
@@ -400,13 +390,5 @@ function ContractorGrid({
         />
       ))}
     </div>
-  );
-}
-
-export default function Contractors({ loaderData }: Route.ComponentProps) {
-  return (
-    <AdminEditingProvider>
-      <ContractorsPage {...loaderData} />
-    </AdminEditingProvider>
   );
 }
