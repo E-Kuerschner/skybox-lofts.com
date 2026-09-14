@@ -140,13 +140,18 @@ Deliberately, because features should look different from each other:
 
 ## What contractors does
 
-- "Add contractor" sits in the page header, always visible to admins, labeled.
+- The page has two sections - in-unit contractors and building service
+  providers - and each carries its own labeled "Add" control at the top of that
+  section, always visible to admins. This is Rule 4 applied per section rather
+  than per page: a listing belongs to the section you added it from, so one
+  page-level button would have to ask which kind you meant.
 - Every card carries an `<AdminItemActions>` row with **Edit** and **Remove**,
   always visible to admins, separated by a divider from the card's content and
   from the card's own tap target.
 - Adding and editing both happen in a `<CrudFormDialog>`; removing opens a
   `<ConfirmActionDialog>` naming the business and warning that its photos go too.
-- One `<ActionStatusBanner>` at the top of the page.
+- One page-level confirmation via `useStatusBanner()`, floating over the page so
+  a save never shifts the list underneath it.
 - A non-admin who posts to the action gets a sentence explaining it's
   admin-only; a signed-out request gets a 401.
 
@@ -234,8 +239,10 @@ Same lifecycle, for deletes. Exists so nothing reaches for `window.confirm()`.
 ### `useStatusBanner()`
 
 The dialogs close themselves on success, so the confirmation needs somewhere to
-land. `const { banner, showSuccess } = useStatusBanner()` — render `{banner}` at
-the top of the page and pass `showSuccess` as `onSuccess`.
+land. `const { banner, showSuccess } = useStatusBanner()` — render `{banner}`
+anywhere in the page and pass `showSuccess` as `onSuccess`. It positions itself
+as a floating toast, so it takes up no layout space and appearing never pushes
+the list you just edited down the page.
 
 ### The form contract
 

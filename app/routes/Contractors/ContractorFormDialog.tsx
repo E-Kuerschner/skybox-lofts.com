@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Trash2Icon } from "lucide-react";
+import { CheckboxGroup } from "~/components/CheckboxGroup";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
@@ -14,6 +15,7 @@ export function ContractorFormDialog({
   open,
   onOpenChange,
   contractor,
+  defaultBuildingService = false,
   services,
   onSuccess,
 }: {
@@ -21,6 +23,8 @@ export function ContractorFormDialog({
   onOpenChange: (open: boolean) => void;
   /** The listing being edited, or null when adding a new one. */
   contractor: ContractorListing | null;
+  /** How a brand new listing starts out, set by which "add" button was used. */
+  defaultBuildingService?: boolean;
   services: ContractorService[];
   onSuccess: (message: string) => void;
 }) {
@@ -30,6 +34,8 @@ export function ContractorFormDialog({
   const [newServices, setNewServices] = useState("");
   const [photoIdsToRemove, setPhotoIdsToRemove] = useState<number[]>([]);
   const [newPhotoCount, setNewPhotoCount] = useState(0);
+  const [isUnitContractor, setIsUnitContractor] = useState(true);
+  const [isBuildingService, setIsBuildingService] = useState(false);
 
   // The dialog resets uncontrolled fields on its own; these are the few bits of
   // this form that React holds rather than the DOM.
@@ -39,7 +45,11 @@ export function ContractorFormDialog({
     setNewServices("");
     setPhotoIdsToRemove([]);
     setNewPhotoCount(0);
-  }, [open, contractor]);
+    // A new listing starts out as whatever the section its "add" button lives
+    // in holds; an existing one keeps the sections it's already in.
+    setIsUnitContractor(contractor?.isUnitContractor ?? !defaultBuildingService);
+    setIsBuildingService(contractor?.isBuildingService ?? defaultBuildingService);
+  }, [open, contractor, defaultBuildingService]);
 
   const remainingPhotoSlots = useMemo(() => {
     const kept = (contractor?.photos.length ?? 0) - photoIdsToRemove.length;
@@ -71,8 +81,10 @@ export function ContractorFormDialog({
       recordId={contractor?.id}
       hasFileUploads
       onSuccess={onSuccess}
+      contentClassName="lg:min-w-[40rem]"
       submitDisabled={
-        selectedServiceIds.length === 0 && newServices.trim() === ""
+        (selectedServiceIds.length === 0 && newServices.trim() === "") ||
+        (!isUnitContractor && !isBuildingService)
       }
       description={
         isEditing
@@ -80,6 +92,28 @@ export function ContractorFormDialog({
           : "Add a contractor the building has vetted. Residents will be able to find them by the services they offer."
       }
     >
+      <CheckboxGroup
+        legend="Show this business under"
+        options={[
+          {
+            name: "isUnitContractor",
+            label: "In-unit work & services",
+            description:
+              "Work an owner arranges for themselves, on their unit/property.",
+            checked: isUnitContractor,
+            onChange: setIsUnitContractor,
+          },
+          {
+            name: "isBuildingService",
+            label: "Building service providers",
+            description:
+              "Works on the building itself (elevator, snow removal), which the board and property manager handle.",
+            checked: isBuildingService,
+            onChange: setIsBuildingService,
+          },
+        ]}
+      />
+
       <div className="space-y-2">
         <Label htmlFor="businessName">
           Business or owner name <span className="text-destructive">*</span>
@@ -131,6 +165,18 @@ export function ContractorFormDialog({
           />
         </div>
       </fieldset>
+
+      <div className="space-y-2">
+        <Label htmlFor="website">Website</Label>
+        <Input
+          id="website"
+          name="website"
+          type="url"
+          className="bg-white"
+          defaultValue={contractor?.website ?? ""}
+          placeholder="https://example.com"
+        />
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="address">Address</Label>

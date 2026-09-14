@@ -31,11 +31,12 @@ CREATE TABLE `contractors` (
 	`business_name` text NOT NULL,
 	`contact_name` text,
 	`address` text,
-	`latitude` real,
-	`longitude` real,
 	`phone` text,
 	`email` text,
+	`website` text,
 	`notes` text,
+	`is_unit_contractor` integer DEFAULT true NOT NULL,
+	`is_building_service` integer DEFAULT false NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL
 );

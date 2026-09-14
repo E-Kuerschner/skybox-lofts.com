@@ -82,11 +82,12 @@ export async function fetchContractorDirectory(db: Database): Promise<{
     businessName: contractor.businessName,
     contactName: contractor.contactName,
     address: contractor.address,
-    latitude: contractor.latitude,
-    longitude: contractor.longitude,
     phone: contractor.phone,
     email: contractor.email,
+    website: contractor.website,
     notes: contractor.notes,
+    isUnitContractor: contractor.isUnitContractor,
+    isBuildingService: contractor.isBuildingService,
     services: (servicesByContractor.get(contractor.id) ?? []).sort((a, b) =>
       a.name.localeCompare(b.name),
     ),
@@ -124,7 +125,10 @@ type ContractorInput = {
   address: string | null;
   phone: string | null;
   email: string | null;
+  website: string | null;
   notes: string | null;
+  isUnitContractor: boolean;
+  isBuildingService: boolean;
 };
 
 function parseContractorFields(
@@ -133,9 +137,19 @@ function parseContractorFields(
   const businessName = readTrimmed(formData, "businessName");
   const phone = readTrimmed(formData, "phone");
   const email = readTrimmed(formData, "email");
+  const isUnitContractor = formData.get("isUnitContractor") === "on";
+  const isBuildingService = formData.get("isBuildingService") === "on";
 
   if (!businessName) {
     return { ok: false, error: "Please enter the business or owner name." };
+  }
+
+  if (!isUnitContractor && !isBuildingService) {
+    return {
+      ok: false,
+      error:
+        "Please pick at least one section for this listing, otherwise it won't show up anywhere on the page.",
+    };
   }
 
   if (!phone && !email) {
@@ -158,9 +172,25 @@ function parseContractorFields(
       address: readTrimmed(formData, "address"),
       phone,
       email,
+      website: readTrimmed(formData, "website"),
       notes: readTrimmed(formData, "notes"),
+      isUnitContractor,
+      isBuildingService,
     },
   };
+}
+
+/** Names the section(s) a listing landed in, for the confirmation message. */
+function describeSections(listing: {
+  isUnitContractor: boolean;
+  isBuildingService: boolean;
+}): string {
+  if (listing.isUnitContractor && listing.isBuildingService) {
+    return "contractor list and the building service providers";
+  }
+  return listing.isBuildingService
+    ? "building service providers"
+    : "contractor list";
 }
 
 /**
@@ -408,7 +438,7 @@ export async function createContractor({
   return actionSuccess(
     photos.warning
       ? `${contractor.businessName} was added. ${photos.warning}`
-      : `${contractor.businessName} was added to the contractor list.`,
+      : `${contractor.businessName} was added to the ${describeSections(contractor)}.`,
   );
 }
 
@@ -441,15 +471,10 @@ export async function updateContractor({
   const services = await resolveServiceIds(formData, db);
   if (!services.ok) return actionError(services.error);
 
-  // Clear the saved map coordinates when the address changes so the Google Maps
-  // integration re-geocodes rather than pinning the old location.
-  const addressChanged = fields.value.address !== existing.address;
-
   await db
     .update(schema.contractors)
     .set({
       ...fields.value,
-      ...(addressChanged ? { latitude: null, longitude: null } : {}),
       updatedAt: new Date(),
     })
     .where(eq(schema.contractors.id, contractorId));
@@ -559,6 +584,6 @@ export async function deleteContractor({
   );
 
   return actionSuccess(
-    `${existing.businessName} was removed from the contractor list.`,
+    `${existing.businessName} was removed from the ${describeSections(existing)}.`,
   );
 }

@@ -5,6 +5,14 @@
 *.tsbuildinfo
 temp/
 
+# Console logs and traces dropped by the Playwright MCP server while driving
+# the app locally.
+.playwright-mcp/
+
+# One-off SQL run by hand against a database (seed data, backfills).
+# Schema lives in database/migrations and is checked in; data doesn't.
+database/seeds/
+
 # React Router
 /.react-router/
 /build/

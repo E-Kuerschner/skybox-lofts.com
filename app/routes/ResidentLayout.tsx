@@ -81,9 +81,7 @@ const SideBarContent = ({
         </LayoutNavLink>
         <LayoutNavLink to="/resident/documents">📄 Documents</LayoutNavLink>
         <LayoutNavLink to="/resident/board">👥 Board Members</LayoutNavLink>
-        <LayoutNavLink to="/resident/contractors">
-          🔧 Contractors
-        </LayoutNavLink>
+        <LayoutNavLink to="/resident/contractors">🔧 Contractors</LayoutNavLink>
         {isAdmin && (
           <>
             <LayoutNavLink to="/resident/management">
@@ -139,7 +137,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
     if (lastSegment === "resident") return "Resident Home";
     if (lastSegment === "documents") return "Resident Documents";
     if (lastSegment === "board") return "Board Members";
-    if (lastSegment === "contractors") return "Approved Contractors";
+    if (lastSegment === "contractors") return "Contractors & Service Providers";
     if (lastSegment === "meeting-notes") return "Meeting Notes";
     if (lastSegment === "management") return "Resident Management";
     if (lastSegment === "activity") return "Activity Log";
@@ -207,12 +205,9 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
         </Button>
       </aside>
       <div
-        className={cn(
-          "relative z-0 md:flex-grow flex flex-col site-bg",
-          {
-            "overflow-hidden": isOpen,
-          },
-        )}
+        className={cn("relative z-0 md:flex-grow flex flex-col site-bg", {
+          "overflow-hidden": isOpen,
+        })}
       >
         <header className="flex flex-col">
           <a
