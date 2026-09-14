@@ -2,7 +2,6 @@ import {
   sqliteTable,
   text,
   integer,
-  real,
   index,
   uniqueIndex,
   primaryKey,
@@ -41,7 +40,14 @@ export const activityLogs = sqliteTable("activity_logs", {
 });
 
 /**
- * Building-vetted contractors residents can hire for work on their units.
+ * Businesses the building has vetted.
+ *
+ * `isUnitContractor` and `isBuildingService` decide which section(s) of the
+ * contractors page a listing appears in, and are deliberately independent
+ * rather than one either/or flag: a plumber can be both the vendor the board
+ * calls for the building's risers and someone a resident hires for their own
+ * sink. At least one must be set - the action rejects a listing with neither,
+ * since it would appear nowhere.
  *
  * A contractor is discovered primarily by the services it offers, so services
  * live in their own curated lookup table (`contractor_services`) joined to
@@ -52,13 +58,17 @@ export const contractors = sqliteTable("contractors", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   businessName: text("business_name").notNull(),
   contactName: text("contact_name"), // Owner / main point of contact (nullable)
-  address: text("address"), // Single free-form line, geocodable by Google Maps (nullable)
-  // Populated later by the Google Maps integration so pins can be placed without re-geocoding
-  latitude: real("latitude"),
-  longitude: real("longitude"),
+  address: text("address"), // Single free-form line (nullable)
   phone: text("phone"), // At least one of phone/email is required (enforced in the action)
   email: text("email"),
+  website: text("website"),
   notes: text("notes"), // Optional free-form context, e.g. "ask for the resident rate"
+  isUnitContractor: integer("is_unit_contractor", { mode: "boolean" })
+    .notNull()
+    .default(true),
+  isBuildingService: integer("is_building_service", { mode: "boolean" })
+    .notNull()
+    .default(false),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .$defaultFn(() => new Date())
     .notNull(),
@@ -151,3 +161,4 @@ export const contractorPhotoRelations = relations(
     }),
   }),
 );
+

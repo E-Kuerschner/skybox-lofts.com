@@ -6,7 +6,8 @@ import { isActionResult } from "~/util/crud/actionResult";
 import { cn } from "~/util/ui/utils";
 import { ActionStatusBanner } from "./ActionStatusBanner";
 
-export type CrudMode = "create" | "edit";
+// Only ever set from inside this module's props; not part of its API.
+type CrudMode = "create" | "edit";
 
 /**
  * The form contract every CRUD action in the app can rely on:
@@ -39,6 +40,8 @@ type CrudFormDialogProps = {
   submitDisabled?: boolean;
   /** Called with the success message just before the dialog closes itself. */
   onSuccess?: (message: string) => void;
+  /** Extra classes for the desktop dialog's content box, e.g. to widen it. */
+  contentClassName?: string;
   children: React.ReactNode;
 };
 
@@ -61,6 +64,9 @@ type CrudFormDialogProps = {
  *
  * What is left to the caller is the part that is actually per-feature: the
  * fields themselves.
+ *
+ * See `./README.md` for how to wire one up, and `docs/admin-crud-pattern.md`
+ * for why admin surfaces behave this way.
  */
 export function CrudFormDialog({
   open,
@@ -75,6 +81,7 @@ export function CrudFormDialog({
   submitLabel,
   submitDisabled = false,
   onSuccess,
+  contentClassName,
   children,
 }: CrudFormDialogProps) {
   const fetcher = useFetcher();
@@ -120,14 +127,18 @@ export function CrudFormDialog({
       }}
       title={title ?? capitalize(defaultTitle)}
       description={description}
+      contentClassName={contentClassName}
     >
+      {/* A column with one scrolling middle: the fields scroll, while the
+          status banner and the buttons stay put. Forms here have grown long
+          enough that a submit button at the end of the scroll is easy to miss. */}
       <fetcher.Form
         // Remount on a different record so uncontrolled defaultValues reset
         key={`${mode}-${recordId ?? "new"}`}
         method="post"
         action={action}
         encType={hasFileUploads ? "multipart/form-data" : undefined}
-        className="max-h-[70vh] space-y-4 overflow-y-auto pt-2"
+        className="flex max-h-[70vh] flex-col"
       >
         <input type="hidden" name={CRUD_INTENT_FIELD} value={isEdit ? "update" : "create"} />
         {isEdit && recordId !== undefined && (
@@ -138,18 +149,30 @@ export function CrudFormDialog({
           />
         )}
 
-        {hasSubmitted && <ActionStatusBanner result={fetcher.data} />}
+        {hasSubmitted && (
+          <ActionStatusBanner
+            result={fetcher.data}
+            className="mt-2 shrink-0"
+          />
+        )}
 
-        {/* Disabling the fieldset disables every control inside it, so fields
-            don't each need their own `disabled` prop. */}
-        <fieldset
-          disabled={isSubmitting}
-          className={cn("min-w-0 space-y-4 border-0 p-0", isSubmitting && "opacity-70")}
-        >
-          {children}
-        </fieldset>
+        {/* `min-h-0` lets this shrink below its content's height, which is what
+            makes it the part that scrolls instead of the whole dialog. */}
+        <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1 py-4">
+          {/* Disabling the fieldset disables every control inside it, so fields
+              don't each need their own `disabled` prop. */}
+          <fieldset
+            disabled={isSubmitting}
+            className={cn(
+              "min-w-0 space-y-4 border-0 p-0",
+              isSubmitting && "opacity-70",
+            )}
+          >
+            {children}
+          </fieldset>
+        </div>
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex shrink-0 gap-2 border-t pt-4">
           <Button
             type="button"
             variant="outline"

@@ -13,6 +13,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "~/components/ui/sheet";
+import { cn } from "~/util/ui/utils";
 
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -42,6 +43,8 @@ type ResponsiveOverlayProps = {
   description?: string;
   children: React.ReactNode;
   showCloseButton?: boolean;
+  /** Extra classes for the desktop dialog's content box, e.g. to widen it. */
+  contentClassName?: string;
 };
 
 export function ResponsiveOverlay({
@@ -51,13 +54,17 @@ export function ResponsiveOverlay({
   description,
   children,
   showCloseButton = true,
+  contentClassName,
 }: ResponsiveOverlayProps) {
   const isDesktop = useIsDesktop();
 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent showCloseButton={showCloseButton} className="site-bg">
+        <DialogContent
+          showCloseButton={showCloseButton}
+          className={cn("site-bg", contentClassName)}
+        >
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             {description && (

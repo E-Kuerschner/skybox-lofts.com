@@ -48,6 +48,10 @@ export function ActionStatusBanner({
  * The CRUD dialogs close themselves on success, so the confirmation has to land
  * somewhere that outlives them. Errors stay inside the dialog, next to the form
  * that caused them; only successes bubble up here.
+ *
+ * It floats above the page rather than sitting in the flow: a banner that takes
+ * up space shoves the whole list down the moment it appears, so the row you
+ * just edited jumps out from under your cursor.
  */
 export function useStatusBanner() {
   const [message, setMessage] = useState<string | null>(null);
@@ -60,12 +64,17 @@ export function useStatusBanner() {
   }, []);
 
   const banner = message ? (
-    <StatusBanner
-      key={renderKey}
-      variant="success"
-      message={message}
-      autoDismiss={4000}
-    />
+    // The wrapper ignores clicks so the floating banner never swallows a tap
+    // meant for the page underneath it.
+    <div className="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4">
+      <StatusBanner
+        key={renderKey}
+        variant="success"
+        message={message}
+        autoDismiss={4000}
+        className="pointer-events-auto max-w-md shadow-lg animate-in fade-in slide-in-from-top-2"
+      />
+    </div>
   ) : null;
 
   return { banner, showSuccess };

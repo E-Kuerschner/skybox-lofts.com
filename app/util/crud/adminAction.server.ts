@@ -13,7 +13,7 @@ export type AdminActionArgs = {
   db: ReturnType<typeof getDatabase>;
 };
 
-export type AdminActionHandlers = Record<
+type AdminActionHandlers = Record<
   string,
   (args: AdminActionArgs) => Promise<ActionResult>
 >;
@@ -32,6 +32,10 @@ export type AdminActionHandlers = Record<
  * - Unexpected failure -> logged for us, generic apology for them.
  *
  * Handlers are keyed by the form's `intent` field.
+ *
+ * See `app/components/crud/README.md` for the surrounding pattern, and
+ * `docs/admin-crud-pattern.md` for when to skip this and write the action
+ * directly.
  */
 export async function runAdminAction(
   {

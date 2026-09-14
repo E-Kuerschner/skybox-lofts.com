@@ -1,15 +1,12 @@
-import { MailIcon, MapPinIcon, PhoneIcon } from "lucide-react";
+import { GlobeIcon, MailIcon, MapPinIcon, PhoneIcon } from "lucide-react";
 import { contractorPhotoUrl } from "~/util/contractorPhotoUrl";
 import { ServiceBadges } from "./ServiceFilterChips";
-import { ContractorMapPreview } from "./ContractorMap";
 import type { ContractorListing } from "./types";
 
 export function ContractorDetail({
   contractor,
-  googleMapsApiKey,
 }: {
   contractor: ContractorListing;
-  googleMapsApiKey: string | null;
 }) {
   return (
     <div className="space-y-4 overflow-y-auto pt-2 max-h-[70vh]">
@@ -64,6 +61,17 @@ export function ContractorDetail({
             <span className="break-all">{contractor.email}</span>
           </a>
         )}
+        {contractor.website && (
+          <a
+            href={contractor.website}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 text-emerald-700 hover:underline"
+          >
+            <GlobeIcon className="size-4 shrink-0" />
+            <span className="break-all">{contractor.website}</span>
+          </a>
+        )}
         {contractor.address && (
           <p className="flex items-start gap-2">
             <MapPinIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
@@ -79,14 +87,6 @@ export function ContractorDetail({
             {contractor.notes}
           </p>
         </div>
-      )}
-
-      {contractor.address && (
-        <ContractorMapPreview
-          address={contractor.address}
-          businessName={contractor.businessName}
-          apiKey={googleMapsApiKey}
-        />
       )}
     </div>
   );

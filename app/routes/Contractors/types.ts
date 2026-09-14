@@ -20,11 +20,14 @@ export type ContractorListing = {
   businessName: string;
   contactName: string | null;
   address: string | null;
-  latitude: number | null;
-  longitude: number | null;
   phone: string | null;
   email: string | null;
+  website: string | null;
   notes: string | null;
+  /** Listed under "In-unit work & services". */
+  isUnitContractor: boolean;
+  /** Listed under "Building service providers". Both can be true. */
+  isBuildingService: boolean;
   services: ContractorService[];
   photos: ContractorPhoto[];
 };
