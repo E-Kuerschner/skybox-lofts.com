@@ -6,6 +6,7 @@ import {
   Mail,
   UserCog,
   Users,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import { ContentCard } from "~/components/ContentCard";
@@ -61,6 +62,12 @@ export default function ResidentHome({ loaderData }: Route.ComponentProps) {
           icon={Users}
           title="Board Members"
           description="See who is on the HOA board and how to reach them."
+        />
+        <NavTile
+          to="/resident/contractors"
+          icon={Wrench}
+          title="Contractors"
+          description="Find trusted contractors for your unit and the building's service providers."
         />
         {loaderData.isAdmin && (
           <>
