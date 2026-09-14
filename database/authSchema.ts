@@ -21,6 +21,9 @@ export const users = sqliteTable("users", {
   unitNumber: integer("unit_number").default(0).notNull(),
   firstName: text("first_name"),
   lastName: text("last_name"),
+  receivesGeneralEmails: integer("receives_general_emails", { mode: "boolean" })
+    .default(true)
+    .notNull(),
 });
 
 export const sessions = sqliteTable(

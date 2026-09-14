@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `receives_general_emails` integer DEFAULT true NOT NULL;
