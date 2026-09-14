@@ -1,6 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
 import {
-  Link,
   Outlet,
   useLocation,
   useRevalidator,
@@ -19,13 +18,6 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { WrigleyClock } from "~/components/WrigleyClock";
 import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
 import { Button } from "~/components/ui/button";
@@ -40,19 +32,27 @@ const emailTrackerCookie = createCookie("email-tracker", {
   maxAge: 60 * 5, // 5 minutes
 });
 
-type LayoutNavLinkProps = Omit<NavLinkProps, "children"> & {
+type LayoutNavLinkProps = Omit<NavLinkProps, "children" | "className"> & {
   children: string;
   // icons inherit the link's text color so they match hover/active states
   icon: ReactNode;
+  className?: string;
 };
 
-const LayoutNavLink = ({ children, icon, ...props }: LayoutNavLinkProps) => {
+const LayoutNavLink = ({
+  children,
+  icon,
+  className,
+  ...props
+}: LayoutNavLinkProps) => {
   return (
     <NavLink
       className={({ isActive }) =>
-        cn("hover:text-emerald-600 py-6 w-full", {
-          "text-emerald-600": isActive,
-        })
+        cn(
+          "hover:text-emerald-600 py-6 w-full",
+          { "text-emerald-600": isActive },
+          className,
+        )
       }
       {...props}
     >
@@ -73,14 +73,16 @@ const SideBarContent = ({
   className,
   isAdmin,
   userName,
+  onSignOut,
 }: {
   renderLogo?: boolean;
   className?: string;
   isAdmin: boolean;
   userName?: string | null;
+  onSignOut: () => void;
 }) => {
   return (
-    <div className={cn("px-4 md:px-8 flex flex-col", className)}>
+    <div className={cn("px-4 md:px-8 flex flex-col grow", className)}>
       <div className="flex flex-col pt-4 h-auto md:h-[200px]">
         {renderLogo && (
           <a href="/" aria-label="Go home">
@@ -90,13 +92,7 @@ const SideBarContent = ({
         <WrigleyClock className="h-[100px] w-[100px] self-center my-4" />
         {userName && (
           <p className="md:hidden text-sm text-muted-foreground mb-2">
-            Hello,{" "}
-            <Link
-              to="/resident/preferences"
-              className="text-emerald-500 hover:underline"
-            >
-              {userName}
-            </Link>
+            Hello, <span className="text-emerald-500">{userName}</span>
           </p>
         )}
       </div>
@@ -131,6 +127,27 @@ const SideBarContent = ({
           </>
         )}
       </nav>
+      {/* account actions, held against the bottom of the sidebar */}
+      <div className="mt-auto flex flex-col pt-8 pb-4">
+        <hr className="border-1 border-slate-200 mb-2" />
+        <div className="flex flex-col items-start *:hover:translate-x-2 *:transition-transform *:hover:scale-105 *:active:scale-[0.9] *:active:text-emerald-600">
+          <LayoutNavLink
+            to="/resident/preferences"
+            icon={<Settings className="size-4" />}
+            className="py-4"
+          >
+            My preferences
+          </LayoutNavLink>
+          <button
+            type="button"
+            onClick={onSignOut}
+            className="flex items-center gap-3 py-4 w-full cursor-pointer hover:text-emerald-600"
+          >
+            <LogOut className="size-4" />
+            <span>Sign out</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -207,8 +224,13 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="relative md:flex min-h-dvh">
-      <aside className="hidden md:block w-64 shrink-0 border-e border-stone-200 bg-white">
-        <SideBarContent isAdmin={isAdmin} userName={userName} />
+      {/* sticky + viewport height so the account actions at its bottom stay reachable on long pages */}
+      <aside className="hidden md:flex md:flex-col self-start sticky top-0 h-dvh overflow-y-auto w-64 shrink-0 bg-white">
+        <SideBarContent
+          isAdmin={isAdmin}
+          userName={userName}
+          onSignOut={handleSignOut}
+        />
       </aside>
       {/* overlay fixed behind the collapsible, mobile sidebar */}
       {isOpen && (
@@ -220,7 +242,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
       {/* mobile-only aside that slides in from the left side of the screen */}
       <aside
         className={cn(
-          "flex flex-col justify-between absolute top-0 z-10 left-0 md:hidden h-full w-64 site-bg -translate-x-full transition-transform duration-500 ease-in-out",
+          "flex flex-col fixed top-0 z-10 left-0 md:hidden h-dvh overflow-y-auto w-64 site-bg -translate-x-full transition-transform duration-500 ease-in-out",
           {
             "-translate-x-0": isOpen,
           },
@@ -230,10 +252,8 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
           renderLogo={false}
           isAdmin={isAdmin}
           userName={userName}
+          onSignOut={handleSignOut}
         />
-        <Button className="mx-4 mb-8" variant="outline" onClick={handleSignOut}>
-          Sign out
-        </Button>
       </aside>
       <div
         className={cn("relative z-0 md:flex-grow flex flex-col site-bg", {
@@ -277,39 +297,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
                 <ResidentBreadcrumbs className="hidden md:flex grow" />
                 {userName && (
                   <span className="hidden md:inline text-foreground md:text-white md:text-shadow-lg/50">
-                    Hello,{" "}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        className="text-emerald-300 hover:text-emerald-500 hover:underline cursor-pointer"
-                        aria-label="Open account menu"
-                      >
-                        {userName}
-                      </DropdownMenuTrigger>
-                      {/* sideOffset matches the header's pb-4 so the menu's top edge sits on the header/content border */}
-                      <DropdownMenuContent
-                        align="end"
-                        sideOffset={16}
-                        className="rounded-t-none border-t-0"
-                      >
-                        <DropdownMenuItem
-                          asChild
-                          className="text-base cursor-pointer focus:bg-transparent focus:text-emerald-600"
-                        >
-                          <Link to="/resident/preferences">
-                            <Settings className="size-4 text-current" />
-                            My preferences
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={handleSignOut}
-                          className="text-base cursor-pointer focus:bg-transparent focus:text-emerald-600"
-                        >
-                          <LogOut className="size-4 text-current" />
-                          Sign out
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    Hello, <span className="text-emerald-300">{userName}</span>
                   </span>
                 )}
               </div>
