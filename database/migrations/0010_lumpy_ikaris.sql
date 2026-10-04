@@ -29,7 +29,6 @@ CREATE UNIQUE INDEX `contractor_services_slug_unique` ON `contractor_services` (
 CREATE TABLE `contractors` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`business_name` text NOT NULL,
-	`contact_name` text,
 	`address` text,
 	`phone` text,
 	`email` text,

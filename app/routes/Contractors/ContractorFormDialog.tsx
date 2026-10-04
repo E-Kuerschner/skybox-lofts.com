@@ -1,16 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
-import { Trash2Icon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronLeftIcon } from "lucide-react";
 import { CheckboxGroup } from "~/components/CheckboxGroup";
+import { FormSection, RequiredMark } from "~/components/FormSection";
+import { CrudFormDialog } from "~/components/crud/CrudFormDialog";
+import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import { CrudFormDialog } from "~/components/crud/CrudFormDialog";
-import { contractorPhotoUrl } from "~/util/contractorPhotoUrl";
-import { cn } from "~/util/ui/utils";
+import { PhotoField } from "./PhotoField";
+import { ServicePicker } from "./ServicePicker";
 import type { ContractorListing, ContractorService } from "./types";
 
 const MAX_PHOTOS = 6;
 
+const inputClass = "h-10 bg-card";
+
+/**
+ * Adding or editing a listing. Its sections follow the same order as the
+ * details view - photos, name, services, how to reach them, good to know - so
+ * jumping from one to the other feels like the same card turning editable.
+ */
 export function ContractorFormDialog({
   open,
   onOpenChange,
@@ -18,6 +27,8 @@ export function ContractorFormDialog({
   defaultBuildingService = false,
   services,
   onSuccess,
+  onBack,
+  onDelete,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -27,13 +38,13 @@ export function ContractorFormDialog({
   defaultBuildingService?: boolean;
   services: ContractorService[];
   onSuccess: (message: string) => void;
+  /** Set when the form was opened from the details view, to go back to it. */
+  onBack?: () => void;
+  onDelete?: (contractor: ContractorListing) => void;
 }) {
   const isEditing = contractor !== null;
 
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
-  const [newServices, setNewServices] = useState("");
-  const [photoIdsToRemove, setPhotoIdsToRemove] = useState<number[]>([]);
-  const [newPhotoCount, setNewPhotoCount] = useState(0);
   const [isUnitContractor, setIsUnitContractor] = useState(true);
   const [isBuildingService, setIsBuildingService] = useState(false);
 
@@ -42,35 +53,11 @@ export function ContractorFormDialog({
   useEffect(() => {
     if (!open) return;
     setSelectedServiceIds(contractor?.services.map((s) => s.id) ?? []);
-    setNewServices("");
-    setPhotoIdsToRemove([]);
-    setNewPhotoCount(0);
-    // A new listing starts out as whatever the section its "add" button lives
-    // in holds; an existing one keeps the sections it's already in.
+    // A new listing starts out as whatever the tab its "add" button lives on
+    // holds; an existing one keeps the lists it's already in.
     setIsUnitContractor(contractor?.isUnitContractor ?? !defaultBuildingService);
     setIsBuildingService(contractor?.isBuildingService ?? defaultBuildingService);
   }, [open, contractor, defaultBuildingService]);
-
-  const remainingPhotoSlots = useMemo(() => {
-    const kept = (contractor?.photos.length ?? 0) - photoIdsToRemove.length;
-    return Math.max(0, MAX_PHOTOS - kept);
-  }, [contractor, photoIdsToRemove]);
-
-  const toggleService = (serviceId: number) => {
-    setSelectedServiceIds((current) =>
-      current.includes(serviceId)
-        ? current.filter((id) => id !== serviceId)
-        : [...current, serviceId],
-    );
-  };
-
-  const togglePhotoRemoval = (photoId: number) => {
-    setPhotoIdsToRemove((current) =>
-      current.includes(photoId)
-        ? current.filter((id) => id !== photoId)
-        : [...current, photoId],
-    );
-  };
 
   return (
     <CrudFormDialog
@@ -81,240 +68,156 @@ export function ContractorFormDialog({
       recordId={contractor?.id}
       hasFileUploads
       onSuccess={onSuccess}
-      contentClassName="lg:min-w-[40rem]"
-      submitDisabled={
-        (selectedServiceIds.length === 0 && newServices.trim() === "") ||
-        (!isUnitContractor && !isBuildingService)
-      }
+      contentClassName="md:max-w-[37.5rem]"
       description={
         isEditing
-          ? "Update this contractor's details. Residents will see your changes right away."
-          : "Add a contractor the building has vetted. Residents will be able to find them by the services they offer."
+          ? "Changes show up for residents right away."
+          : "Residents find contractors by the services you pick."
+      }
+      submitDisabled={
+        selectedServiceIds.length === 0 ||
+        (!isUnitContractor && !isBuildingService)
+      }
+      headerStart={
+        isEditing &&
+        onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="-ml-1 flex h-8 w-fit cursor-pointer items-center gap-0.5 rounded-md pr-2 text-sm font-medium text-emerald-700 hover:text-emerald-800"
+          >
+            <ChevronLeftIcon className="size-4" />
+            Back to {contractor.businessName}
+          </button>
+        )
+      }
+      footerStart={
+        isEditing &&
+        onDelete && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-11 md:h-11 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => onDelete(contractor)}
+          >
+            Remove
+          </Button>
+        )
       }
     >
-      <CheckboxGroup
-        legend="Show this business under"
-        options={[
-          {
-            name: "isUnitContractor",
-            label: "In-unit work & services",
-            description:
-              "Work an owner arranges for themselves, on their unit/property.",
-            checked: isUnitContractor,
-            onChange: setIsUnitContractor,
-          },
-          {
-            name: "isBuildingService",
-            label: "Building service providers",
-            description:
-              "Works on the building itself (elevator, snow removal), which the board and property manager handle.",
-            checked: isBuildingService,
-            onChange: setIsBuildingService,
-          },
-        ]}
-      />
+      <FormSection title="Photos">
+        <PhotoField
+          existingPhotos={contractor?.photos ?? []}
+          maxPhotos={MAX_PHOTOS}
+        />
+      </FormSection>
 
-      <div className="space-y-2">
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor="businessName">
-          Business or owner name <span className="text-destructive">*</span>
+          Business name
+          <RequiredMark />
         </Label>
         <Input
           id="businessName"
           name="businessName"
-          className="bg-white"
+          className={inputClass}
           required
           defaultValue={contractor?.businessName ?? ""}
           placeholder="Northside Heating & Cooling"
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="contactName">Person to ask for</Label>
-        <Input
-          id="contactName"
-          name="contactName"
-          className="bg-white"
-          defaultValue={contractor?.contactName ?? ""}
-          placeholder="Dana Ruiz"
+      <FormSection title="Services" required>
+        <ServicePicker
+          services={services}
+          selectedIds={selectedServiceIds}
+          onChange={setSelectedServiceIds}
         />
-      </div>
+      </FormSection>
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">
-          How residents reach them{" "}
-          <span className="text-muted-foreground">
-            (a phone number or an email, at least one)
-          </span>
-        </legend>
-        <div className="grid gap-2 sm:grid-cols-2">
-          <Input
-            aria-label="Phone number"
-            name="phone"
-            type="tel"
-            className="bg-white"
-            defaultValue={contractor?.phone ?? ""}
-            placeholder="(312) 555-0143"
-          />
-          <Input
-            aria-label="Email address"
-            name="email"
-            type="email"
-            className="bg-white"
-            defaultValue={contractor?.email ?? ""}
-            placeholder="hello@example.com"
-          />
-        </div>
-      </fieldset>
-
-      <div className="space-y-2">
-        <Label htmlFor="website">Website</Label>
-        <Input
-          id="website"
-          name="website"
-          type="url"
-          className="bg-white"
-          defaultValue={contractor?.website ?? ""}
-          placeholder="https://example.com"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="address">Address</Label>
-        <Input
-          id="address"
-          name="address"
-          className="bg-white"
-          defaultValue={contractor?.address ?? ""}
-          placeholder="1234 W Addison St, Chicago, IL 60613"
-        />
-        <p className="text-xs text-muted-foreground">
-          Optional. When it's filled in, residents get a link straight to Google
-          Maps.
-        </p>
-      </div>
-
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">
-          Services offered <span className="text-destructive">*</span>
-        </legend>
-        <div className="grid max-h-48 gap-1.5 overflow-y-auto rounded-lg border bg-white p-3 sm:grid-cols-2">
-          {services.map((service) => (
-            <label
-              key={service.id}
-              className={cn(
-                "flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-sm",
-                selectedServiceIds.includes(service.id) && "bg-emerald-50",
-              )}
-            >
-              <input
-                type="checkbox"
-                name="serviceIds"
-                value={service.id}
-                checked={selectedServiceIds.includes(service.id)}
-                onChange={() => toggleService(service.id)}
-                className="size-4 accent-emerald-600"
+      <FormSection
+        title="How to reach them"
+        hint="A phone number or an email is needed. The address is optional."
+      >
+        <div className="flex flex-col gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                className={inputClass}
+                defaultValue={contractor?.phone ?? ""}
+                placeholder="(312) 555-0143"
               />
-              {service.name}
-            </label>
-          ))}
-        </div>
-        <Label htmlFor="newServices" className="pt-1">
-          Something not on the list?
-        </Label>
-        <Input
-          id="newServices"
-          name="newServices"
-          className="bg-white"
-          value={newServices}
-          onChange={(event) => setNewServices(event.target.value)}
-          placeholder="Awning Repair, Tuckpointing"
-        />
-        <p className="text-xs text-muted-foreground">
-          Separate several with commas. New services are added to the list for
-          everyone.
-        </p>
-      </fieldset>
-
-      <div className="space-y-2">
-        <Label htmlFor="notes">Good to know</Label>
-        <Textarea
-          id="notes"
-          name="notes"
-          className="bg-white"
-          rows={3}
-          defaultValue={contractor?.notes ?? ""}
-          placeholder="Has worked in the building before. Mention you're a Skybox Lofts resident."
-        />
-      </div>
-
-      {isEditing && contractor.photos.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Current photos</p>
-          <div className="flex flex-wrap gap-2">
-            {contractor.photos.map((photo) => {
-              const markedForRemoval = photoIdsToRemove.includes(photo.id);
-
-              return (
-                <div key={photo.id} className="relative">
-                  <img
-                    src={contractorPhotoUrl(photo.id)}
-                    alt=""
-                    className={cn(
-                      "size-20 rounded-lg border object-cover transition-opacity",
-                      markedForRemoval && "opacity-30",
-                    )}
-                  />
-                  {markedForRemoval && (
-                    <input
-                      type="hidden"
-                      name="removePhotoIds"
-                      value={photo.id}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => togglePhotoRemoval(photo.id)}
-                    aria-label={
-                      markedForRemoval ? "Keep this photo" : "Remove this photo"
-                    }
-                    className="absolute -right-1.5 -top-1.5 cursor-pointer rounded-full border bg-white p-1 shadow-sm hover:text-destructive"
-                  >
-                    <Trash2Icon className="size-3" />
-                  </button>
-                </div>
-              );
-            })}
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                className={inputClass}
+                defaultValue={contractor?.email ?? ""}
+                placeholder="hello@example.com"
+              />
+            </div>
           </div>
-          {photoIdsToRemove.length > 0 && (
-            <p className="text-xs text-muted-foreground">
-              {photoIdsToRemove.length} photo
-              {photoIdsToRemove.length === 1 ? "" : "s"} will be deleted when you
-              save.
-            </p>
-          )}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="website">Website</Label>
+            <Input
+              id="website"
+              name="website"
+              type="url"
+              className={inputClass}
+              defaultValue={contractor?.website ?? ""}
+              placeholder="https://example.com"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="address">Address</Label>
+            <Input
+              id="address"
+              name="address"
+              className={inputClass}
+              defaultValue={contractor?.address ?? ""}
+              placeholder="1234 W Addison St, Chicago, IL 60613"
+            />
+          </div>
         </div>
-      )}
+      </FormSection>
 
-      <div className="space-y-2">
-        <Label htmlFor="photos">Add photos</Label>
-        <Input
-          id="photos"
-          name="photos"
-          type="file"
-          multiple
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          className="bg-white"
-          disabled={remainingPhotoSlots === 0}
-          onChange={(event) => setNewPhotoCount(event.target.files?.length ?? 0)}
+      <FormSection title="Good to know">
+        <Textarea
+          aria-label="Good to know"
+          name="notes"
+          rows={3}
+          className="bg-muted/40"
+          defaultValue={contractor?.notes ?? ""}
+          placeholder="Who to ask for, and anything else residents should know. For example: Ask for Dana. Has worked in the building before."
         />
-        <p className="text-xs text-muted-foreground">
-          {remainingPhotoSlots === 0
-            ? `This listing already has ${MAX_PHOTOS} photos. Remove one to add another.`
-            : `Optional. Up to ${remainingPhotoSlots} more photo${remainingPhotoSlots === 1 ? "" : "s"}, 5MB each.`}
-          {newPhotoCount > 0 &&
-            ` ${newPhotoCount} selected${newPhotoCount > remainingPhotoSlots ? ` — only the first ${remainingPhotoSlots} will be saved.` : "."}`}
-        </p>
-      </div>
+      </FormSection>
+
+      <CheckboxGroup
+        legend="Show this business under"
+        options={[
+          {
+            name: "isUnitContractor",
+            label: "In-unit work",
+            description: "Work owners arrange for their own unit.",
+            checked: isUnitContractor,
+            onChange: setIsUnitContractor,
+          },
+          {
+            name: "isBuildingService",
+            label: "Building services",
+            description: "Work on the building. The board handles these.",
+            checked: isBuildingService,
+            onChange: setIsBuildingService,
+          },
+        ]}
+      />
     </CrudFormDialog>
   );
 }

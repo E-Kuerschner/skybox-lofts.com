@@ -4,6 +4,8 @@ import { cn } from "~/util/ui/utils";
 export type SegmentedToggleOption<T extends string> = {
   value: T;
   label: string;
+  /** Shown as a small counter next to the label, e.g. how many items it holds. */
+  count?: number;
 };
 
 /**
@@ -18,12 +20,15 @@ export function SegmentedToggle<T extends string>({
   value,
   onChange,
   ariaLabel,
+  stretch = false,
   className,
 }: {
   options: readonly SegmentedToggleOption<T>[];
   value: T;
   onChange: (value: T) => void;
   ariaLabel: string;
+  /** Fill the available width, splitting it evenly between the options. */
+  stretch?: boolean;
   className?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,7 +59,8 @@ export function SegmentedToggle<T extends string>({
     <div
       ref={containerRef}
       className={cn(
-        "relative flex shrink-0 rounded-full border bg-white p-0.5 text-sm",
+        "relative flex shrink-0 rounded-full border bg-card p-0.5 text-sm",
+        stretch && "w-full",
         className,
       )}
       role="group"
@@ -83,12 +89,25 @@ export function SegmentedToggle<T extends string>({
           aria-pressed={value === option.value}
           className={cn(
             "relative z-10 cursor-pointer rounded-full px-3 py-1.5 transition-colors",
+            stretch && "flex-1",
             value === option.value
               ? "text-emerald-800"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
           {option.label}
+          {option.count !== undefined && (
+            <span
+              className={cn(
+                "ml-1.5 text-xs",
+                value === option.value
+                  ? "text-emerald-700"
+                  : "text-muted-foreground",
+              )}
+            >
+              {option.count}
+            </span>
+          )}
         </button>
       ))}
     </div>

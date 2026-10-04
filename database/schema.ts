@@ -57,12 +57,11 @@ export const activityLogs = sqliteTable("activity_logs", {
 export const contractors = sqliteTable("contractors", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   businessName: text("business_name").notNull(),
-  contactName: text("contact_name"), // Owner / main point of contact (nullable)
   address: text("address"), // Single free-form line (nullable)
   phone: text("phone"), // At least one of phone/email is required (enforced in the action)
   email: text("email"),
   website: text("website"),
-  notes: text("notes"), // Optional free-form context, e.g. "ask for the resident rate"
+  notes: text("notes"), // Optional free-form context, e.g. "Ask for Dana. Mention the resident rate."
   isUnitContractor: integer("is_unit_contractor", { mode: "boolean" })
     .notNull()
     .default(true),

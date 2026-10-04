@@ -1,3 +1,4 @@
+import { formSectionTitleClass } from "~/components/FormSection";
 import { cn } from "~/util/ui/utils";
 
 export type CheckboxGroupOption = {
@@ -37,30 +38,40 @@ export function CheckboxGroup({
   className?: string;
 }) {
   return (
-    <fieldset
-      className={cn("space-y-2 rounded-lg border bg-white p-3", className)}
-    >
-      <legend className="ps-1 pe-0 text-sm font-medium">{legend}</legend>
+    <fieldset className={cn("flex min-w-0 flex-col gap-2", className)}>
+      <legend className={cn(formSectionTitleClass, "mb-2")}>{legend}</legend>
 
-      {options.map((option) => (
-        <label key={option.name} className="flex cursor-pointer gap-3">
-          <input
-            type="checkbox"
-            name={option.name}
-            checked={option.checked}
-            onChange={(event) => option.onChange(event.target.checked)}
-            className="mt-0.5 size-4 shrink-0 accent-emerald-600"
-          />
-          <span className="text-sm">
-            <span className="font-medium">{option.label}</span>
-            {option.description && (
-              <span className="block text-xs text-muted-foreground">
-                {option.description}
-              </span>
+      {/* Each choice is a whole card, so the target is easy to hit and the
+          ticked ones stand out at a glance. */}
+      <div className="grid gap-2 sm:grid-cols-2">
+        {options.map((option) => (
+          <label
+            key={option.name}
+            className={cn(
+              "flex cursor-pointer gap-2.5 rounded-xl border-[1.5px] p-3 transition-colors",
+              option.checked
+                ? "border-ring bg-emerald-50"
+                : "border-border bg-card hover:border-ring/60",
             )}
-          </span>
-        </label>
-      ))}
+          >
+            <input
+              type="checkbox"
+              name={option.name}
+              checked={option.checked}
+              onChange={(event) => option.onChange(event.target.checked)}
+              className="mt-0.5 size-[18px] shrink-0 accent-emerald-600"
+            />
+            <span className="flex flex-col gap-0.5">
+              <span className="text-sm font-semibold">{option.label}</span>
+              {option.description && (
+                <span className="text-xs text-muted-foreground">
+                  {option.description}
+                </span>
+              )}
+            </span>
+          </label>
+        ))}
+      </div>
     </fieldset>
   );
 }

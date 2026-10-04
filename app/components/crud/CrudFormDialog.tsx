@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useFetcher } from "react-router";
 import { Button } from "~/components/ui/button";
-import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
+import {
+  OverlayBody,
+  OverlayFooter,
+  ResponsiveOverlay,
+} from "~/components/ResponsiveOverlay";
 import { isActionResult } from "~/util/crud/actionResult";
 import { cn } from "~/util/ui/utils";
 import { ActionStatusBanner } from "./ActionStatusBanner";
@@ -42,6 +46,14 @@ type CrudFormDialogProps = {
   onSuccess?: (message: string) => void;
   /** Extra classes for the desktop dialog's content box, e.g. to widen it. */
   contentClassName?: string;
+  /** Above the title, e.g. a "Back to …" link. */
+  headerStart?: React.ReactNode;
+  /**
+   * At the start of the button row, away from Cancel and Save - e.g. a quiet
+   * Remove. When present, Cancel and Save size to their labels instead of
+   * splitting the row.
+   */
+  footerStart?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -82,6 +94,8 @@ export function CrudFormDialog({
   submitDisabled = false,
   onSuccess,
   contentClassName,
+  headerStart,
+  footerStart,
   children,
 }: CrudFormDialogProps) {
   const fetcher = useFetcher();
@@ -128,17 +142,19 @@ export function CrudFormDialog({
       title={title ?? capitalize(defaultTitle)}
       description={description}
       contentClassName={contentClassName}
+      headerStart={headerStart}
+      bare
     >
-      {/* A column with one scrolling middle: the fields scroll, while the
-          status banner and the buttons stay put. Forms here have grown long
-          enough that a submit button at the end of the scroll is easy to miss. */}
+      {/* A column with one scrolling middle: the fields scroll while the
+          buttons stay put. Forms here have grown long enough that a submit
+          button at the end of the scroll is easy to miss. */}
       <fetcher.Form
         // Remount on a different record so uncontrolled defaultValues reset
         key={`${mode}-${recordId ?? "new"}`}
         method="post"
         action={action}
         encType={hasFileUploads ? "multipart/form-data" : undefined}
-        className="flex max-h-[70vh] flex-col"
+        className="flex min-h-0 flex-1 flex-col"
       >
         <input type="hidden" name={CRUD_INTENT_FIELD} value={isEdit ? "update" : "create"} />
         {isEdit && recordId !== undefined && (
@@ -149,34 +165,31 @@ export function CrudFormDialog({
           />
         )}
 
-        {hasSubmitted && (
-          <ActionStatusBanner
-            result={fetcher.data}
-            className="mt-2 shrink-0"
-          />
-        )}
+        <OverlayBody className="flex flex-col gap-6">
+          {hasSubmitted && (
+            <ActionStatusBanner result={fetcher.data} className="shrink-0" />
+          )}
 
-        {/* `min-h-0` lets this shrink below its content's height, which is what
-            makes it the part that scrolls instead of the whole dialog. */}
-        <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1 py-4">
           {/* Disabling the fieldset disables every control inside it, so fields
               don't each need their own `disabled` prop. */}
           <fieldset
             disabled={isSubmitting}
             className={cn(
-              "min-w-0 space-y-4 border-0 p-0",
+              "flex min-w-0 flex-col gap-6 border-0 p-0",
               isSubmitting && "opacity-70",
             )}
           >
             {children}
           </fieldset>
-        </div>
+        </OverlayBody>
 
-        <div className="flex shrink-0 gap-2 border-t pt-4">
+        <OverlayFooter>
+          {footerStart}
+          {footerStart && <span className="grow" />}
           <Button
             type="button"
             variant="outline"
-            className="flex-1"
+            className={cn("h-11 md:h-11 rounded-xl", !footerStart && "flex-1")}
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
@@ -185,14 +198,17 @@ export function CrudFormDialog({
           <Button
             type="submit"
             variant="cta"
-            className="flex-1"
+            className={cn(
+              "h-11 md:h-11 shadow-none hover:translate-y-0 hover:shadow-none",
+              !footerStart && "flex-1",
+            )}
             disabled={isSubmitting || submitDisabled}
           >
             {isSubmitting
               ? "Saving..."
               : (submitLabel ?? capitalize(defaultSubmitLabel))}
           </Button>
-        </div>
+        </OverlayFooter>
       </fetcher.Form>
     </ResponsiveOverlay>
   );

@@ -80,7 +80,6 @@ export async function fetchContractorDirectory(db: Database): Promise<{
   const contractors = contractorRows.map((contractor) => ({
     id: contractor.id,
     businessName: contractor.businessName,
-    contactName: contractor.contactName,
     address: contractor.address,
     phone: contractor.phone,
     email: contractor.email,
@@ -104,14 +103,6 @@ export async function fetchContractorDirectory(db: Database): Promise<{
   };
 }
 
-export function slugifyServiceName(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 function readTrimmed(formData: FormData, field: string): string | null {
   const value = formData.get(field);
   if (typeof value !== "string") return null;
@@ -119,9 +110,9 @@ function readTrimmed(formData: FormData, field: string): string | null {
   return trimmed === "" ? null : trimmed;
 }
 
+/** What the add/edit form sets. Who to ask for goes in the notes. */
 type ContractorInput = {
   businessName: string;
-  contactName: string | null;
   address: string | null;
   phone: string | null;
   email: string | null;
@@ -168,7 +159,6 @@ function parseContractorFields(
     ok: true,
     value: {
       businessName,
-      contactName: readTrimmed(formData, "contactName"),
       address: readTrimmed(formData, "address"),
       phone,
       email,
@@ -194,53 +184,32 @@ function describeSections(listing: {
 }
 
 /**
- * Turns the form's service selection into service ids.
+ * Turns the form's service picks into service ids.
  *
- * `serviceIds` are picks from the existing catalog. `newServices` is a
- * comma-separated list an admin typed in; each one is matched to the catalog by
- * slug first so "AC repair" and "A/C Repair" don't become two entries.
+ * Only services already on the list can be picked - new ones aren't created
+ * from the form, which keeps the list from filling up with near-duplicates.
+ * Ids that don't match a listed service are ignored.
  */
 async function resolveServiceIds(
   formData: FormData,
   db: Database,
 ): Promise<{ ok: true; value: number[] } | { ok: false; error: string }> {
-  const selectedIds = formData
-    .getAll("serviceIds")
-    .map((value) => Number(value))
-    .filter((value) => Number.isInteger(value) && value > 0);
+  const pickedIds = new Set(
+    formData
+      .getAll("serviceIds")
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value) && value > 0),
+  );
 
-  const newServiceNames = (readTrimmed(formData, "newServices") ?? "")
-    .split(",")
-    .map((name) => name.trim())
-    .filter((name) => name !== "");
+  const known = pickedIds.size
+    ? await db
+        .select({ id: schema.contractorServices.id })
+        .from(schema.contractorServices)
+        .where(inArray(schema.contractorServices.id, [...pickedIds]))
+        .all()
+    : [];
 
-  const resolvedIds = new Set(selectedIds);
-
-  for (const name of newServiceNames) {
-    const slug = slugifyServiceName(name);
-    if (!slug) continue;
-
-    const existing = await db
-      .select()
-      .from(schema.contractorServices)
-      .where(eq(schema.contractorServices.slug, slug))
-      .get();
-
-    if (existing) {
-      resolvedIds.add(existing.id);
-      continue;
-    }
-
-    const created = await db
-      .insert(schema.contractorServices)
-      .values({ name, slug })
-      .returning()
-      .get();
-
-    resolvedIds.add(created.id);
-  }
-
-  if (resolvedIds.size === 0) {
+  if (known.length === 0) {
     return {
       ok: false,
       error:
@@ -248,7 +217,7 @@ async function resolveServiceIds(
     };
   }
 
-  return { ok: true, value: Array.from(resolvedIds) };
+  return { ok: true, value: known.map((service) => service.id) };
 }
 
 function extensionForPhoto(file: File): string {

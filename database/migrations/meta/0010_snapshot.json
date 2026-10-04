@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c5b90487-7b8e-4ea5-aff6-526f089c1526",
+  "id": "6cbdf46c-c1dd-476a-959c-269619733af9",
   "prevId": "d60ee1d6-ec3d-4374-8d52-295883a324e6",
   "tables": {
     "activity_logs": {
@@ -332,13 +332,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "contact_name": {
-          "name": "contact_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "address": {

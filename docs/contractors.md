@@ -12,11 +12,10 @@ admins at all times, all hidden from residents.
 | Field | Required | Notes |
 | --- | --- | --- |
 | Business or owner name | yes | |
-| Person to ask for | no | The owner or main contact |
 | Phone / email | **one of the two** | Enforced in the action, not just the form |
 | Address | no | Free-form, geocodable. Not every contractor has a public address |
 | Services offered | yes, at least one | From a shared catalog — see below |
-| Good to know | no | Free-form note, e.g. "mention you're a resident" |
+| Good to know | no | Free-form note, e.g. "Ask for Dana. Mention you're a resident." Who to ask for goes here too |
 | Photos | no | Up to 6, 5MB each, JPG/PNG/WEBP/GIF |
 
 ## Finding a contractor
@@ -24,7 +23,7 @@ admins at all times, all hidden from residents.
 Residents are looking for a *job*, not a business name, so the page is built
 around services rather than an alphabetical list:
 
-- A **search box** matches business names, contact names, notes **and service
+- A **search box** matches business names, notes **and service
   names**, so typing "balcony" finds the painters.
 - **Service chips** across the top, each showing how many businesses offer it.
   Services with nobody behind them are left out — an empty chip is a dead end.

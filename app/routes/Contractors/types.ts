@@ -18,7 +18,6 @@ export type ContractorPhoto = {
 export type ContractorListing = {
   id: number;
   businessName: string;
-  contactName: string | null;
   address: string | null;
   phone: string | null;
   email: string | null;
