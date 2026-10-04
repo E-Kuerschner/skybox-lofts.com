@@ -50,7 +50,7 @@ const NavTile = ({ to, icon: Icon, title, description }: NavTileProps) => {
 export default function ResidentHome({ loaderData }: Route.ComponentProps) {
   return (
     <div className="flex flex-col gap-8 md:flex-row md:items-start">
-      <div className="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-4 md:w-72 md:shrink-0">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 md:w-[30rem] md:shrink-0 md:items-start">
         <NavTile
           to="/resident/documents"
           icon={FileText}
