@@ -6,6 +6,12 @@ import { isAuthenticated } from "~/util/authHelpers.server";
 import { getDatabase } from "~/util/database.server";
 import * as schema from "../../../database/schema";
 import { Switch } from "~/components/ui/switch";
+import { StatusBanner } from "~/components/StatusBanner";
+import {
+  actionError,
+  actionSuccess,
+  isActionResult,
+} from "~/util/crud/actionResult";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const session = await isAuthenticated(request, context);
@@ -34,13 +40,20 @@ export async function action({ request, context }: Route.ActionArgs) {
   const receivesGeneralEmails =
     formData.get("receivesGeneralEmails") === "true";
 
-  const { headers } = await auth.api.updateUser({
-    headers: request.headers,
-    body: { receivesGeneralEmails },
-    returnHeaders: true,
-  });
+  try {
+    const { headers } = await auth.api.updateUser({
+      headers: request.headers,
+      body: { receivesGeneralEmails },
+      returnHeaders: true,
+    });
 
-  return data({ success: true }, { headers });
+    return data(actionSuccess("Your preferences were saved."), { headers });
+  } catch (error) {
+    console.error("Updating email preferences failed:", error);
+    return actionError(
+      "We couldn't save your change. Please try again in a moment.",
+    );
+  }
 }
 
 type PreferenceRowProps = {
@@ -77,7 +90,9 @@ const PreferenceRow = ({
 export default function Preferences({ loaderData }: Route.ComponentProps) {
   const fetcher = useFetcher();
 
-  // Show the toggle in its new position immediately while the save is in flight
+  // Show the toggle in its new position immediately while the save is in flight.
+  // Once it settles, this falls back to the saved value, so a failed save puts
+  // the switch back where it was.
   const receivesGeneralEmails = fetcher.formData
     ? fetcher.formData.get("receivesGeneralEmails") === "true"
     : loaderData.receivesGeneralEmails;
@@ -95,6 +110,13 @@ export default function Preferences({ loaderData }: Route.ComponentProps) {
       <p className="text-sm text-muted-foreground mb-2">
         Choose which emails you would like to receive from us.
       </p>
+      {isActionResult(fetcher.data) && !fetcher.data.success && (
+        <StatusBanner
+          variant="error"
+          message={fetcher.data.error}
+          className="my-2"
+        />
+      )}
       <div className="divide-y">
         <PreferenceRow
           title="Account & sign-in emails"
