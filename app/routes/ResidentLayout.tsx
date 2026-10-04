@@ -268,28 +268,29 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
           "overflow-hidden": isOpen,
         })}
       >
-        <header className="flex flex-col">
-          <a
-            href="/"
-            aria-label="Go home"
-            className="md:hidden self-center my-4"
-          >
-            <img src={TextLogo} alt="Skybox Lofts" className="" />
-          </a>
-          <div className="relative md:h-[200px] h-auto border-b">
-            {/* Banner background image with webP support and JPEG fallback */}
-            <picture className="hidden md:block absolute inset-0">
-              <source type="image/webp" srcSet="/banner.webp" />
-              <img
-                src="/banner.jpg"
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            </picture>
-            <div className="relative md:h-[200px] h-auto flex flex-col justify-end pb-4 px-3 md:px-8 frosted-glass">
+        <header className="relative border-b">
+          {/* Banner background image with webP support and JPEG fallback */}
+          <picture className="absolute inset-0">
+            <source type="image/webp" srcSet="/banner.webp" />
+            <img
+              src="/banner.jpg"
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </picture>
+          <div className="relative md:h-[200px] flex flex-col frosted-glass">
+            {/* on mobile the logo sits on the banner, above the page title */}
+            <a
+              href="/"
+              aria-label="Go home"
+              className="md:hidden self-center mt-4 mb-2"
+            >
+              <img src={TextLogo} alt="Skybox Lofts" />
+            </a>
+            <div className="grow flex flex-col justify-end pb-4 px-3 md:px-8">
               <div className="flex gap-1 items-center">
                 <Button
-                  className="md:hidden -ml-3"
+                  className="md:hidden -ml-3 text-white hover:text-white hover:bg-white/20"
                   onClick={toggleMenuOpen}
                   variant="ghost"
                   size="icon"
@@ -297,7 +298,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
                 >
                   <Menu className="size-4" />
                 </Button>
-                <h1 className="text-2xl md:text-4xl md:mb-4 text-green-900 md:text-white font-semibold md:text-shadow-lg/50">
+                <h1 className="text-2xl md:text-4xl md:mb-4 text-white font-semibold text-shadow-lg/50">
                   {pageTitle}
                 </h1>
               </div>
