@@ -6,7 +6,7 @@ A full-stack resident portal for Skybox Lofts, built with React Router v7 and de
 
 - [Bun](https://bun.sh) — used as the package manager and development runtime
 - [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) — Cloudflare's deployment tool (installed automatically with dependencies)
-- A Cloudflare account with access to the project's Workers, D1 database, and R2 bucket (see [Cloudflare Infrastructure](#cloudflare-infrastructure) below)
+- A Cloudflare account with access to the project's Workers, D1 database, and R2 buckets (see [Cloudflare Infrastructure](#cloudflare-infrastructure) below)
 
 ## Local Development
 
@@ -155,6 +155,7 @@ The app runs entirely on Cloudflare's infrastructure. Here is what is in use and
 | `skybox-lofts` | Workers | — | Serverless runtime that serves the entire application |
 | `app` | D1 Database | `app` | SQLite database storing user accounts, sessions, documents, and other application data |
 | `documents` | R2 Bucket | `documents` | Object storage for uploaded resident documents (PDFs, etc.) |
+| `contractor-photos` | R2 Bucket | `contractor-photos` | Object storage for photos on contractor listings |
 | `skybox-lofts.com` | Custom Domain | — | Public domain routed through Cloudflare to the Worker |
 
 ### What a new maintainer needs
