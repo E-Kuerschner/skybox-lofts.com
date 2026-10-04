@@ -1,6 +1,6 @@
 import type { Route } from "./+types/index";
 import { Suspense, useMemo, useState, useEffect } from "react";
-import { Await, type AppLoadContext, useFetcher } from "react-router";
+import { Await, type AppLoadContext } from "react-router";
 import { FileIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { isAuthenticated } from "~/util/authHelpers.server";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
@@ -16,6 +16,7 @@ import { SearchInput } from "~/components/SearchInput";
 import { DocumentUploadDialog } from "./DocumentUploadDialog";
 import { NoContent } from "~/components/NoContent";
 import { StatusBanner } from "~/components/StatusBanner";
+import { ConfirmActionDialog } from "~/components/crud/ConfirmActionDialog";
 
 async function fetchDocuments(prefix: string, context: AppLoadContext) {
   const files = await context.cloudflare.env.DOCUMENTS.list({
@@ -64,14 +65,10 @@ function FileList({
   searchQuery?: string;
   onDeleteSuccess?: (message: string) => void;
 }) {
-  const fetcher = useFetcher();
-
-  // Call onDeleteSuccess when delete succeeds
-  useEffect(() => {
-    if (fetcher.state === "idle" && fetcher.data?.success && onDeleteSuccess) {
-      onDeleteSuccess(fetcher.data.message);
-    }
-  }, [fetcher.state, fetcher.data, onDeleteSuccess]);
+  const [fileToDelete, setFileToDelete] = useState<{
+    key: string;
+    name: string;
+  } | null>(null);
 
   // Filter files based on search query
   const filteredFiles = useMemo(() => {
@@ -84,49 +81,55 @@ function FileList({
   }
 
   return (
-    <ul className="space-y-2">
-      {filteredFiles.map((file) => (
-        <li key={file.key}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 link">
-              <FileIcon className="size-4 stroke-current shrink-0" />
-              <a
-                href={`/resident/documents/download?key=${encodeURIComponent(file.key)}`}
-                className="text-current hover:underline"
-              >
-                {file.name}
-              </a>
-            </div>
-            {isAdmin && (
-              <fetcher.Form
-                method="post"
-                action="/documentDelete"
-                onSubmit={(e) => {
-                  if (
-                    !window.confirm(
-                      `Are you sure you want to delete "${file.name}"? This action cannot be undone.`,
-                    )
-                  ) {
-                    e.preventDefault();
-                  }
-                }}
-              >
-                <input type="hidden" name="key" value={file.key} />
+    <>
+      <ul className="space-y-2">
+        {filteredFiles.map((file) => (
+          <li key={file.key}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 link">
+                <FileIcon className="size-4 stroke-current shrink-0" />
+                <a
+                  href={`/resident/documents/download?key=${encodeURIComponent(file.key)}`}
+                  className="text-current hover:underline"
+                >
+                  {file.name}
+                </a>
+              </div>
+              {isAdmin && (
                 <Button
-                  type="submit"
+                  type="button"
                   variant="ghost"
                   size="icon"
                   className="hover:text-destructive"
-                  disabled={fetcher.state !== "idle"}
+                  aria-label={`Delete ${file.name}`}
+                  onClick={() => setFileToDelete(file)}
                 >
                   <Trash2Icon className="size-4" />
                 </Button>
-              </fetcher.Form>
-            )}
-          </div>
-        </li>
-      ))}
-    </ul>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+      <ConfirmActionDialog
+        open={fileToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setFileToDelete(null);
+        }}
+        title="Delete this document?"
+        intent="delete"
+        recordId={fileToDelete?.key ?? ""}
+        action="/documentDelete"
+        confirmLabel="Delete document"
+        pendingLabel="Deleting..."
+        cancelLabel="Keep it"
+        destructive
+        onSuccess={onDeleteSuccess}
+      >
+        <strong>{fileToDelete?.name}</strong> will be removed for all residents.
+        This can't be undone.
+      </ConfirmActionDialog>
+    </>
   );
 }
 
@@ -173,94 +176,94 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
       <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
           <p className="text-muted-foreground">
-            Building documents, meeting notes and financials are available to all
-            residents for download. Expand the sections below to see more.
+            Building documents, meeting notes and financials are available to
+            all residents for download. Expand the sections below to see more.
           </p>
         </div>
 
-      <div className="flex flex-col gap-2 md:flex-row items-center justify-between mb-4">
-        <SearchInput
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search documents..."
-          className="max-w-md"
-        />
-        {/* Admin Upload Button */}
-        {loaderData.isAdmin && (
-          <Button
-            variant="secondary"
-            // disable document upload on mobile
-            className="hidden md:flex"
-            onClick={() => setIsUploadDrawerOpen(true)}
+        <div className="flex flex-col gap-2 md:flex-row items-center justify-between mb-4">
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search documents..."
+            className="max-w-md"
+          />
+          {/* Admin Upload Button */}
+          {loaderData.isAdmin && (
+            <Button
+              variant="secondary"
+              // disable document upload on mobile
+              className="hidden md:flex"
+              onClick={() => setIsUploadDrawerOpen(true)}
+            >
+              <UploadIcon className="size-4 mr-2" />
+              Upload Document
+            </Button>
+          )}
+        </div>
+
+        <Accordion
+          type="multiple"
+          defaultValue={defaultAccordionValue}
+          className="space-y-2"
+        >
+          <AccordionItem
+            value="building-info"
+            className="bg-card border rounded-lg px-4"
           >
-            <UploadIcon className="size-4 mr-2" />
-            Upload Document
-          </Button>
-        )}
-      </div>
+            <AccordionTrigger>Building Information</AccordionTrigger>
+            <AccordionContent>
+              <FileList
+                files={loaderData.buildingFiles}
+                isAdmin={loaderData.isAdmin}
+                searchQuery={searchQuery}
+                onDeleteSuccess={handleDeleteSuccess}
+              />
+            </AccordionContent>
+          </AccordionItem>
 
-      <Accordion
-        type="multiple"
-        defaultValue={defaultAccordionValue}
-        className="space-y-2"
-      >
-        <AccordionItem
-          value="building-info"
-          className="bg-card border rounded-lg px-4"
-        >
-          <AccordionTrigger>Building Information</AccordionTrigger>
-          <AccordionContent>
-            <FileList
-              files={loaderData.buildingFiles}
-              isAdmin={loaderData.isAdmin}
-              searchQuery={searchQuery}
-              onDeleteSuccess={handleDeleteSuccess}
-            />
-          </AccordionContent>
-        </AccordionItem>
+          <AccordionItem
+            value="meeting-notes"
+            className="bg-card border rounded-lg px-4"
+          >
+            <AccordionTrigger>Meeting Notes</AccordionTrigger>
+            <AccordionContent>
+              <Suspense fallback={Fallback}>
+                <Await resolve={loaderData.meetingNotesFiles}>
+                  {(files) => (
+                    <FileList
+                      files={files}
+                      isAdmin={loaderData.isAdmin}
+                      searchQuery={searchQuery}
+                      onDeleteSuccess={handleDeleteSuccess}
+                    />
+                  )}
+                </Await>
+              </Suspense>
+            </AccordionContent>
+          </AccordionItem>
 
-        <AccordionItem
-          value="meeting-notes"
-          className="bg-card border rounded-lg px-4"
-        >
-          <AccordionTrigger>Meeting Notes</AccordionTrigger>
-          <AccordionContent>
-            <Suspense fallback={Fallback}>
-              <Await resolve={loaderData.meetingNotesFiles}>
-                {(files) => (
-                  <FileList
-                    files={files}
-                    isAdmin={loaderData.isAdmin}
-                    searchQuery={searchQuery}
-                    onDeleteSuccess={handleDeleteSuccess}
-                  />
-                )}
-              </Await>
-            </Suspense>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem
-          value="budget"
-          className="bg-card border rounded-lg px-4"
-        >
-          <AccordionTrigger>Budget</AccordionTrigger>
-          <AccordionContent>
-            <Suspense fallback={Fallback}>
-              <Await resolve={loaderData.budgetFiles}>
-                {(files) => (
-                  <FileList
-                    files={files}
-                    isAdmin={loaderData.isAdmin}
-                    searchQuery={searchQuery}
-                    onDeleteSuccess={handleDeleteSuccess}
-                  />
-                )}
-              </Await>
-            </Suspense>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+          <AccordionItem
+            value="budget"
+            className="bg-card border rounded-lg px-4"
+          >
+            <AccordionTrigger>Budget</AccordionTrigger>
+            <AccordionContent>
+              <Suspense fallback={Fallback}>
+                <Await resolve={loaderData.budgetFiles}>
+                  {(files) => (
+                    <FileList
+                      files={files}
+                      isAdmin={loaderData.isAdmin}
+                      searchQuery={searchQuery}
+                      onDeleteSuccess={handleDeleteSuccess}
+                    />
+                  )}
+                </Await>
+              </Suspense>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         {/* Upload Drawer */}
         {loaderData.isAdmin && (

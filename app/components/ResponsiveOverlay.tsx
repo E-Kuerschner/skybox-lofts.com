@@ -47,6 +47,11 @@ type ResponsiveOverlayProps = {
  * The app's dialog: a centered card on wider screens and a bottom sheet on
  * phones. Header and footer stay put while the body
  * scrolls, so the buttons are always in reach.
+ *
+ * Every dialog in the app goes through this (directly, or via
+ * `CrudFormDialog` / `ConfirmActionDialog`). Never import
+ * `~/components/ui/dialog` in a feature, and never use `window.confirm()`:
+ * both skip the shared header, pinned footer and phone bottom sheet.
  */
 export function ResponsiveOverlay({
   open,

@@ -10,7 +10,11 @@ import { sendInviteEmail } from "~/email/sendInviteEmail.server";
 import { Button } from "~/components/ui/button";
 import { NoContent } from "~/components/NoContent";
 import { SearchInput } from "~/components/SearchInput";
-import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
+import {
+  OverlayBody,
+  OverlayFooter,
+  ResponsiveOverlay,
+} from "~/components/ResponsiveOverlay";
 import { fuzzyMatch } from "~/util/fuzzySearch";
 import { createActivityLogData } from "~/util/activityLogger.server";
 import { StatusBanner } from "~/components/StatusBanner";
@@ -518,15 +522,9 @@ export default function ResidentManagement({
             ? undefined
             : "Enter the resident's information below. They will receive a welcome email with instructions to sign in and access their account."
         }
+        bare
       >
-        {actionData?.error && (
-          <StatusBanner
-            variant="error"
-            message={actionData.error}
-            className="mt-4"
-          />
-        )}
-        <Form method="post" className="mt-4">
+        <Form method="post" className="flex min-h-0 flex-1 flex-col">
           <input
             type="hidden"
             name="intent"
@@ -535,22 +533,47 @@ export default function ResidentManagement({
           {editingUserId && (
             <input type="hidden" name="userId" value={editingUserId} />
           )}
-          <ResidentForm
-            firstName={newUserFirstName}
-            lastName={newUserLastName}
-            email={newUserEmail}
-            unitNumber={newUserUnitNumber}
-            role={newUserRole}
-            isFormValid={isFormValid}
-            onFirstNameChange={setNewUserFirstName}
-            onLastNameChange={setNewUserLastName}
-            onEmailChange={setNewUserEmail}
-            onUnitNumberChange={setNewUserUnitNumber}
-            onRoleChange={setNewUserRole}
-            submitLabel={editingUserId ? "Save" : "Register"}
-            vertical
-            editMode={editingUserId !== null}
-          />
+          <OverlayBody className="flex flex-col gap-6">
+            {actionData?.error && (
+              <StatusBanner
+                variant="error"
+                message={actionData.error}
+                className="shrink-0"
+              />
+            )}
+            <ResidentForm
+              firstName={newUserFirstName}
+              lastName={newUserLastName}
+              email={newUserEmail}
+              unitNumber={newUserUnitNumber}
+              role={newUserRole}
+              onFirstNameChange={setNewUserFirstName}
+              onLastNameChange={setNewUserLastName}
+              onEmailChange={setNewUserEmail}
+              onUnitNumberChange={setNewUserUnitNumber}
+              onRoleChange={setNewUserRole}
+              vertical
+              editMode={editingUserId !== null}
+            />
+          </OverlayBody>
+          <OverlayFooter>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 md:h-11 flex-1 rounded-xl"
+              onClick={() => handleOverlayOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="cta"
+              className="h-11 md:h-11 flex-1 shadow-none hover:translate-y-0 hover:shadow-none"
+              disabled={!isFormValid}
+            >
+              {editingUserId ? "Save" : "Register"}
+            </Button>
+          </OverlayFooter>
         </Form>
       </ResponsiveOverlay>
     </div>
