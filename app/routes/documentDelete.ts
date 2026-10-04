@@ -2,6 +2,7 @@ import type { Route } from "./+types/documentDelete";
 import { isAdmin } from "~/util/authHelpers.server";
 import { getDatabase } from "~/util/database.server";
 import { createActivityLogData } from "~/util/activityLogger.server";
+import { CRUD_RECORD_ID_FIELD } from "~/components/crud/CrudFormDialog";
 import * as schema from "../../database/schema";
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -10,7 +11,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   try {
     const formData = await request.formData();
-    const key = formData.get("key") as string;
+    const key = formData.get(CRUD_RECORD_ID_FIELD) as string;
 
     // Validate input
     if (!key || key.trim() === "") {

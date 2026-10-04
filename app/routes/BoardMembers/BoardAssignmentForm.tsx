@@ -1,22 +1,22 @@
-import { Form } from "react-router";
-import { Button } from "~/components/ui/button";
-
 type Props = {
   boardMemberId: number;
   positionTitle: string;
   assignedUserId: string | null;
   assignedUserName: string | null;
   isUnassignment: boolean;
-  onCancel: () => void;
 };
 
+/**
+ * The fields of the assign / remove form: the explanation of what will happen
+ * plus the hidden inputs it posts. The dialog wraps these in a `<Form>` and
+ * pins the Cancel / confirm buttons in its footer.
+ */
 export function BoardAssignmentForm({
   boardMemberId,
   positionTitle,
   assignedUserId,
   assignedUserName,
   isUnassignment,
-  onCancel,
 }: Props) {
   return (
     <>
@@ -54,32 +54,13 @@ export function BoardAssignmentForm({
         )}
       </div>
 
-      <Form method="post" onSubmit={onCancel} className="mt-4">
-        <input type="hidden" name="intent" value="assign" />
-        <input type="hidden" name="boardMemberId" value={boardMemberId} />
-        <input
-          type="hidden"
-          name="userId"
-          value={isUnassignment ? "" : assignedUserId || ""}
-        />
-        <div className="flex gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            className="flex-1"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant={isUnassignment ? "destructive" : "cta"}
-            className="flex-1"
-          >
-            {isUnassignment ? "Remove" : "Assign"}
-          </Button>
-        </div>
-      </Form>
+      <input type="hidden" name="intent" value="assign" />
+      <input type="hidden" name="boardMemberId" value={boardMemberId} />
+      <input
+        type="hidden"
+        name="userId"
+        value={isUnassignment ? "" : assignedUserId || ""}
+      />
     </>
   );
 }

@@ -36,7 +36,7 @@ export function ContractorsMobile({
             { value: "unit", label: "In-unit", count: unit.total },
             { value: "building", label: "Building", count: building.total },
           ]}
-          className="min-w-0 grow"
+          className="w-auto min-w-0 shrink grow"
         />
         <AdminOnly>
           <Button

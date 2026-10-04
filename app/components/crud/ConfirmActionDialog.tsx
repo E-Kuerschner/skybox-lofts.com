@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useFetcher } from "react-router";
 import { Button } from "~/components/ui/button";
-import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
+import {
+  OverlayBody,
+  OverlayFooter,
+  ResponsiveOverlay,
+} from "~/components/ResponsiveOverlay";
 import { isActionResult } from "~/util/crud/actionResult";
 import { ActionStatusBanner } from "./ActionStatusBanner";
 import { CRUD_INTENT_FIELD, CRUD_RECORD_ID_FIELD } from "./CrudFormDialog";
@@ -10,6 +14,7 @@ type ConfirmActionDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
+  description?: string;
   /** The action's intent, e.g. "delete". */
   intent: string;
   recordId: string | number;
@@ -36,6 +41,7 @@ export function ConfirmActionDialog({
   open,
   onOpenChange,
   title,
+  description,
   intent,
   recordId,
   action,
@@ -77,8 +83,14 @@ export function ConfirmActionDialog({
         if (!isSubmitting) onOpenChange(next);
       }}
       title={title}
+      description={description}
+      bare
     >
-      <fetcher.Form method="post" action={action} className="space-y-4 pt-2">
+      <fetcher.Form
+        method="post"
+        action={action}
+        className="flex min-h-0 flex-1 flex-col"
+      >
         <input type="hidden" name={CRUD_INTENT_FIELD} value={intent} />
         <input
           type="hidden"
@@ -86,15 +98,19 @@ export function ConfirmActionDialog({
           value={String(recordId)}
         />
 
-        {hasSubmitted && <ActionStatusBanner result={fetcher.data} />}
+        <OverlayBody className="flex flex-col gap-4">
+          {hasSubmitted && (
+            <ActionStatusBanner result={fetcher.data} className="shrink-0" />
+          )}
 
-        <div className="text-sm text-muted-foreground">{children}</div>
+          <div className="text-sm text-muted-foreground">{children}</div>
+        </OverlayBody>
 
-        <div className="flex gap-2">
+        <OverlayFooter>
           <Button
             type="button"
             variant="outline"
-            className="flex-1"
+            className="h-11 md:h-11 flex-1 rounded-xl"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
@@ -103,12 +119,12 @@ export function ConfirmActionDialog({
           <Button
             type="submit"
             variant={destructive ? "destructive" : "cta"}
-            className="flex-1"
+            className="h-11 md:h-11 flex-1 shadow-none hover:translate-y-0 hover:shadow-none"
             disabled={isSubmitting}
           >
             {isSubmitting ? pendingLabel : confirmLabel}
           </Button>
-        </div>
+        </OverlayFooter>
       </fetcher.Form>
     </ResponsiveOverlay>
   );

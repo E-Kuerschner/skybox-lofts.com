@@ -21,6 +21,11 @@ behave. This file is the short version: what's here and how to wire it up.
 Admin-only *visibility* is separate: see `~/components/AdminOnly` for
 `<AdminOnly>`, `<AdminItemActions>` and `useIsAdmin()`.
 
+**Dialogs:** new dialogs use `ResponsiveOverlay` (or `CrudFormDialog` /
+`ConfirmActionDialog`), never `~/components/ui/dialog` directly, and never
+`window.confirm()`. Put buttons in `OverlayFooter` (or the `footer` prop), not in
+the body, so they stay pinned while long content scrolls.
+
 ## The contract
 
 Every form posts **`intent`** (`create` | `update` | `delete`) and, when editing

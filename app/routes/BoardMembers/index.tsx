@@ -18,7 +18,11 @@ import { Form } from "react-router";
 import { Edit3Icon } from "lucide-react";
 import { BoardPositionAssignment } from "./BoardPositionAssignment";
 import { BoardAssignmentForm } from "./BoardAssignmentForm";
-import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
+import {
+  OverlayBody,
+  OverlayFooter,
+  ResponsiveOverlay,
+} from "~/components/ResponsiveOverlay";
 import { StatusBanner } from "~/components/StatusBanner";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -26,10 +30,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const db = getDatabase(context);
 
   // Fetch all board members (with nullable userId and name)
-  const boardMemberData = await db
-    .select()
-    .from(schema.boardMembers)
-    .all();
+  const boardMemberData = await db.select().from(schema.boardMembers).all();
 
   // Fetch all email-verified residents for the assignment combobox
   // Note: emailVerified is a boolean in SQLite (0 or 1), so we check for truthy values
@@ -95,11 +96,17 @@ async function handleAssignBoardPosition(
 
         // Log the unassignment
         await db.insert(schema.activityLogs).values(
-          createActivityLogData(actorUserId, "updated", "board_member", boardMemberId, {
-            position: position.role,
-            previousUserId,
-            note: "unassigned",
-          })
+          createActivityLogData(
+            actorUserId,
+            "updated",
+            "board_member",
+            boardMemberId,
+            {
+              position: position.role,
+              previousUserId,
+              note: "unassigned",
+            },
+          ),
         );
       }
 
@@ -119,7 +126,10 @@ async function handleAssignBoardPosition(
     }
 
     if (!user.emailVerified) {
-      return { error: "User must have a verified email to be assigned to a board position" };
+      return {
+        error:
+          "User must have a verified email to be assigned to a board position",
+      };
     }
 
     // Check if user already has a board position (one position per user)
@@ -162,15 +172,24 @@ async function handleAssignBoardPosition(
 
     // Log the assignment
     await db.insert(schema.activityLogs).values(
-      createActivityLogData(actorUserId, "updated", "board_member", boardMemberId, {
-        position: position.role,
-        assignedUserId: userId,
-        assignedUserName: user.name,
-        note: "assigned",
-      })
+      createActivityLogData(
+        actorUserId,
+        "updated",
+        "board_member",
+        boardMemberId,
+        {
+          position: position.role,
+          assignedUserId: userId,
+          assignedUserName: user.name,
+          note: "assigned",
+        },
+      ),
     );
 
-    return { success: true, message: `${user.name} assigned to ${position.role}` };
+    return {
+      success: true,
+      message: `${user.name} assigned to ${position.role}`,
+    };
   } catch (error) {
     console.error("Error assigning board position:", error);
     return { error: "Failed to assign board position" };
@@ -182,7 +201,9 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   // Admin-only protection
   if (session.user.role !== "admin") {
-    return { error: "Permission denied. Only admins can modify board positions." };
+    return {
+      error: "Permission denied. Only admins can modify board positions.",
+    };
   }
 
   const db = getDatabase(context);
@@ -192,7 +213,12 @@ export async function action({ request, context }: Route.ActionArgs) {
   if (intent === "assign") {
     const boardMemberId = formData.get("boardMemberId") as string;
     const userId = formData.get("userId") as string | null;
-    return handleAssignBoardPosition(boardMemberId, userId, db, session.user.id);
+    return handleAssignBoardPosition(
+      boardMemberId,
+      userId,
+      db,
+      session.user.id,
+    );
   }
 
   return { error: "Invalid action" };
@@ -217,7 +243,7 @@ export default function BoardMembers({
     userName: string | null,
   ) => {
     const position = loaderData.boardMemberData.find(
-      (m: { id: number; role: string }) => m.id === boardMemberId
+      (m: { id: number; role: string }) => m.id === boardMemberId,
     );
     if (!position) return;
 
@@ -243,7 +269,11 @@ export default function BoardMembers({
         <StatusBanner
           className="mb-4"
           variant="success"
-          message={"message" in actionData ? actionData.message : "Operation completed successfully"}
+          message={
+            "message" in actionData
+              ? actionData.message
+              : "Operation completed successfully"
+          }
           autoDismiss={3000}
         />
       )}
@@ -280,26 +310,35 @@ export default function BoardMembers({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loaderData.boardMemberData.map((member: { id: number; name: string | null; role: string; userId: string | null }) => (
-              <TableRow key={member.id}>
-                <TableCell>{member.role}</TableCell>
-                <TableCell>
-                  {editMode ? (
-                    <BoardPositionAssignment
-                      boardMemberId={member.id}
-                      currentUserId={member.userId}
-                      currentUserName={member.name}
-                      verifiedResidents={loaderData.verifiedResidents}
-                      onAssignmentChange={handleAssignmentChange}
-                    />
-                  ) : (
-                    member.name || (
-                      <span className="text-muted-foreground italic">Vacant</span>
-                    )
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
+            {loaderData.boardMemberData.map(
+              (member: {
+                id: number;
+                name: string | null;
+                role: string;
+                userId: string | null;
+              }) => (
+                <TableRow key={member.id}>
+                  <TableCell>{member.role}</TableCell>
+                  <TableCell>
+                    {editMode ? (
+                      <BoardPositionAssignment
+                        boardMemberId={member.id}
+                        currentUserId={member.userId}
+                        currentUserName={member.name}
+                        verifiedResidents={loaderData.verifiedResidents}
+                        onAssignmentChange={handleAssignmentChange}
+                      />
+                    ) : (
+                      member.name || (
+                        <span className="text-muted-foreground italic">
+                          Vacant
+                        </span>
+                      )
+                    )}
+                  </TableCell>
+                </TableRow>
+              ),
+            )}
           </TableBody>
         </Table>
       </div>
@@ -314,15 +353,42 @@ export default function BoardMembers({
               ? "Remove Board Member?"
               : "Assign Board Member?"
           }
+          bare
         >
-          <BoardAssignmentForm
-            boardMemberId={selectedPosition.id}
-            positionTitle={selectedPosition.title}
-            assignedUserId={selectedPosition.userId}
-            assignedUserName={selectedPosition.userName}
-            isUnassignment={selectedPosition.userId === null}
-            onCancel={() => setDialogOpen(false)}
-          />
+          <Form
+            method="post"
+            onSubmit={() => setDialogOpen(false)}
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <OverlayBody>
+              <BoardAssignmentForm
+                boardMemberId={selectedPosition.id}
+                positionTitle={selectedPosition.title}
+                assignedUserId={selectedPosition.userId}
+                assignedUserName={selectedPosition.userName}
+                isUnassignment={selectedPosition.userId === null}
+              />
+            </OverlayBody>
+            <OverlayFooter>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 md:h-11 flex-1 rounded-xl"
+                onClick={() => setDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant={
+                  selectedPosition.userId === null ? "destructive" : "cta"
+                }
+                className="h-11 md:h-11 flex-1 shadow-none hover:translate-y-0 hover:shadow-none"
+              >
+                {selectedPosition.userId === null ? "Remove" : "Assign"}
+              </Button>
+            </OverlayFooter>
+          </Form>
         </ResponsiveOverlay>
       )}
     </div>

@@ -2,13 +2,10 @@ import { useState, useEffect } from "react";
 import { useFetcher } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "~/components/ui/dialog";
+  OverlayBody,
+  OverlayFooter,
+  ResponsiveOverlay,
+} from "~/components/ResponsiveOverlay";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -73,117 +70,105 @@ export function DocumentUploadDialog({
   }, [fetcher.state, fetcher.data, onUploadSuccess]);
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="site-bg">
-        <DialogHeader>
-          <DialogTitle>Upload Document</DialogTitle>
-          <DialogDescription>
-            Choose a file to upload from your computer and the category to file
-            it under. Files will be accessible to all registered residents.
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveOverlay
+      open={open}
+      onOpenChange={handleClose}
+      title="Upload Document"
+      description="Choose a file to upload from your computer and the category to file it under. Files will be accessible to all registered residents."
+      bare
+    >
+      <fetcher.Form
+        method="post"
+        action="/documentUpload"
+        encType="multipart/form-data"
+        className="flex min-h-0 flex-1 flex-col"
+      >
+        <OverlayBody className="flex flex-col gap-6">
+          {/* Error Message */}
+          {fetcher.data && !fetcher.data.success && fetcher.data.error && (
+            <StatusBanner
+              variant="error"
+              message={fetcher.data.error}
+              className="shrink-0"
+            />
+          )}
 
-        {/* Error Message */}
-        {fetcher.data && !fetcher.data.success && fetcher.data.error && (
-          <StatusBanner
-            variant="error"
-            message={fetcher.data.error}
-            className="mt-4"
-          />
-        )}
-
-        <fetcher.Form
-          method="post"
-          action="/documentUpload"
-          encType="multipart/form-data"
-          className="mt-4"
-        >
-          <div className="space-y-4">
-            {/* Category Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="category-select">Category</Label>
-              <Select
-                value={selectedCategory}
-                onValueChange={setSelectedCategory}
-                disabled={isSubmitting}
-              >
-                <SelectTrigger id="category-select" className="bg-white">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {existingCategories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category
-                        .split("-")
-                        .map(
-                          (word) =>
-                            word.charAt(0).toUpperCase() + word.slice(1),
-                        )
-                        .join(" ")}
-                    </SelectItem>
-                  ))}
-                  {/*<SelectItem value="custom">+ New Category</SelectItem>*/}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/*/!* Custom Category Input *!/*/}
-            {/*{isCustomCategory && (*/}
-            {/*  <div className="space-y-2">*/}
-            {/*    <Label htmlFor="custom-category">Category Name</Label>*/}
-            {/*    <Input*/}
-            {/*      id="custom-category"*/}
-            {/*      type="text"*/}
-            {/*      value={customCategory}*/}
-            {/*      onChange={(e) => setCustomCategory(e.target.value)}*/}
-            {/*      placeholder="Enter category name"*/}
-            {/*      disabled={isSubmitting}*/}
-            {/*      required*/}
-            {/*    />*/}
-            {/*  </div>*/}
-            {/*)}*/}
-
-            {/* Hidden input for category value */}
-            <input type="hidden" name="category" value={categoryValue} />
-
-            {/* File Upload */}
-            <div className="space-y-2">
-              <Label htmlFor="file">Document</Label>
-              <Input
-                id="file"
-                name="file"
-                type="file"
-                className={cn("bg-white", [selectedFile && "text-emerald-500"])}
-                onChange={handleFileChange}
-                disabled={isSubmitting}
-                required
-              />
-              {selectedFile && (
-                <p className="text-sm text-muted-foreground">
-                  Selected: {selectedFile.name} (
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                </p>
-              )}
-            </div>
+          {/* Category Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="category-select">Category</Label>
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+              disabled={isSubmitting}
+            >
+              <SelectTrigger id="category-select" className="bg-card w-full">
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {existingCategories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category
+                      .split("-")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1),
+                      )
+                      .join(" ")}
+                  </SelectItem>
+                ))}
+                {/*<SelectItem value="custom">+ New Category</SelectItem>*/}
+              </SelectContent>
+            </Select>
           </div>
 
-          <DialogFooter className="mt-6">
-            <Button
-              variant="cta"
-              type="submit"
-              className="w-full"
-              disabled={
-                isSubmitting ||
-                !selectedFile ||
-                !categoryValue ||
-                categoryValue.trim() === ""
-              }
-            >
-              {isSubmitting ? "Uploading..." : "Upload"}
-            </Button>
-          </DialogFooter>
-        </fetcher.Form>
-      </DialogContent>
-    </Dialog>
+          {/* Hidden input for category value */}
+          <input type="hidden" name="category" value={categoryValue} />
+
+          {/* File Upload */}
+          <div className="space-y-2">
+            <Label htmlFor="file">Document</Label>
+            <Input
+              id="file"
+              name="file"
+              type="file"
+              className={cn("bg-card", [selectedFile && "text-emerald-500"])}
+              onChange={handleFileChange}
+              disabled={isSubmitting}
+              required
+            />
+            {selectedFile && (
+              <p className="text-sm text-muted-foreground">
+                Selected: {selectedFile.name} (
+                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+              </p>
+            )}
+          </div>
+        </OverlayBody>
+
+        <OverlayFooter>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 md:h-11 flex-1 rounded-xl"
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="cta"
+            type="submit"
+            className="h-11 md:h-11 flex-1 shadow-none hover:translate-y-0 hover:shadow-none"
+            disabled={
+              isSubmitting ||
+              !selectedFile ||
+              !categoryValue ||
+              categoryValue.trim() === ""
+            }
+          >
+            {isSubmitting ? "Uploading..." : "Upload"}
+          </Button>
+        </OverlayFooter>
+      </fetcher.Form>
+    </ResponsiveOverlay>
   );
 }

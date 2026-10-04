@@ -286,10 +286,10 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
                 className="w-full h-full object-cover"
               />
             </picture>
-            <div className="relative md:h-[200px] h-auto flex flex-col justify-end pb-4 px-5 md:px-8 frosted-glass">
+            <div className="relative md:h-[200px] h-auto flex flex-col justify-end pb-4 px-3 md:px-8 frosted-glass">
               <div className="flex gap-1 items-center">
                 <Button
-                  className="md:hidden"
+                  className="md:hidden -ml-3"
                   onClick={toggleMenuOpen}
                   variant="ghost"
                   size="icon"

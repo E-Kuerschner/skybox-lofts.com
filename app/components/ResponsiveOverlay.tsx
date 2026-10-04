@@ -20,7 +20,6 @@ type ResponsiveOverlayProps = {
   title: string;
   description?: string;
   children: React.ReactNode;
-  showCloseButton?: boolean;
   /** Extra classes for the content box, e.g. `md:max-w-[35rem]` to widen it. */
   contentClassName?: string;
   /**
@@ -31,8 +30,6 @@ type ResponsiveOverlayProps = {
   hideHeader?: boolean;
   /** Above the title, e.g. a "Back to …" link. */
   headerStart?: React.ReactNode;
-  /** Beside the close button, e.g. an Edit button. */
-  headerActions?: React.ReactNode;
   /** Pinned under the content, e.g. the dialog's buttons. */
   footer?: React.ReactNode;
   /**
@@ -47,6 +44,11 @@ type ResponsiveOverlayProps = {
  * The app's dialog: a centered card on wider screens and a bottom sheet on
  * phones. Header and footer stay put while the body
  * scrolls, so the buttons are always in reach.
+ *
+ * Every dialog in the app goes through this (directly, or via
+ * `CrudFormDialog` / `ConfirmActionDialog`). Never import
+ * `~/components/ui/dialog` in a feature, and never use `window.confirm()`:
+ * both skip the shared header, pinned footer and phone bottom sheet.
  */
 export function ResponsiveOverlay({
   open,
@@ -54,11 +56,9 @@ export function ResponsiveOverlay({
   title,
   description,
   children,
-  showCloseButton = true,
   contentClassName,
   hideHeader = false,
   headerStart,
-  headerActions,
   footer,
   bare = false,
 }: ResponsiveOverlayProps) {
@@ -90,10 +90,7 @@ export function ResponsiveOverlay({
                 <DialogDescription>{description}</DialogDescription>
               )}
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              {headerActions}
-              {showCloseButton && <OverlayCloseButton />}
-            </div>
+            <OverlayCloseButton />
           </div>
         )}
 
