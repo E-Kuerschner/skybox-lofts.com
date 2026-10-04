@@ -135,14 +135,19 @@ Migrations are managed with [Drizzle ORM](https://orm.drizzle.team). **Never cre
 
 ```bash
 bun run db:generate   # generates migration files from schema changes
-bun run db:migrate    # applies migrations to the remote Cloudflare D1 database
 ```
 
-For local development only:
+Apply them to your local database:
 
 ```bash
 bun run db:migrate:local
 ```
+
+### Production
+
+Production migrations run in CI. You don't run them by hand. The [Migrate workflow](.github/workflows/migrate.yml) runs `bun run db:migrate` against the production D1 database on every push to `main`, so merging a PR that adds a migration is what applies it. Runs are queued one at a time so two never touch the database at once. The job uses the `production` GitHub environment, where the Cloudflare secrets are stored and where required reviewers can be added to gate migrations.
+
+The workflow applies migrations with drizzle-kit rather than `wrangler d1 migrations apply`. Production tracks applied migrations in drizzle's `__drizzle_migrations` table. Wrangler keeps its own separate list and would treat every migration as not yet applied.
 
 ## Cloudflare Infrastructure
 
