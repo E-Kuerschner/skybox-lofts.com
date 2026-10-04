@@ -3,6 +3,11 @@ name: Migrate
 on:
   push:
     branches: [main]
+    # Only run (and ask for production approval) when a merge adds or changes migrations
+    paths:
+      - "database/migrations/**"
+  # Lets you run it by hand from the Actions tab if ever needed
+  workflow_dispatch:
 
 # Never let two runs apply migrations to the same database at once
 concurrency:
