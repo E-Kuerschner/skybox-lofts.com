@@ -17,6 +17,7 @@ import {
   Settings,
   UserCog,
   Users,
+  Wrench,
 } from "lucide-react";
 import { WrigleyClock } from "~/components/WrigleyClock";
 import { ResidentBreadcrumbs } from "~/components/ResidentBreadcrumbs";
@@ -110,6 +111,12 @@ const SideBarContent = ({
         <LayoutNavLink to="/resident/board" icon={<Users className="size-4" />}>
           Board Members
         </LayoutNavLink>
+        <LayoutNavLink
+          to="/resident/contractors"
+          icon={<Wrench className="size-4" />}
+        >
+          Contractors
+        </LayoutNavLink>
         {isAdmin && (
           <>
             <LayoutNavLink
@@ -192,6 +199,7 @@ export default function ResidentLayout({ loaderData }: Route.ComponentProps) {
     if (lastSegment === "resident") return "Resident Home";
     if (lastSegment === "documents") return "Resident Documents";
     if (lastSegment === "board") return "Board Members";
+    if (lastSegment === "contractors") return "Contractors & Service Providers";
     if (lastSegment === "meeting-notes") return "Meeting Notes";
     if (lastSegment === "management") return "Resident Management";
     if (lastSegment === "activity") return "Activity Log";

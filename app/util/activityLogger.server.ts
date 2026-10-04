@@ -1,5 +1,5 @@
 type ActivityAction = "created" | "updated" | "deleted";
-type EntityType = "resident" | "document" | "board_member";
+type EntityType = "resident" | "document" | "board_member" | "contractor";
 
 interface ActivityMetadata {
   residentName?: string;
@@ -17,6 +17,10 @@ interface ActivityMetadata {
   assignedUserId?: string;
   assignedUserName?: string;
   note?: string;
+  // Contractor fields
+  contractorName?: string;
+  serviceCount?: number;
+  photoCount?: number;
 }
 
 export function createActivityLogData(

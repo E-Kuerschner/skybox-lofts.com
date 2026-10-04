@@ -1,8 +1,6 @@
 @import "tailwindcss" source(".");
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -11,13 +9,8 @@
 html,
 body {
   @apply bg-gradient-to-b from-stone-100 to-neutral-50;
-
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
-
-    @apply min-h-screen;
-    @apply h-full;
+  @apply min-h-screen;
+  @apply h-full;
 }
 
 @theme inline {
@@ -77,7 +70,16 @@ body {
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: var(--color-emerald-600);
+  /*
+   * The app's one "active/focused" accent color: input focus rings, and any
+   * component indicating a currently-selected state (segmented toggles,
+   * filter chips, etc.) should all pull from this rather than hardcoding an
+   * emerald shade directly. Pair it as a border/ring accent (as inputs do)
+   * rather than a solid fill — a fully-saturated emerald-500 background
+   * doesn't leave room for text dark enough to read well without looking
+   * like plain black.
+   */
+  --ring: var(--color-emerald-500);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);

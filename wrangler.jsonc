@@ -23,6 +23,10 @@
     {
       "binding": "DOCUMENTS",
       "bucket_name": "documents"
+    },
+    {
+      "binding": "CONTRACTOR_PHOTOS",
+      "bucket_name": "contractor-photos"
     }
   ],
   "d1_databases": [

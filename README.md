@@ -6,7 +6,7 @@ A full-stack resident portal for Skybox Lofts, built with React Router v7 and de
 
 - [Bun](https://bun.sh) — used as the package manager and development runtime
 - [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) — Cloudflare's deployment tool (installed automatically with dependencies)
-- A Cloudflare account with access to the project's Workers, D1 database, and R2 bucket (see [Cloudflare Infrastructure](#cloudflare-infrastructure) below)
+- A Cloudflare account with access to the project's Workers, D1 database, and R2 buckets (see [Cloudflare Infrastructure](#cloudflare-infrastructure) below)
 
 ## Local Development
 
@@ -135,14 +135,19 @@ Migrations are managed with [Drizzle ORM](https://orm.drizzle.team). **Never cre
 
 ```bash
 bun run db:generate   # generates migration files from schema changes
-bun run db:migrate    # applies migrations to the remote Cloudflare D1 database
 ```
 
-For local development only:
+Apply them to your local database:
 
 ```bash
 bun run db:migrate:local
 ```
+
+### Production
+
+Production migrations run in CI. You don't run them by hand. The [Migrate workflow](.github/workflows/migrate.yml) runs `bun run db:migrate` against the production D1 database on every push to `main`, so merging a PR that adds a migration is what applies it. Runs are queued one at a time so two never touch the database at once. The job uses the `production` GitHub environment, where the Cloudflare secrets are stored and where required reviewers can be added to gate migrations.
+
+The workflow applies migrations with drizzle-kit rather than `wrangler d1 migrations apply`. Production tracks applied migrations in drizzle's `__drizzle_migrations` table. Wrangler keeps its own separate list and would treat every migration as not yet applied.
 
 ## Cloudflare Infrastructure
 
@@ -155,6 +160,7 @@ The app runs entirely on Cloudflare's infrastructure. Here is what is in use and
 | `skybox-lofts` | Workers | — | Serverless runtime that serves the entire application |
 | `app` | D1 Database | `app` | SQLite database storing user accounts, sessions, documents, and other application data |
 | `documents` | R2 Bucket | `documents` | Object storage for uploaded resident documents (PDFs, etc.) |
+| `contractor-photos` | R2 Bucket | `contractor-photos` | Object storage for photos on contractor listings |
 | `skybox-lofts.com` | Custom Domain | — | Public domain routed through Cloudflare to the Worker |
 
 ### What a new maintainer needs
