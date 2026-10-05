@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { ActionButton } from "~/components/ActionButton";
 import { Button } from "~/components/ui/button";
 import { Form } from "react-router";
 import { Edit3Icon } from "lucide-react";
@@ -370,23 +371,23 @@ export default function BoardMembers({
               />
             </OverlayBody>
             <OverlayFooter>
-              <Button
+              <ActionButton
                 type="button"
                 variant="outline"
-                className="h-11 md:h-11 flex-1 rounded-xl"
+                className="flex-1"
                 onClick={() => setDialogOpen(false)}
               >
                 Cancel
-              </Button>
-              <Button
+              </ActionButton>
+              <ActionButton
                 type="submit"
                 variant={
                   selectedPosition.userId === null ? "destructive" : "cta"
                 }
-                className="h-11 md:h-11 flex-1 shadow-none hover:translate-y-0 hover:shadow-none"
+                className="flex-1"
               >
                 {selectedPosition.userId === null ? "Remove" : "Assign"}
-              </Button>
+              </ActionButton>
             </OverlayFooter>
           </Form>
         </ResponsiveOverlay>

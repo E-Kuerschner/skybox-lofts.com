@@ -1,6 +1,6 @@
 import { PlusIcon } from "lucide-react";
 import { AdminOnly } from "~/components/AdminOnly";
-import { Button } from "~/components/ui/button";
+import { ActionButton } from "~/components/ActionButton";
 import { SegmentedToggle } from "~/components/SegmentedToggle";
 import { Tabs, TabsContent } from "~/components/ui/tabs";
 import { cn } from "~/util/ui/utils";
@@ -39,15 +39,12 @@ export function ContractorsMobile({
           className="w-auto min-w-0 shrink grow"
         />
         <AdminOnly>
-          <Button
+          <ActionButton
             variant="secondary"
-            size="icon"
-            className="size-10 md:size-10 rounded-full"
+            icon={PlusIcon}
+            label={copy.addLabel}
             onClick={() => onAdd(tab === "building")}
-            aria-label={copy.addLabel}
-          >
-            <PlusIcon />
-          </Button>
+          />
         </AdminOnly>
       </div>
 

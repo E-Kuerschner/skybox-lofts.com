@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useFetcher } from "react-router";
-import { Button } from "~/components/ui/button";
+import { ActionButton } from "~/components/ActionButton";
 import {
   OverlayBody,
   OverlayFooter,
@@ -125,12 +125,8 @@ export function CrudFormDialog({
   }, [fetcher.state, fetcher.data, hasSubmitted, onSuccess, onOpenChange]);
 
   const isEdit = mode === "edit";
-  const defaultTitle = isEdit
-    ? `Edit ${entityName}`
-    : `Add a ${entityName}`;
-  const defaultSubmitLabel = isEdit
-    ? "Save changes"
-    : `Add ${entityName}`;
+  const defaultTitle = isEdit ? `Edit ${entityName}` : `Add a ${entityName}`;
+  const defaultSubmitLabel = isEdit ? "Save changes" : `Add ${entityName}`;
 
   return (
     <ResponsiveOverlay
@@ -156,7 +152,11 @@ export function CrudFormDialog({
         encType={hasFileUploads ? "multipart/form-data" : undefined}
         className="flex min-h-0 flex-1 flex-col"
       >
-        <input type="hidden" name={CRUD_INTENT_FIELD} value={isEdit ? "update" : "create"} />
+        <input
+          type="hidden"
+          name={CRUD_INTENT_FIELD}
+          value={isEdit ? "update" : "create"}
+        />
         {isEdit && recordId !== undefined && (
           <input
             type="hidden"
@@ -186,28 +186,25 @@ export function CrudFormDialog({
         <OverlayFooter>
           {footerStart}
           {footerStart && <span className="grow" />}
-          <Button
+          <ActionButton
             type="button"
             variant="outline"
-            className={cn("h-11 md:h-11 rounded-xl", !footerStart && "flex-1")}
+            className={cn(!footerStart && "flex-1")}
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
             Cancel
-          </Button>
-          <Button
+          </ActionButton>
+          <ActionButton
             type="submit"
             variant="cta"
-            className={cn(
-              "h-11 md:h-11 shadow-none hover:translate-y-0 hover:shadow-none",
-              !footerStart && "flex-1",
-            )}
+            className={cn(!footerStart && "flex-1")}
             disabled={isSubmitting || submitDisabled}
           >
             {isSubmitting
               ? "Saving..."
               : (submitLabel ?? capitalize(defaultSubmitLabel))}
-          </Button>
+          </ActionButton>
         </OverlayFooter>
       </fetcher.Form>
     </ResponsiveOverlay>

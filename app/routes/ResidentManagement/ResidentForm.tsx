@@ -1,6 +1,6 @@
 import { Input } from "~/components/ui/input";
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
+import { ActionButton } from "~/components/ActionButton";
 import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
 import { Label } from "~/components/ui/label";
 import {
@@ -173,25 +173,25 @@ export function ResidentForm({
         description="Admins can use every feature and can add or remove other residents."
         footer={
           <>
-            <Button
+            <ActionButton
               type="button"
               variant="outline"
-              className="h-11 md:h-11 flex-1 rounded-xl"
+              className="flex-1"
               onClick={() => setConfirmAdminOpen(false)}
             >
               Keep current role
-            </Button>
-            <Button
+            </ActionButton>
+            <ActionButton
               type="button"
               variant="cta"
-              className="h-11 md:h-11 flex-1 shadow-none hover:translate-y-0 hover:shadow-none"
+              className="flex-1"
               onClick={() => {
                 onRoleChange("admin");
                 setConfirmAdminOpen(false);
               }}
             >
               Make admin
-            </Button>
+            </ActionButton>
           </>
         }
       >

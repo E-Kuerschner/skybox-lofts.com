@@ -3,7 +3,7 @@ import { ChevronLeftIcon } from "lucide-react";
 import { CheckboxGroup } from "~/components/CheckboxGroup";
 import { FormSection, RequiredMark } from "~/components/FormSection";
 import { CrudFormDialog } from "~/components/crud/CrudFormDialog";
-import { Button } from "~/components/ui/button";
+import { ActionButton } from "~/components/ActionButton";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
@@ -55,8 +55,12 @@ export function ContractorFormDialog({
     setSelectedServiceIds(contractor?.services.map((s) => s.id) ?? []);
     // A new listing starts out as whatever the tab its "add" button lives on
     // holds; an existing one keeps the lists it's already in.
-    setIsUnitContractor(contractor?.isUnitContractor ?? !defaultBuildingService);
-    setIsBuildingService(contractor?.isBuildingService ?? defaultBuildingService);
+    setIsUnitContractor(
+      contractor?.isUnitContractor ?? !defaultBuildingService,
+    );
+    setIsBuildingService(
+      contractor?.isBuildingService ?? defaultBuildingService,
+    );
   }, [open, contractor, defaultBuildingService]);
 
   return (
@@ -94,14 +98,14 @@ export function ContractorFormDialog({
       footerStart={
         isEditing &&
         onDelete && (
-          <Button
+          <ActionButton
             type="button"
             variant="ghost"
-            className="h-11 md:h-11 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={() => onDelete(contractor)}
           >
             Remove
-          </Button>
+          </ActionButton>
         )
       }
     >
