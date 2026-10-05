@@ -1,7 +1,7 @@
 import type { Route } from "./+types/index";
 import { eq } from "drizzle-orm";
 import { useState, useEffect, useMemo } from "react";
-import { UserPlusIcon } from "lucide-react";
+import { ChevronLeftIcon, UserPlusIcon } from "lucide-react";
 import { Form, useNavigation } from "react-router";
 import { getAuth } from "~/auth";
 import { getDatabase } from "~/util/database.server";
@@ -19,9 +19,14 @@ import {
 import { fuzzyMatch } from "~/util/fuzzySearch";
 import { createActivityLogData } from "~/util/activityLogger.server";
 import { StatusBanner } from "~/components/StatusBanner";
+import { useStatusBanner } from "~/components/crud/ActionStatusBanner";
+import { ConfirmActionDialog } from "~/components/crud/ConfirmActionDialog";
+import { CRUD_RECORD_ID_FIELD } from "~/components/crud/CrudFormDialog";
 import * as schema from "../../../database/schema";
 import { ResidentCard } from "./ResidentCard";
+import { ResidentDetail } from "./ResidentDetail";
 import { ResidentForm } from "./ResidentForm";
+import type { Resident } from "./types";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAdmin(request, context);
@@ -69,7 +74,7 @@ async function handleDeleteUser(
   actorUserId: string,
 ) {
   if (!userId) {
-    return { error: "User ID is required" };
+    return { success: false, error: "User ID is required" };
   }
 
   try {
@@ -81,11 +86,11 @@ async function handleDeleteUser(
       .get();
 
     if (!userToDelete) {
-      return { error: "User not found" };
+      return { success: false, error: "User not found" };
     }
 
     if (userToDelete.role === "admin") {
-      return { error: "Cannot delete admin users" };
+      return { success: false, error: "Cannot delete admin users" };
     }
 
     // Check if user is on the board
@@ -97,6 +102,7 @@ async function handleDeleteUser(
 
     if (boardPosition) {
       return {
+        success: false,
         error:
           "Cannot delete user who is on the board. Please remove them from their board position first.",
       };
@@ -121,10 +127,10 @@ async function handleDeleteUser(
       }),
     );
 
-    return { success: true, message: "Resident removed successfully" };
+    return { success: true, message: "Resident removed" };
   } catch (error) {
     console.error("Error deleting user:", error);
-    return { error: "Failed to delete user" };
+    return { success: false, error: "Failed to delete user" };
   }
 }
 
@@ -266,7 +272,8 @@ export async function action({ request, context }: Route.ActionArgs) {
   const auth = getAuth(context);
 
   if (intent === "delete") {
-    const userId = formData.get("userId") as string;
+    // Sent by ConfirmActionDialog, which names the record generically
+    const userId = formData.get(CRUD_RECORD_ID_FIELD) as string;
     return handleDeleteUser(userId, db, auth, request, session.user.id);
   }
 
@@ -323,6 +330,9 @@ export default function ResidentManagement({
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [optimisticUsers, setOptimisticUsers] = useState(loaderData.users);
   const [successKey, setSuccessKey] = useState(0);
+  const [detailUser, setDetailUser] = useState<Resident | null>(null);
+  const [userToRemove, setUserToRemove] = useState<Resident | null>(null);
+  const { banner, showSuccess } = useStatusBanner();
 
   // Sync optimistic users with loader data
   useEffect(() => {
@@ -355,14 +365,8 @@ export default function ResidentManagement({
   };
 
   // Handle edit user
-  const handleEditUser = (user: {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string;
-    unitNumber: number | null;
-    role: string | null;
-  }) => {
+  const handleEditUser = (user: Resident) => {
+    setDetailUser(null);
     setEditingUserId(user.id);
     setNewUserFirstName(user.firstName || "");
     setNewUserLastName(user.lastName || "");
@@ -382,6 +386,9 @@ export default function ResidentManagement({
     setNewUserRole("");
     setIsOverlayOpen(true);
   };
+
+  const editingUser =
+    optimisticUsers.find((user) => user.id === editingUserId) ?? null;
 
   const isFormValid = Boolean(
     newUserFirstName.trim() &&
@@ -450,6 +457,7 @@ export default function ResidentManagement({
 
   return (
     <div className="flex flex-col gap-6">
+      {banner}
       {actionData?.error && (
         <StatusBanner variant="error" message={actionData.error} />
       )}
@@ -504,13 +512,31 @@ export default function ResidentManagement({
               <ResidentCard
                 key={user.id}
                 user={user}
-                isAdmin={true}
-                onEdit={handleEditUser}
+                onOpenDetails={setDetailUser}
               />
             ))
           )}
         </div>
       </div>
+
+      <ResponsiveOverlay
+        open={detailUser !== null}
+        onOpenChange={(open) => !open && setDetailUser(null)}
+        title={detailUser?.name ?? ""}
+        hideHeader
+        bare
+      >
+        {detailUser && (
+          <ResidentDetail
+            resident={detailUser}
+            onEdit={handleEditUser}
+            onRemove={(user) => {
+              setDetailUser(null);
+              setUserToRemove(user);
+            }}
+          />
+        )}
+      </ResponsiveOverlay>
 
       {/* Registration/Edit Overlay (dialog on desktop, drawer on mobile) */}
       <ResponsiveOverlay
@@ -521,6 +547,17 @@ export default function ResidentManagement({
           editingUserId
             ? undefined
             : "Enter the resident's information below. They will receive a welcome email with instructions to sign in and access their account."
+        }
+        headerStart={
+          editingUser && (
+            <BackToDetails
+              user={editingUser}
+              onBack={() => {
+                handleOverlayOpenChange(false);
+                setDetailUser(editingUser);
+              }}
+            />
+          )
         }
         bare
       >
@@ -576,6 +613,46 @@ export default function ResidentManagement({
           </OverlayFooter>
         </Form>
       </ResponsiveOverlay>
+
+      {userToRemove && (
+        <ConfirmActionDialog
+          open
+          onOpenChange={(open) => !open && setUserToRemove(null)}
+          title="Remove this resident?"
+          intent="delete"
+          recordId={userToRemove.id}
+          confirmLabel="Remove resident"
+          pendingLabel="Removing..."
+          cancelLabel="Keep them"
+          destructive
+          onSuccess={showSuccess}
+        >
+          <span className="font-medium text-foreground">
+            {userToRemove.name}
+          </span>{" "}
+          will be signed out and won't be able to use the website anymore. This
+          can't be undone.
+        </ConfirmActionDialog>
+      )}
     </div>
+  );
+}
+
+function BackToDetails({
+  user,
+  onBack,
+}: {
+  user: Resident;
+  onBack: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onBack}
+      className="-ml-1 flex h-8 w-fit cursor-pointer items-center gap-0.5 rounded-md pr-2 text-sm font-medium text-emerald-700 hover:text-emerald-800"
+    >
+      <ChevronLeftIcon className="size-4" />
+      Back to {user.name || "resident"}
+    </button>
   );
 }

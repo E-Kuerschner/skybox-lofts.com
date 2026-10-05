@@ -43,9 +43,9 @@ export function StatusBanner({
       className={cn(
         "rounded-md p-4 text-sm border transition-opacity duration-300",
         variant === "success" &&
-          "bg-emerald-50 text-emerald-700 border-emerald-200",
+          "bg-positive text-positive-foreground border-positive-border",
         variant === "error" &&
-          "bg-destructive/10 text-destructive border-destructive",
+          "bg-error text-error-foreground border-error-border",
         isExiting && "opacity-0",
         className,
       )}

@@ -160,8 +160,10 @@ function formatDetails(
 
     switch (entityType) {
       case "resident":
-        const residentName = data.residentName || data.residentEmail || "Unknown";
-        const unitInfo = data.unitNumber !== undefined ? ` (Unit ${data.unitNumber})` : "";
+        const residentName =
+          data.residentName || data.residentEmail || "Unknown";
+        const unitInfo =
+          data.unitNumber !== undefined ? ` (Unit ${data.unitNumber})` : "";
         return `${residentName}${unitInfo}`;
       case "document":
         return `${data.filename || "Unknown"} (${data.category || "Unknown"})`;
@@ -224,8 +226,8 @@ export default function Activity({ loaderData }: Route.ComponentProps) {
       <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
         <p className="mb-8 text-muted-foreground">
           View all activity performed by admins on the platform. This includes
-          creating, updating, and deleting residents, documents, board
-          members, and contractors.
+          creating, updating, and deleting residents, documents, board members,
+          and contractors.
         </p>
 
         {/* Filters */}
@@ -307,9 +309,9 @@ export default function Activity({ loaderData }: Route.ComponentProps) {
                       <span
                         className={
                           activity.action === "deleted"
-                            ? "text-destructive"
+                            ? "text-error-foreground"
                             : activity.action === "created"
-                              ? "text-emerald-600"
+                              ? "text-positive-foreground"
                               : ""
                         }
                       >
