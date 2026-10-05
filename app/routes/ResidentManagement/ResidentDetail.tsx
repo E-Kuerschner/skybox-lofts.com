@@ -3,6 +3,7 @@ import { ActionButton } from "~/components/ActionButton";
 import { AdminOnly } from "~/components/AdminOnly";
 import { Chip } from "~/components/Chip";
 import { ContactButton } from "~/components/ContactButton";
+import { InfoList, InfoRow } from "~/components/InfoList";
 import {
   OverlayCloseButton,
   OverlayFooter,
@@ -63,53 +64,41 @@ export function ResidentDetail({
         </div>
 
         <div className="flex flex-col gap-5 px-5 pt-5 pb-6 md:px-6">
-          <ul className="divide-y overflow-hidden rounded-xl border">
-            <li className="flex items-center gap-3 py-2 pr-2 pl-3">
-              {resident.emailVerified ? (
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-positive text-positive-foreground">
-                  <BadgeCheckIcon className="size-4" />
-                </span>
-              ) : (
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-warning text-warning-foreground">
-                  <ClockIcon className="size-4" />
-                </span>
-              )}
-              <div className="flex min-w-0 grow flex-col">
-                <span className="text-xs text-muted-foreground">Status</span>
-                <span className="font-medium">
-                  {resident.emailVerified
-                    ? "Verified"
-                    : "Invitation sent, awaiting acceptance"}
-                </span>
-              </div>
-            </li>
-            <li className="flex items-center gap-3 py-2 pr-2 pl-3">
-              <ContactButton
-                kind="email"
-                value={resident.email}
-                name={name}
-                shape="square"
+          <InfoList>
+            {resident.emailVerified ? (
+              <InfoRow
+                icon={BadgeCheckIcon}
+                tone="positive"
+                label="Status"
+                value="Verified"
               />
-              <a
-                href={contactHref("email", resident.email)}
-                className="flex min-w-0 grow flex-col"
-              >
-                <span className="text-xs text-muted-foreground">Email</span>
-                <span className="truncate font-medium">{resident.email}</span>
-              </a>
-            </li>
-            <li className="flex items-center gap-3 py-2 pr-2 pl-3">
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                <HomeIcon className="size-4" />
-              </span>
-              <div className="flex min-w-0 grow flex-col">
-                <span className="text-xs text-muted-foreground">Unit</span>
-                <span className="font-medium">
-                  {resident.unitNumber ?? "Not set"}
-                </span>
-              </div>
-            </li>
-          </ul>
+            ) : (
+              <InfoRow
+                icon={ClockIcon}
+                tone="warning"
+                label="Status"
+                value="Invitation sent, awaiting acceptance"
+              />
+            )}
+            <InfoRow
+              leading={
+                <ContactButton
+                  kind="email"
+                  value={resident.email}
+                  name={name}
+                  shape="square"
+                />
+              }
+              label="Email"
+              value={resident.email}
+              href={contactHref("email", resident.email)}
+            />
+            <InfoRow
+              icon={HomeIcon}
+              label="Unit"
+              value={resident.unitNumber ?? "Not set"}
+            />
+          </InfoList>
         </div>
       </div>
 
