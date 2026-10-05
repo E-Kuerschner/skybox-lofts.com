@@ -63,7 +63,7 @@ export const ContactForm = () => {
     >
       {showMessage && data?.success && (
         <div
-          className={`p-4 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-800 transition-opacity duration-1000 ${
+          className={`p-4 bg-positive border border-positive-border rounded-md text-positive-foreground transition-opacity duration-1000 ${
             fadeOut ? "opacity-0" : "opacity-100"
           }`}
         >
@@ -72,7 +72,7 @@ export const ContactForm = () => {
       )}
       {showMessage && data?.error && (
         <div
-          className={`p-4 bg-red-50 border border-red-200 rounded-md text-red-800 transition-opacity duration-1000 ${
+          className={`p-4 bg-error border border-error-border rounded-md text-error-foreground transition-opacity duration-1000 ${
             fadeOut ? "opacity-0" : "opacity-100"
           }`}
         >
