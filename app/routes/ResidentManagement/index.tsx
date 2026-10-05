@@ -7,6 +7,7 @@ import { getAuth } from "~/auth";
 import { getDatabase } from "~/util/database.server";
 import { isAdmin } from "~/util/authHelpers.server";
 import { sendInviteEmail } from "~/email/sendInviteEmail.server";
+import { ActionButton } from "~/components/ActionButton";
 import { Button } from "~/components/ui/button";
 import { NoContent } from "~/components/NoContent";
 import { SearchInput } from "~/components/SearchInput";
@@ -485,14 +486,13 @@ export default function ResidentManagement({
             Invite Resident
           </Button>
           {/* mobile button */}
-          <Button
+          <ActionButton
+            variant="secondary"
+            icon={UserPlusIcon}
+            label="Invite Resident"
             onClick={handleNewUser}
             className="md:hidden"
-            size="icon"
-            variant="secondary"
-          >
-            <UserPlusIcon className="size-4" />
-          </Button>
+          />
         </div>
 
         {/* Resident Cards */}
@@ -557,22 +557,22 @@ export default function ResidentManagement({
             />
           </OverlayBody>
           <OverlayFooter>
-            <Button
+            <ActionButton
               type="button"
               variant="outline"
-              className="h-11 md:h-11 flex-1 rounded-xl"
+              className="flex-1"
               onClick={() => handleOverlayOpenChange(false)}
             >
               Cancel
-            </Button>
-            <Button
+            </ActionButton>
+            <ActionButton
               type="submit"
               variant="cta"
-              className="h-11 md:h-11 flex-1 shadow-none hover:translate-y-0 hover:shadow-none"
+              className="flex-1"
               disabled={!isFormValid}
             >
               {editingUserId ? "Save" : "Register"}
-            </Button>
+            </ActionButton>
           </OverlayFooter>
         </Form>
       </ResponsiveOverlay>

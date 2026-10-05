@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useFetcher } from "react-router";
-import { Button } from "~/components/ui/button";
+import { ActionButton } from "~/components/ActionButton";
 import {
   OverlayBody,
   OverlayFooter,
@@ -107,23 +107,23 @@ export function ConfirmActionDialog({
         </OverlayBody>
 
         <OverlayFooter>
-          <Button
+          <ActionButton
             type="button"
             variant="outline"
-            className="h-11 md:h-11 flex-1 rounded-xl"
+            className="flex-1"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
             {cancelLabel}
-          </Button>
-          <Button
+          </ActionButton>
+          <ActionButton
             type="submit"
             variant={destructive ? "destructive" : "cta"}
-            className="h-11 md:h-11 flex-1 shadow-none hover:translate-y-0 hover:shadow-none"
+            className="flex-1"
             disabled={isSubmitting}
           >
             {isSubmitting ? pendingLabel : confirmLabel}
-          </Button>
+          </ActionButton>
         </OverlayFooter>
       </fetcher.Form>
     </ResponsiveOverlay>

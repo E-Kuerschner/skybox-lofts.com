@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useFetcher } from "react-router";
-import { Button } from "~/components/ui/button";
+import { ActionButton } from "~/components/ActionButton";
 import {
   OverlayBody,
   OverlayFooter,
@@ -145,19 +145,19 @@ export function DocumentUploadDialog({
         </OverlayBody>
 
         <OverlayFooter>
-          <Button
+          <ActionButton
             type="button"
             variant="outline"
-            className="h-11 md:h-11 flex-1 rounded-xl"
+            className="flex-1"
             onClick={handleClose}
             disabled={isSubmitting}
           >
             Cancel
-          </Button>
-          <Button
+          </ActionButton>
+          <ActionButton
             variant="cta"
             type="submit"
-            className="h-11 md:h-11 flex-1 shadow-none hover:translate-y-0 hover:shadow-none"
+            className="flex-1"
             disabled={
               isSubmitting ||
               !selectedFile ||
@@ -166,7 +166,7 @@ export function DocumentUploadDialog({
             }
           >
             {isSubmitting ? "Uploading..." : "Upload"}
-          </Button>
+          </ActionButton>
         </OverlayFooter>
       </fetcher.Form>
     </ResponsiveOverlay>
