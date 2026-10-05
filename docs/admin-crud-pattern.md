@@ -145,9 +145,10 @@ Deliberately, because features should look different from each other:
   section, always visible to admins. This is Rule 4 applied per section rather
   than per page: a listing belongs to the section you added it from, so one
   page-level button would have to ask which kind you meant.
-- Every card carries an `<AdminItemActions>` row with **Edit** and **Remove**,
-  always visible to admins, separated by a divider from the card's content and
-  from the card's own tap target.
+- Tapping a card opens its details view, which carries **Edit** at the top and
+  **Remove** in the footer for admins. Phone cards carry no admin buttons of
+  their own; desktop cards keep small Edit/Remove icon buttons in the corner.
+  The edit form itself has no Remove - you've already passed it on the way in.
 - Adding and editing both happen in a `<CrudFormDialog>`; removing opens a
   `<ConfirmActionDialog>` naming the business and warning that its photos go too.
 - One page-level confirmation via `useStatusBanner()`, floating over the page so

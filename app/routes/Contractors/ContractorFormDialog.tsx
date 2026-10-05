@@ -3,7 +3,6 @@ import { ChevronLeftIcon } from "lucide-react";
 import { CheckboxGroup } from "~/components/CheckboxGroup";
 import { FormSection, RequiredMark } from "~/components/FormSection";
 import { CrudFormDialog } from "~/components/crud/CrudFormDialog";
-import { ActionButton } from "~/components/ActionButton";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
@@ -28,7 +27,6 @@ export function ContractorFormDialog({
   services,
   onSuccess,
   onBack,
-  onDelete,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -40,7 +38,6 @@ export function ContractorFormDialog({
   onSuccess: (message: string) => void;
   /** Set when the form was opened from the details view, to go back to it. */
   onBack?: () => void;
-  onDelete?: (contractor: ContractorListing) => void;
 }) {
   const isEditing = contractor !== null;
 
@@ -93,19 +90,6 @@ export function ContractorFormDialog({
             <ChevronLeftIcon className="size-4" />
             Back to {contractor.businessName}
           </button>
-        )
-      }
-      footerStart={
-        isEditing &&
-        onDelete && (
-          <ActionButton
-            type="button"
-            variant="ghost"
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => onDelete(contractor)}
-          >
-            Remove
-          </ActionButton>
         )
       }
     >
