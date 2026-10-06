@@ -48,12 +48,6 @@ type CrudFormDialogProps = {
   contentClassName?: string;
   /** Above the title, e.g. a "Back to …" link. */
   headerStart?: React.ReactNode;
-  /**
-   * At the start of the button row, away from Cancel and Save - e.g. a quiet
-   * Remove. When present, Cancel and Save size to their labels instead of
-   * splitting the row.
-   */
-  footerStart?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -95,7 +89,6 @@ export function CrudFormDialog({
   onSuccess,
   contentClassName,
   headerStart,
-  footerStart,
   children,
 }: CrudFormDialogProps) {
   const fetcher = useFetcher();
@@ -183,13 +176,11 @@ export function CrudFormDialog({
           </fieldset>
         </OverlayBody>
 
-        <OverlayFooter>
-          {footerStart}
-          {footerStart && <span className="grow" />}
+        <OverlayFooter className="md:justify-end">
           <ActionButton
             type="button"
             variant="outline"
-            className={cn(!footerStart && "flex-1")}
+            className="flex-1 md:flex-none"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
@@ -198,7 +189,7 @@ export function CrudFormDialog({
           <ActionButton
             type="submit"
             variant="cta"
-            className={cn(!footerStart && "flex-1")}
+            className="flex-1 md:flex-none"
             disabled={isSubmitting || submitDisabled}
           >
             {isSubmitting

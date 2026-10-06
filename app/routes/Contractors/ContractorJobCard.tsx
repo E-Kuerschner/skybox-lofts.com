@@ -60,7 +60,6 @@ export function ContractorJobCard({
             {contractor.businessName}
           </h4>
           <ContractorAdminActions
-            variant="icons"
             contractor={contractor}
             onEdit={onEdit}
             onDelete={onDelete}

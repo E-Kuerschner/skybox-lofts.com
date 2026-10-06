@@ -130,6 +130,10 @@ export default function Contractors({ loaderData }: Route.ComponentProps) {
           <ContractorDetail
             contractor={detailContractor}
             onEdit={(contractor) => openEditForm(contractor, true)}
+            onRemove={(contractor) => {
+              setDetailContractor(null);
+              setContractorToDelete(contractor);
+            }}
           />
         )}
       </ResponsiveOverlay>
@@ -150,10 +154,6 @@ export default function Contractors({ loaderData }: Route.ComponentProps) {
               }
             : undefined
         }
-        onDelete={(contractor) => {
-          setIsFormOpen(false);
-          setContractorToDelete(contractor);
-        }}
       />
 
       {contractorToDelete && (

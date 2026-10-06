@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { PencilIcon } from "lucide-react";
+import { ActionButton } from "~/components/ActionButton";
 import { AdminOnly } from "~/components/AdminOnly";
-import { OverlayCloseButton } from "~/components/ResponsiveOverlay";
+import {
+  OverlayCloseButton,
+  OverlayFooter,
+} from "~/components/ResponsiveOverlay";
 import { Button } from "~/components/ui/button";
 import { contractorPhotoUrl } from "~/util/contractorPhotoUrl";
 import { cn } from "~/util/ui/utils";
@@ -11,18 +15,20 @@ import type { ContractorListing } from "./types";
 
 /**
  * Everything about one business: its photos, the services it offers, every
- * way to reach it, and anything worth knowing first. Board admins can jump
- * straight to editing it from here.
+ * way to reach it, and anything worth knowing first. Board admins can edit
+ * or remove it from here.
  *
- * Meant for a `ResponsiveOverlay` with `hideHeader` - it draws its own top,
- * with the cover photo when there is one.
+ * Meant for a `ResponsiveOverlay` with `hideHeader` and `bare` - it draws its
+ * own top, with the cover photo when there is one, and footer.
  */
 export function ContractorDetail({
   contractor,
   onEdit,
+  onRemove,
 }: {
   contractor: ContractorListing;
   onEdit: (contractor: ContractorListing) => void;
+  onRemove: (contractor: ContractorListing) => void;
 }) {
   const hasPhotos = contractor.photos.length > 0;
 
@@ -55,36 +61,51 @@ export function ContractorDetail({
   );
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto">
-      {hasPhotos ? (
-        <div className="relative">
-          <PhotoStrip contractor={contractor} />
-          <div className="absolute top-3 right-3">{actions(true)}</div>
-        </div>
-      ) : (
-        <div className="flex items-start justify-between gap-4 px-5 pt-5 md:px-6 md:pt-6">
-          {nameAndServices}
-          {actions(false)}
-        </div>
-      )}
-
-      <div className="flex flex-col gap-5 px-5 pt-5 pb-6 md:px-6">
-        {hasPhotos && nameAndServices}
-
-        <ContactCells contractor={contractor} />
-
-        {contractor.notes && (
-          <div className="rounded-xl border bg-muted/40 px-3.5 py-3">
-            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Good to know
-            </h3>
-            <p className="text-sm whitespace-pre-line text-foreground/80">
-              {contractor.notes}
-            </p>
+    <>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {hasPhotos ? (
+          <div className="relative">
+            <PhotoStrip contractor={contractor} />
+            <div className="absolute top-3 right-3">{actions(true)}</div>
+          </div>
+        ) : (
+          <div className="flex items-start justify-between gap-4 px-5 pt-5 md:px-6 md:pt-6">
+            {nameAndServices}
+            {actions(false)}
           </div>
         )}
+
+        <div className="flex flex-col gap-5 px-5 pt-5 pb-6 md:px-6">
+          {hasPhotos && nameAndServices}
+
+          <ContactCells contractor={contractor} />
+
+          {contractor.notes && (
+            <div className="rounded-xl border bg-muted/40 px-3.5 py-3">
+              <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Good to know
+              </h3>
+              <p className="text-sm whitespace-pre-line text-foreground/80">
+                {contractor.notes}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      <AdminOnly>
+        <OverlayFooter>
+          <ActionButton
+            type="button"
+            variant="ghost"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => onRemove(contractor)}
+          >
+            Remove contractor
+          </ActionButton>
+        </OverlayFooter>
+      </AdminOnly>
+    </>
   );
 }
 

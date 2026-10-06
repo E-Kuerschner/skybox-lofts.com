@@ -1,24 +1,20 @@
 import { ContactButton } from "~/components/ContactButton";
-import { ContractorAdminActions } from "./ContractorAdminActions";
 import { otherJobs } from "./directory";
 import type { ContractorListing } from "./types";
 
 /**
  * A contractor as listed under one job on a phone: the details on the left,
- * email and call one tap away on the right.
+ * email and call one tap away on the right. Admins edit or remove it from
+ * its details view.
  */
 export function ContractorJobRow({
   contractor,
   underSlug,
   onOpenDetails,
-  onEdit,
-  onDelete,
 }: {
   contractor: ContractorListing;
   underSlug: string;
   onOpenDetails: (contractor: ContractorListing) => void;
-  onEdit: (contractor: ContractorListing) => void;
-  onDelete: (contractor: ContractorListing) => void;
 }) {
   const alsoDoes = otherJobs(contractor, underSlug);
 
@@ -64,13 +60,6 @@ export function ContractorJobRow({
           )}
         </div>
       </div>
-
-      <ContractorAdminActions
-        contractor={contractor}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        className="mt-3"
-      />
     </li>
   );
 }

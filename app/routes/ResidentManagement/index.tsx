@@ -328,6 +328,9 @@ export default function ResidentManagement({
   const [searchQuery, setSearchQuery] = useState("");
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  // Whether the edit form was opened from the details view, so it can offer a
+  // way back there.
+  const [editingFromDetails, setEditingFromDetails] = useState(false);
   const [optimisticUsers, setOptimisticUsers] = useState(loaderData.users);
   const [successKey, setSuccessKey] = useState(0);
   const [detailUser, setDetailUser] = useState<Resident | null>(null);
@@ -365,8 +368,9 @@ export default function ResidentManagement({
   };
 
   // Handle edit user
-  const handleEditUser = (user: Resident) => {
+  const handleEditUser = (user: Resident, fromDetails = false) => {
     setDetailUser(null);
+    setEditingFromDetails(fromDetails);
     setEditingUserId(user.id);
     setNewUserFirstName(user.firstName || "");
     setNewUserLastName(user.lastName || "");
@@ -513,6 +517,8 @@ export default function ResidentManagement({
                 key={user.id}
                 user={user}
                 onOpenDetails={setDetailUser}
+                onEdit={(user) => handleEditUser(user)}
+                onRemove={setUserToRemove}
               />
             ))
           )}
@@ -529,7 +535,7 @@ export default function ResidentManagement({
         {detailUser && (
           <ResidentDetail
             resident={detailUser}
-            onEdit={handleEditUser}
+            onEdit={(user) => handleEditUser(user, true)}
             onRemove={(user) => {
               setDetailUser(null);
               setUserToRemove(user);
@@ -549,7 +555,8 @@ export default function ResidentManagement({
             : "Enter the resident's information below. They will receive a welcome email with instructions to sign in and access their account."
         }
         headerStart={
-          editingUser && (
+          editingUser &&
+          editingFromDetails && (
             <BackToDetails
               user={editingUser}
               onBack={() => {
@@ -593,11 +600,11 @@ export default function ResidentManagement({
               editMode={editingUserId !== null}
             />
           </OverlayBody>
-          <OverlayFooter>
+          <OverlayFooter className="md:justify-end">
             <ActionButton
               type="button"
               variant="outline"
-              className="flex-1"
+              className="flex-1 md:flex-none"
               onClick={() => handleOverlayOpenChange(false)}
             >
               Cancel
@@ -605,10 +612,10 @@ export default function ResidentManagement({
             <ActionButton
               type="submit"
               variant="cta"
-              className="flex-1"
+              className="flex-1 md:flex-none"
               disabled={!isFormValid}
             >
-              {editingUserId ? "Save" : "Register"}
+              {editingUserId ? "Save changes" : "Register"}
             </ActionButton>
           </OverlayFooter>
         </Form>

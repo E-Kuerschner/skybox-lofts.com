@@ -10,7 +10,7 @@ import {
 } from "~/components/ResponsiveOverlay";
 import { Button } from "~/components/ui/button";
 import { contactHref } from "~/util/contactLinks";
-import type { Resident } from "./types";
+import { whyNotRemovable, type Resident } from "./types";
 
 /**
  * Everything about one resident: who they are, how to reach them, where they
@@ -122,20 +122,9 @@ function RemoveControl({
   resident: Resident;
   onRemove: (resident: Resident) => void;
 }) {
-  if (resident.role === "admin") {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Admins can't be removed. Change their role first.
-      </p>
-    );
-  }
-
-  if (resident.isBoardMember) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        To remove this resident, first take them off the board.
-      </p>
-    );
+  const blockedReason = whyNotRemovable(resident);
+  if (blockedReason) {
+    return <p className="text-sm text-muted-foreground">{blockedReason}</p>;
   }
 
   return (
