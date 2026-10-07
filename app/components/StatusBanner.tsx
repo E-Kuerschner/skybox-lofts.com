@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Callout } from "~/components/Callout";
 import { cn } from "~/util/ui/utils";
 
 type StatusBannerProps = {
@@ -8,6 +9,11 @@ type StatusBannerProps = {
   autoDismiss?: number; // Duration in ms before auto-dismiss
 };
 
+/**
+ * Tells someone how an action they just took went, e.g. "Invite sent" or
+ * "Failed to save". A `Callout` that can fade away on its own after
+ * `autoDismiss` milliseconds.
+ */
 export function StatusBanner({
   variant,
   message,
@@ -39,18 +45,17 @@ export function StatusBanner({
   if (!isVisible) return null;
 
   return (
-    <div
+    <Callout
+      tone={variant === "success" ? "positive" : "error"}
+      // Errors interrupt screen readers; successes wait their turn
+      role={variant === "error" ? "alert" : "status"}
       className={cn(
-        "rounded-md p-4 text-sm border transition-opacity duration-300",
-        variant === "success" &&
-          "bg-positive text-positive-foreground border-positive-border",
-        variant === "error" &&
-          "bg-error text-error-foreground border-error-border",
+        "transition-opacity duration-300",
         isExiting && "opacity-0",
         className,
       )}
     >
       {message}
-    </div>
+    </Callout>
   );
 }
