@@ -1,4 +1,4 @@
-type ActivityAction = "created" | "updated" | "deleted";
+type ActivityAction = "created" | "updated" | "deleted" | "invited";
 type EntityType = "resident" | "document" | "board_member" | "contractor";
 
 interface ActivityMetadata {

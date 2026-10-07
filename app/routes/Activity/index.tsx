@@ -266,6 +266,7 @@ export default function Activity({ loaderData }: Route.ComponentProps) {
               <SelectItem value="created">Created</SelectItem>
               <SelectItem value="updated">Updated</SelectItem>
               <SelectItem value="deleted">Deleted</SelectItem>
+              <SelectItem value="invited">Invited</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={handleFilterChange} variant="secondary">

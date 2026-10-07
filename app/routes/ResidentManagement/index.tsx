@@ -9,6 +9,7 @@ import { isAdmin } from "~/util/authHelpers.server";
 import { sendInviteEmail } from "~/email/sendInviteEmail.server";
 import { ActionButton } from "~/components/ActionButton";
 import { Button } from "~/components/ui/button";
+import { FilterChips } from "~/components/FilterChips";
 import { NoContent } from "~/components/NoContent";
 import { SearchInput } from "~/components/SearchInput";
 import {
@@ -23,10 +24,30 @@ import { useStatusBanner } from "~/components/crud/ActionStatusBanner";
 import { ConfirmActionDialog } from "~/components/crud/ConfirmActionDialog";
 import { CRUD_RECORD_ID_FIELD } from "~/components/crud/CrudFormDialog";
 import * as schema from "../../../database/schema";
-import { ResidentCard } from "./ResidentCard";
 import { ResidentDetail } from "./ResidentDetail";
 import { ResidentForm } from "./ResidentForm";
+import { ResidentList } from "./ResidentList";
+import { ResidentTable } from "./ResidentTable";
+import { PendingInvitesBanner } from "./PendingInvitesBanner";
 import type { Resident } from "./types";
+
+type ResidentFilter = "all" | "owner" | "renter" | "pending";
+
+/** The chips above the list, each with the residents it keeps. */
+const RESIDENT_FILTERS: {
+  value: ResidentFilter;
+  label: string;
+  matches: (resident: Resident) => boolean;
+}[] = [
+  { value: "all", label: "All", matches: () => true },
+  { value: "owner", label: "Owners", matches: (r) => r.role === "owner" },
+  { value: "renter", label: "Renters", matches: (r) => r.role === "renter" },
+  {
+    value: "pending",
+    label: "Invite pending",
+    matches: (r) => !r.emailVerified,
+  },
+];
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await isAdmin(request, context);
@@ -190,6 +211,13 @@ async function handleCreateUser(
 
     // Send invite email
     await sendInviteEmail(context.cloudflare.env, email, firstName, name);
+    await db.insert(schema.activityLogs).values(
+      createActivityLogData(actorUserId, "invited", "resident", newUser.id, {
+        residentName: name,
+        residentEmail: email,
+        unitNumber: unitNum,
+      }),
+    );
 
     return { success: true, message: "User created and invitation sent" };
   } catch (error) {
@@ -326,6 +354,7 @@ export default function ResidentManagement({
   const [newUserUnitNumber, setNewUserUnitNumber] = useState("");
   const [newUserRole, setNewUserRole] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [residentFilter, setResidentFilter] = useState<ResidentFilter>("all");
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   // Whether the edit form was opened from the details view, so it can offer a
@@ -445,22 +474,36 @@ export default function ResidentManagement({
     }
   }, [actionData?.error, loaderData.users, navigation.state]);
 
-  // Filter users based on search query
+  const pendingUsers = useMemo(
+    () => optimisticUsers.filter((user) => !user.emailVerified),
+    [optimisticUsers],
+  );
+
+  const filterOptions = RESIDENT_FILTERS.map((filter) => ({
+    value: filter.value,
+    label: filter.label,
+    count: optimisticUsers.filter(filter.matches).length,
+  }));
+
+  // Narrow by the selected chip, then by the search box
   const filteredUsers = useMemo(() => {
-    if (!searchQuery) {
-      return optimisticUsers;
-    }
+    const matchesFilter =
+      RESIDENT_FILTERS.find((filter) => filter.value === residentFilter)
+        ?.matches ?? (() => true);
     return optimisticUsers.filter(
       (user) =>
-        fuzzyMatch(searchQuery, user.firstName || "") ||
-        fuzzyMatch(searchQuery, user.lastName || "") ||
-        fuzzyMatch(searchQuery, user.name || "") ||
-        fuzzyMatch(searchQuery, user.email || ""),
+        matchesFilter(user) &&
+        (!searchQuery ||
+          fuzzyMatch(searchQuery, user.firstName || "") ||
+          fuzzyMatch(searchQuery, user.lastName || "") ||
+          fuzzyMatch(searchQuery, user.name || "") ||
+          fuzzyMatch(searchQuery, user.email || "") ||
+          String(user.unitNumber ?? "").includes(searchQuery.trim())),
     );
-  }, [optimisticUsers, searchQuery]);
+  }, [optimisticUsers, residentFilter, searchQuery]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       {banner}
       {actionData?.error && (
         <StatusBanner variant="error" message={actionData.error} />
@@ -474,56 +517,82 @@ export default function ResidentManagement({
         />
       )}
 
-      <div className="bg-white rounded-xl px-4 pt-4 border-1 pb-8 shadow-md">
-        <p className="mb-8 text-muted-foreground">
-          Grant new residents access to the website by clicking the button
-          below. Please double-check all email addresses belong to actual
-          residents before submitting.
+      {/* Phones: heading and button share a row, help text below. Larger
+          screens: heading over help text, button off to the right. */}
+      <div className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1">
+        <h2 className="text-xl font-semibold">
+          Residents{" "}
+          <span className="font-normal text-muted-foreground">
+            · {optimisticUsers.length}
+          </span>
+        </h2>
+        <Button
+          variant="secondary"
+          onClick={handleNewUser}
+          className="h-11 md:row-span-2 md:h-10 md:self-end"
+        >
+          <UserPlusIcon />
+          <span className="md:hidden">Invite</span>
+          <span className="hidden md:inline">Invite Resident</span>
+        </Button>
+        <p className="col-span-2 max-w-2xl text-sm text-muted-foreground md:col-span-1">
+          Everyone who can sign in to the website. Double-check that each email
+          belongs to a real resident before you invite them.
         </p>
-        {/* Search and Register Button */}
-        <div className="flex flex-row gap-3 items-center justify-between mb-4">
-          <SearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Name or email..."
-            className="max-w-md"
-          />
-          {/* desktop button */}
-          <Button
-            variant="secondary"
-            onClick={handleNewUser}
-            className="hidden md:flex"
-          >
-            <UserPlusIcon className="size-4 mr-2" />
-            Invite Resident
-          </Button>
-          {/* mobile button */}
-          <ActionButton
-            variant="secondary"
-            icon={UserPlusIcon}
-            label="Invite Resident"
-            onClick={handleNewUser}
-            className="md:hidden"
-          />
-        </div>
-
-        {/* Resident Cards */}
-        <div className="space-y-2">
-          {filteredUsers.length === 0 ? (
-            <NoContent message="No residents found" />
-          ) : (
-            filteredUsers.map((user) => (
-              <ResidentCard
-                key={user.id}
-                user={user}
-                onOpenDetails={setDetailUser}
-                onEdit={(user) => handleEditUser(user)}
-                onRemove={setUserToRemove}
-              />
-            ))
-          )}
-        </div>
       </div>
+
+      <PendingInvitesBanner
+        pending={pendingUsers}
+        isShowingPending={residentFilter === "pending"}
+        onToggleShowPending={() =>
+          setResidentFilter((current) =>
+            current === "pending" ? "all" : "pending",
+          )
+        }
+      />
+
+      <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:gap-2">
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Name, email or unit..."
+          className="h-11 md:h-10 md:max-w-sm"
+        />
+        <FilterChips
+          ariaLabel="Show residents"
+          options={filterOptions}
+          selectedValues={[residentFilter]}
+          // One chip at a time; tapping the selected chip goes back to All
+          onToggle={(value) =>
+            setResidentFilter((current) =>
+              current === value ? "all" : value,
+            )
+          }
+          scroll
+          className="-mx-3 px-3 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
+        />
+      </div>
+
+      {filteredUsers.length === 0 ? (
+        <NoContent message="No residents found" />
+      ) : (
+        <>
+          <div className="hidden md:block">
+            <ResidentTable
+              residents={filteredUsers}
+              onOpenDetails={setDetailUser}
+              onEdit={(user) => handleEditUser(user)}
+              onRemove={setUserToRemove}
+                  />
+          </div>
+          <div className="md:hidden">
+            <ResidentList
+              residents={filteredUsers}
+              onOpenDetails={setDetailUser}
+                  />
+          </div>
+        </>
+      )}
 
       <ResponsiveOverlay
         open={detailUser !== null}
