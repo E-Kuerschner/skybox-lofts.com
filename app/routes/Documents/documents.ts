@@ -35,6 +35,7 @@ export type DocumentFile = {
   name: string;
   /** e.g. "PDF", "Word document". */
   typeLabel: string;
+  kind: FileKind;
   /** ISO date the file was uploaded. */
   uploaded: string;
 };
@@ -54,28 +55,45 @@ export function splitExtension(filename: string): {
   return { base: filename.slice(0, dot), extension: filename.slice(dot) };
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  ".pdf": "PDF",
-  ".doc": "Word document",
-  ".docx": "Word document",
-  ".xls": "Spreadsheet",
-  ".xlsx": "Spreadsheet",
-  ".csv": "Spreadsheet",
-  ".ppt": "Slideshow",
-  ".pptx": "Slideshow",
-  ".jpg": "Image",
-  ".jpeg": "Image",
-  ".png": "Image",
-  ".txt": "Text file",
-  ".zip": "Zip file",
+/** The broad kind of file, which picks the icon shown beside it. */
+export type FileKind =
+  | "document"
+  | "spreadsheet"
+  | "slideshow"
+  | "image"
+  | "archive"
+  | "other";
+
+const FILE_TYPES: Record<string, { label: string; kind: FileKind }> = {
+  ".pdf": { label: "PDF", kind: "document" },
+  ".doc": { label: "Word document", kind: "document" },
+  ".docx": { label: "Word document", kind: "document" },
+  ".txt": { label: "Text file", kind: "document" },
+  ".xls": { label: "Spreadsheet", kind: "spreadsheet" },
+  ".xlsx": { label: "Spreadsheet", kind: "spreadsheet" },
+  ".csv": { label: "Spreadsheet", kind: "spreadsheet" },
+  ".ppt": { label: "Slideshow", kind: "slideshow" },
+  ".pptx": { label: "Slideshow", kind: "slideshow" },
+  ".jpg": { label: "Image", kind: "image" },
+  ".jpeg": { label: "Image", kind: "image" },
+  ".png": { label: "Image", kind: "image" },
+  ".gif": { label: "Image", kind: "image" },
+  ".webp": { label: "Image", kind: "image" },
+  ".heic": { label: "Image", kind: "image" },
+  ".zip": { label: "Zip file", kind: "archive" },
 };
 
-/** A plain-language name for a file's type, from its ending. */
-export function fileTypeLabel(filename: string): string {
+/**
+ * What kind of file this is, from its ending: a plain-language label (e.g.
+ * "Word document") and the broad kind for its icon.
+ */
+export function fileType(filename: string): { label: string; kind: FileKind } {
   const { extension } = splitExtension(filename);
   return (
-    TYPE_LABELS[extension.toLowerCase()] ??
-    (extension ? extension.slice(1).toUpperCase() : "File")
+    FILE_TYPES[extension.toLowerCase()] ?? {
+      label: extension ? extension.slice(1).toUpperCase() : "File",
+      kind: "other",
+    }
   );
 }
 

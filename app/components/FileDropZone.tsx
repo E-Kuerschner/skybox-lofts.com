@@ -88,7 +88,7 @@ export function FileDropZone({
         className,
       )}
     >
-      <Icon className="size-7 text-muted-foreground" strokeWidth={1.75} />
+      <Icon className="size-7 text-ring" strokeWidth={1.75} />
       <span className="text-sm">{title}</span>
       <Button
         type="button"

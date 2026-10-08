@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FileTextIcon, XIcon } from "lucide-react";
+import { XIcon } from "lucide-react";
 import { CrudFormDialog } from "~/components/crud/CrudFormDialog";
 import { FileDropZone } from "~/components/FileDropZone";
 import { IconButton } from "~/components/IconButton";
@@ -11,11 +11,13 @@ import {
   ACCEPTED_DOCUMENT_TYPES,
   DOCUMENT_CATEGORIES,
   MAX_DOCUMENT_SIZE,
+  fileType,
   formatFileSize,
   splitExtension,
   suggestDisplayName,
   type DocumentCategory,
 } from "./documents";
+import { FileTypeIcon } from "./FileTypeIcon";
 
 type DocumentUploadDialogProps = {
   open: boolean;
@@ -145,7 +147,10 @@ function FileField({
           )}
         >
           <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-card text-positive-foreground">
-            <FileTextIcon className="size-4.5" />
+            <FileTypeIcon
+              kind={fileType(file.name).kind}
+              className="size-4.5"
+            />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="truncate text-sm font-medium" title={file.name}>

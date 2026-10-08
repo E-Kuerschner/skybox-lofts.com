@@ -1,7 +1,7 @@
 import type { Route } from "./+types/index";
 import { useMemo, useState } from "react";
 import type { AppLoadContext } from "react-router";
-import { FileTextIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { Trash2Icon, UploadIcon } from "lucide-react";
 import { isAuthenticated } from "~/util/authHelpers.server";
 import { Button } from "~/components/ui/button";
 import { fuzzyMatch } from "~/util/fuzzySearch";
@@ -16,9 +16,10 @@ import {
   SectionAccordionMoreButton,
 } from "~/components/SectionAccordion";
 import { DocumentUploadDialog } from "./DocumentUploadDialog";
+import { FileTypeIcon } from "./FileTypeIcon";
 import {
   DOCUMENT_CATEGORIES,
-  fileTypeLabel,
+  fileType,
   splitExtension,
   type DocumentCategory,
   type DocumentFile,
@@ -35,10 +36,12 @@ async function fetchDocuments(
     .filter((file) => file.key !== prefix) // the object that represents the folder
     .map((file) => {
       const filename = decodeURIComponent(file.key.slice(prefix.length));
+      const type = fileType(filename);
       return {
         key: file.key,
         name: splitExtension(filename).base,
-        typeLabel: fileTypeLabel(filename),
+        typeLabel: type.label,
+        kind: type.kind,
         uploaded: file.uploaded.toISOString(),
       };
     });
@@ -90,7 +93,7 @@ function DocumentRow({
   return (
     <li className="flex items-center gap-3.5 border-t py-3 pr-3 pl-5 first:border-t-0">
       <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-700">
-        <FileTextIcon className="size-4.5" />
+        <FileTypeIcon kind={file.kind} className="size-4.5" />
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <a
