@@ -230,7 +230,7 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
             Upload document
           </Button>
         )}
-        <p className="col-span-2 max-w-2xl text-sm text-muted-foreground md:col-span-1">
+        <p className="col-span-2 max-w-2xl text-sm text-balance text-muted-foreground md:col-span-1">
           Building rules, meeting notes and budgets, open to every resident.
           Tap a document's name to download it.
         </p>
