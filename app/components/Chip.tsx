@@ -17,10 +17,10 @@ export const chipVariants = cva(
   {
     variants: {
       variant: {
-        accent: "border-emerald-300 bg-emerald-50 text-emerald-800",
+        accent: "border-emerald-300 bg-highlight-surface text-highlight-foreground",
         neutral: "border-border bg-muted text-foreground",
         selectable:
-          "cursor-pointer border-border bg-card text-foreground hover:border-emerald-600 hover:text-emerald-700 active:scale-95 data-[state=on]:border-ring data-[state=on]:bg-emerald-50 data-[state=on]:font-semibold data-[state=on]:text-emerald-800",
+          "cursor-pointer border-border bg-card text-foreground hover:border-emerald-600 hover:text-emerald-700 active:scale-95 data-[state=on]:border-highlight data-[state=on]:bg-highlight-surface data-[state=on]:font-semibold data-[state=on]:text-highlight-foreground",
       },
       size: {
         sm: "px-2.5 py-0.5 text-xs",

@@ -1,9 +1,13 @@
-import * as AccordionPrimitive from "@radix-ui/react-accordion";
-import { ChevronDownIcon } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
 import { cn } from "~/util/ui/utils";
 
 type SectionAccordionProps = Omit<
-  React.ComponentProps<typeof AccordionPrimitive.Root>,
+  React.ComponentProps<typeof Accordion>,
   "type" | "value" | "defaultValue" | "onValueChange"
 > & {
   /** Which sections are open, for when the page needs to open them itself. */
@@ -23,7 +27,7 @@ type SectionAccordionProps = Omit<
  */
 export function SectionAccordion({ className, ...props }: SectionAccordionProps) {
   return (
-    <AccordionPrimitive.Root
+    <Accordion
       type="multiple"
       className={cn(
         "overflow-hidden rounded-xl border bg-card shadow-xs",
@@ -49,27 +53,26 @@ export function SectionAccordionItem({
   className?: string;
 }) {
   return (
-    <AccordionPrimitive.Item
-      value={value}
-      className={cn("border-t first:border-t-0", className)}
-    >
-      <AccordionPrimitive.Header asChild>
-        <h3>
-          <AccordionPrimitive.Trigger className="group flex min-h-11 w-full cursor-pointer items-center gap-2 bg-subtle px-5 text-left text-muted-foreground outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-inset data-[state=open]:border-b">
-            <ChevronDownIcon className="size-3.5 shrink-0 transition-transform duration-150 ease-out group-data-[state=closed]:-rotate-90" />
-            <span className="text-xs font-medium tracking-[0.04em] uppercase">
-              {title}
-            </span>
-            {count !== undefined && (
-              <span className="text-xs">· {count}</span>
-            )}
-          </AccordionPrimitive.Trigger>
-        </h3>
-      </AccordionPrimitive.Header>
-      <AccordionPrimitive.Content className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-        {children}
-      </AccordionPrimitive.Content>
-    </AccordionPrimitive.Item>
+    <AccordionItem value={value} className={className}>
+      <AccordionTrigger
+        className={cn(
+          // A full-width band rather than the default underlined row
+          "min-h-11 cursor-pointer items-center gap-2 rounded-none bg-subtle px-5 py-0 text-muted-foreground hover:text-foreground hover:no-underline focus-visible:ring-inset data-[state=open]:border-b",
+          // The chevron leads, and points right when the section is folded
+          "flex-row-reverse justify-end [&>svg]:size-3.5 [&>svg]:translate-y-0 [&>svg]:text-current [&>svg]:duration-150 [&[data-state=closed]>svg]:-rotate-90 [&[data-state=open]>svg]:rotate-0",
+        )}
+      >
+        <span className="flex items-center gap-2">
+          <span className="text-xs font-medium tracking-[0.04em] uppercase">
+            {title}
+          </span>
+          {count !== undefined && (
+            <span className="text-xs font-normal">· {count}</span>
+          )}
+        </span>
+      </AccordionTrigger>
+      <AccordionContent className="pb-0">{children}</AccordionContent>
+    </AccordionItem>
   );
 }
 

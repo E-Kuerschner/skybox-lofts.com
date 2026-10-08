@@ -83,12 +83,12 @@ export function FileDropZone({
       // keyboards and for anyone who doesn't think to click a dashed box.
       onClick={() => inputRef.current?.click()}
       className={cn(
-        "flex cursor-pointer flex-col items-center gap-2 rounded-xl border-[1.5px] border-dashed border-muted-foreground/40 bg-subtle px-4 py-7 text-center transition-colors hover:border-ring",
-        isDraggingOver && "border-ring bg-emerald-50",
+        "flex cursor-pointer flex-col items-center gap-2 rounded-xl border-[1.5px] border-dashed border-muted-foreground/40 bg-subtle px-4 py-7 text-center transition-colors hover:border-highlight",
+        isDraggingOver && "border-highlight bg-highlight-surface",
         className,
       )}
     >
-      <Icon className="size-7 text-ring" strokeWidth={1.75} />
+      <Icon className="size-7 text-highlight" strokeWidth={1.75} />
       <span className="text-sm">{title}</span>
       <Button
         type="button"

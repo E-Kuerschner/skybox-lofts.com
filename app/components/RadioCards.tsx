@@ -41,7 +41,7 @@ export function RadioCards<T extends string>({
           key={option.value}
           className={cn(
             "flex cursor-pointer items-center gap-3 rounded-xl border bg-card px-3.5 py-3 transition-colors hover:bg-subtle",
-            "has-[input:checked]:border-ring has-[input:checked]:ring-1 has-[input:checked]:ring-ring has-[input:checked]:hover:bg-card",
+            "has-[input:checked]:border-highlight has-[input:checked]:ring-1 has-[input:checked]:ring-highlight has-[input:checked]:hover:bg-card",
             "has-[input:focus-visible]:ring-[3px] has-[input:focus-visible]:ring-ring/50",
           )}
         >

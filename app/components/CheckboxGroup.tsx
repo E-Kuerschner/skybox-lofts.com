@@ -50,8 +50,8 @@ export function CheckboxGroup({
             className={cn(
               "flex cursor-pointer gap-2.5 rounded-xl border-[1.5px] p-3 transition-colors",
               option.checked
-                ? "border-ring bg-emerald-50"
-                : "border-border bg-card hover:border-ring/60",
+                ? "border-highlight bg-highlight-surface"
+                : "border-border bg-card hover:border-highlight/60",
             )}
           >
             <input

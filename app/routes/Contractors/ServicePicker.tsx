@@ -121,7 +121,7 @@ export function ServicePicker({
                     key={service.id}
                     value={service.name}
                     onSelect={() => add(service.id)}
-                    className="min-h-10 cursor-pointer rounded-lg px-2.5 data-[selected=true]:bg-emerald-50 data-[selected=true]:text-emerald-800"
+                    className="min-h-10 cursor-pointer rounded-lg px-2.5 data-[selected=true]:bg-highlight-surface data-[selected=true]:text-highlight-foreground"
                   >
                     {service.name}
                   </CommandItem>
@@ -156,7 +156,7 @@ export function ServicePicker({
                 <button
                   type="button"
                   onClick={() => setShowAllPicks(true)}
-                  className="h-8 cursor-pointer rounded-full border border-dashed px-3 text-sm font-medium text-foreground/80 hover:border-ring hover:text-foreground"
+                  className="h-8 cursor-pointer rounded-full border border-dashed px-3 text-sm font-medium text-foreground/80 hover:border-highlight hover:text-foreground"
                 >
                   +{hiddenCount} more
                 </button>

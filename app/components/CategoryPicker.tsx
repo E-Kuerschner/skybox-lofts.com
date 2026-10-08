@@ -63,7 +63,7 @@ export function CategoryPicker({
           key={option.value}
           value={option.value}
           title={option.label}
-          className="group h-10 w-full min-w-0 cursor-pointer justify-between rounded-lg px-3 font-normal data-[state=on]:bg-emerald-50 data-[state=on]:font-semibold data-[state=on]:text-emerald-800"
+          className="group h-10 w-full min-w-0 cursor-pointer justify-between rounded-lg px-3 font-normal data-[state=on]:bg-highlight-surface data-[state=on]:font-semibold data-[state=on]:text-highlight-foreground"
         >
           <span className="min-w-0 truncate">{option.label}</span>
           <span className="shrink-0 text-xs text-muted-foreground group-data-[state=on]:text-emerald-700">

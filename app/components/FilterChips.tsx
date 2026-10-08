@@ -63,7 +63,7 @@ export function FilterChips<T extends string>({
           className={cn(
             chipVariants({ variant: "selectable", size: "md" }),
             // Undo the plain toggle's square, grey look.
-            "rounded-full hover:bg-card data-[state=on]:bg-emerald-50",
+            "rounded-full hover:bg-card data-[state=on]:bg-highlight-surface",
           )}
         >
           {option.label}

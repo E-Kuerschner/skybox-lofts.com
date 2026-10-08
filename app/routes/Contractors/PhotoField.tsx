@@ -126,7 +126,7 @@ export function PhotoField({
             key={url}
             src={url}
             alt={`New photo ${index + 1}`}
-            className={cn(thumbClass, "border-ring")}
+            className={cn(thumbClass, "border-highlight")}
           />
         ))}
 
@@ -134,7 +134,7 @@ export function PhotoField({
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="flex size-21 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-[1.5px] border-dashed text-xs font-semibold text-emerald-700 hover:border-ring"
+            className="flex size-21 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-[1.5px] border-dashed text-xs font-semibold text-emerald-700 hover:border-highlight"
           >
             <PlusIcon className="size-4" />
             {newFiles.length > 0 ? "Change" : "Add"}
