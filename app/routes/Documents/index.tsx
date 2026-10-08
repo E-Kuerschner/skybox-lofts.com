@@ -1,12 +1,7 @@
 import type { Route } from "./+types/index";
-import { useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { AppLoadContext } from "react-router";
-import {
-  ChevronDownIcon,
-  FileTextIcon,
-  Trash2Icon,
-  UploadIcon,
-} from "lucide-react";
+import { FileTextIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { isAuthenticated } from "~/util/authHelpers.server";
 import { Button } from "~/components/ui/button";
 import { fuzzyMatch } from "~/util/fuzzySearch";
@@ -15,7 +10,11 @@ import { IconButton } from "~/components/IconButton";
 import { NoContent } from "~/components/NoContent";
 import { ConfirmActionDialog } from "~/components/crud/ConfirmActionDialog";
 import { useStatusBanner } from "~/components/crud/ActionStatusBanner";
-import { cn } from "~/util/ui/utils";
+import {
+  SectionAccordion,
+  SectionAccordionItem,
+  SectionAccordionMoreButton,
+} from "~/components/SectionAccordion";
 import { DocumentUploadDialog } from "./DocumentUploadDialog";
 import {
   DOCUMENT_CATEGORIES,
@@ -120,22 +119,17 @@ function DocumentRow({
 function DocumentGroup({
   group,
   files,
-  isOpen,
-  onToggle,
   showEverything,
   isAdmin,
   onRemove,
 }: {
   group: DocumentGroupData;
   files: DocumentFile[];
-  isOpen: boolean;
-  onToggle: () => void;
   /** Skip the "Show all" cut-off, e.g. while searching. */
   showEverything: boolean;
   isAdmin: boolean;
   onRemove: (file: DocumentFile) => void;
 }) {
-  const listId = useId();
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Don't hide just one or two behind a button; it's quicker to show them
@@ -144,65 +138,37 @@ function DocumentGroup({
     canTruncate && !isExpanded ? files.slice(0, PREVIEW_COUNT) : files;
 
   return (
-    <section className="border-t first:border-t-0">
-      <h3>
-        <button
-          type="button"
-          aria-expanded={isOpen}
-          aria-controls={listId}
-          onClick={onToggle}
-          className={cn(
-            "flex min-h-11 w-full cursor-pointer items-center gap-2 bg-subtle px-5 text-left text-muted-foreground hover:text-foreground",
-            isOpen && "border-b",
-          )}
-        >
-          <ChevronDownIcon
-            className={cn(
-              "size-3.5 shrink-0 transition-transform duration-150 ease-out",
-              !isOpen && "-rotate-90",
-            )}
-          />
-          <span className="text-xs font-medium tracking-[0.04em] uppercase">
-            {group.label}
-          </span>
-          <span className="text-xs">· {files.length}</span>
-        </button>
-      </h3>
-
-      {isOpen && (
-        <div id={listId}>
-          {files.length === 0 ? (
-            <p className="px-5 py-4 text-sm text-muted-foreground">
-              Nothing here yet.
-            </p>
-          ) : (
-            <ul>
-              {visibleFiles.map((file) => (
-                <DocumentRow
-                  key={file.key}
-                  file={file}
-                  isAdmin={isAdmin}
-                  onRemove={onRemove}
-                />
-              ))}
-              {canTruncate && (
-                <li className="border-t">
-                  <button
-                    type="button"
-                    onClick={() => setIsExpanded((value) => !value)}
-                    className="h-11 w-full cursor-pointer text-sm font-medium text-emerald-700 hover:bg-subtle"
-                  >
-                    {isExpanded
-                      ? "Show fewer"
-                      : `Show all ${files.length} ${group.label.toLowerCase()}`}
-                  </button>
-                </li>
-              )}
-            </ul>
-          )}
-        </div>
+    <SectionAccordionItem
+      value={group.category}
+      title={group.label}
+      count={files.length}
+    >
+      {files.length === 0 ? (
+        <p className="px-5 py-4 text-sm text-muted-foreground">
+          Nothing here yet.
+        </p>
+      ) : (
+        <ul>
+          {visibleFiles.map((file) => (
+            <DocumentRow
+              key={file.key}
+              file={file}
+              isAdmin={isAdmin}
+              onRemove={onRemove}
+            />
+          ))}
+        </ul>
       )}
-    </section>
+      {canTruncate && (
+        <SectionAccordionMoreButton
+          onClick={() => setIsExpanded((value) => !value)}
+        >
+          {isExpanded
+            ? "Show fewer"
+            : `Show all ${files.length} ${group.label.toLowerCase()}`}
+        </SectionAccordionMoreButton>
+      )}
+    </SectionAccordionItem>
   );
 }
 
@@ -210,7 +176,9 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
   const { groups, isAdmin } = loaderData;
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [closedGroups, setClosedGroups] = useState<DocumentCategory[]>([]);
+  const [openGroups, setOpenGroups] = useState<string[]>(() =>
+    groups.map((group) => group.category),
+  );
   const [fileToRemove, setFileToRemove] = useState<DocumentFile | null>(null);
   const { banner, showSuccess } = useStatusBanner();
 
@@ -228,12 +196,14 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
       .filter((group) => group.files.length > 0);
   }, [groups, query]);
 
-  const toggleGroup = (category: DocumentCategory) =>
-    setClosedGroups((current) =>
-      current.includes(category)
-        ? current.filter((c) => c !== category)
-        : [...current, category],
-    );
+  const handleSearchChange = (next: string) => {
+    // Starting a search opens every section, so no match is hidden in a
+    // folded one
+    if (!query && next.trim()) {
+      setOpenGroups(groups.map((group) => group.category));
+    }
+    setSearchQuery(next);
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -265,7 +235,7 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
 
       <SearchInput
         value={searchQuery}
-        onChange={setSearchQuery}
+        onChange={handleSearchChange}
         placeholder="Search by name..."
         className="h-10 md:max-w-sm"
       />
@@ -273,21 +243,18 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
       {visibleGroups.length === 0 ? (
         <NoContent message={`No documents match “${query}”`} />
       ) : (
-        <div className="overflow-hidden rounded-xl border bg-card shadow-xs">
+        <SectionAccordion value={openGroups} onValueChange={setOpenGroups}>
           {visibleGroups.map((group) => (
             <DocumentGroup
               key={group.category}
               group={group}
               files={group.files}
-              // A search shows every match, even in a collapsed section
-              isOpen={!!query || !closedGroups.includes(group.category)}
-              onToggle={() => toggleGroup(group.category)}
               showEverything={!!query}
               isAdmin={isAdmin}
               onRemove={setFileToRemove}
             />
           ))}
-        </div>
+        </SectionAccordion>
       )}
 
       {isAdmin && (

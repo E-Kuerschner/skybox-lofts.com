@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PlusIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { ImagePlusIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { FileDropZone } from "~/components/FileDropZone";
 import { IconButton } from "~/components/IconButton";
 import { contractorPhotoUrl } from "~/util/contractorPhotoUrl";
 import { cn } from "~/util/ui/utils";
@@ -58,6 +59,9 @@ export function PhotoField({
       multiple
       accept={ACCEPTED_TYPES}
       disabled={remainingSlots === 0}
+      // Opened by the drop zone or the Add button instead
+      tabIndex={-1}
+      aria-label="Photos"
       onChange={(event) => setNewFiles([...(event.target.files ?? [])])}
       className="sr-only"
     />
@@ -69,16 +73,13 @@ export function PhotoField({
     return (
       <div className="flex flex-col gap-2">
         {fileInput}
-        <label
-          htmlFor="photos"
-          className="flex h-36 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed bg-muted/40 text-center transition-colors hover:border-ring"
-        >
-          <UploadIcon className="size-5 text-emerald-700" />
-        <span className="text-sm font-semibold">Add photos of their work</span>
-        <span className="text-xs text-muted-foreground">
-          Optional · up to {maxPhotos} · 5MB each
-          </span>
-        </label>
+        <FileDropZone
+          inputRef={inputRef}
+          icon={ImagePlusIcon}
+          title="Drag photos of their work here, or"
+          buttonLabel="Choose photos"
+          hint={`Optional · up to ${maxPhotos} · 5MB each`}
+        />
       </div>
     );
   }

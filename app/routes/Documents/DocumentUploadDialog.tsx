@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { FileTextIcon, UploadIcon, XIcon } from "lucide-react";
+import { FileTextIcon, XIcon } from "lucide-react";
 import { CrudFormDialog } from "~/components/crud/CrudFormDialog";
+import { FileDropZone } from "~/components/FileDropZone";
 import { IconButton } from "~/components/IconButton";
 import { RadioCards } from "~/components/RadioCards";
-import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { cn } from "~/util/ui/utils";
@@ -99,9 +99,9 @@ export function DocumentUploadDialog({
 }
 
 /**
- * Drop a file or pick one. A single file input (always mounted, so it's what
- * the form posts) sits behind both, and once there's a file it's shown as a
- * card that can be cleared to pick again.
+ * Drop a file or pick one. The file input stays mounted (it's what the form
+ * posts), and once there's a file it's shown as a card that can be cleared to
+ * pick again.
  */
 function FileField({
   file,
@@ -113,23 +113,10 @@ function FileField({
   onChange: (file: File | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const clear = () => {
     if (inputRef.current) inputRef.current.value = "";
     onChange(null);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDraggingOver(false);
-    const dropped = e.dataTransfer.files;
-    if (!dropped.length || !inputRef.current) return;
-    // Keep only the first file, and put it in the input so the form posts it
-    const transfer = new DataTransfer();
-    transfer.items.add(dropped[0]);
-    inputRef.current.files = transfer.files;
-    onChange(dropped[0]);
   };
 
   return (
@@ -186,35 +173,12 @@ function FileField({
           />
         </div>
       ) : (
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDraggingOver(true);
-          }}
-          onDragLeave={() => setIsDraggingOver(false)}
-          onDrop={handleDrop}
-          className={cn(
-            "flex flex-col items-center gap-2 rounded-xl border-[1.5px] border-dashed border-muted-foreground/40 bg-subtle px-4 py-7 text-center transition-colors",
-            isDraggingOver && "border-ring bg-positive",
-          )}
-        >
-          <UploadIcon
-            className="size-7 text-muted-foreground"
-            strokeWidth={1.75}
-          />
-          <span className="text-sm">Drag a file here, or</span>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 rounded-[10px] bg-card"
-            onClick={() => inputRef.current?.click()}
-          >
-            Choose a file
-          </Button>
-          <span className="text-[0.8125rem] text-muted-foreground">
-            PDF, Word or Excel, up to {formatFileSize(MAX_DOCUMENT_SIZE)}
-          </span>
-        </div>
+        <FileDropZone
+          inputRef={inputRef}
+          title="Drag a file here, or"
+          buttonLabel="Choose a file"
+          hint={`PDF, Word or Excel, up to ${formatFileSize(MAX_DOCUMENT_SIZE)}`}
+        />
       )}
     </div>
   );
