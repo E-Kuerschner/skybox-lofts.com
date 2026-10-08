@@ -40,6 +40,8 @@ type CrudFormDialogProps = {
   /** Set when the form contains a file input. */
   hasFileUploads?: boolean;
   submitLabel?: string;
+  /** Shown on the submit button while saving. Defaults to "Saving...". */
+  pendingLabel?: string;
   /** Blocks submitting while the form is known to be incomplete. */
   submitDisabled?: boolean;
   /** Called with the success message just before the dialog closes itself. */
@@ -85,6 +87,7 @@ export function CrudFormDialog({
   description,
   hasFileUploads = false,
   submitLabel,
+  pendingLabel = "Saving...",
   submitDisabled = false,
   onSuccess,
   contentClassName,
@@ -193,7 +196,7 @@ export function CrudFormDialog({
             disabled={isSubmitting || submitDisabled}
           >
             {isSubmitting
-              ? "Saving..."
+              ? pendingLabel
               : (submitLabel ?? capitalize(defaultSubmitLabel))}
           </ActionButton>
         </OverlayFooter>

@@ -2,9 +2,16 @@ import type { Route } from "./+types/documentUpload";
 import { isAdmin } from "~/util/authHelpers.server";
 import { getDatabase } from "~/util/database.server";
 import { createActivityLogData } from "~/util/activityLogger.server";
+import { actionError, actionSuccess } from "~/util/crud/actionResult";
+import {
+  MAX_DOCUMENT_SIZE,
+  categoryLabel,
+  isDocumentCategory,
+  splitExtension,
+} from "~/routes/Documents/documents";
 import * as schema from "../../database/schema";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_NAME_LENGTH = 120;
 
 export async function action({ request, context }: Route.ActionArgs) {
   // Ensure user is admin
@@ -12,57 +19,56 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File;
-    const category = formData.get("category") as string;
+    const file = formData.get("file");
+    const category = String(formData.get("category") ?? "");
+    const displayName = String(formData.get("displayName") ?? "")
+      // A slash would put the file in a folder of its own
+      .replace(/[\\/]/g, "-")
+      .replace(/\s+/g, " ")
+      .trim();
 
     // Validate inputs
-    if (!file || !(file instanceof File)) {
-      return {
-        success: false,
-        error: "Please select a file to upload.",
-      };
+    if (!(file instanceof File) || file.size === 0) {
+      return actionError("Please choose a file to upload.");
     }
 
-    if (!category || category.trim() === "") {
-      return {
-        success: false,
-        error: "Please select or enter a category.",
-      };
+    if (!isDocumentCategory(category)) {
+      return actionError("Please choose where the document should go.");
+    }
+
+    if (!displayName) {
+      return actionError("Please give the document a name residents will see.");
+    }
+
+    if (displayName.length > MAX_NAME_LENGTH) {
+      return actionError(
+        `Please keep the name under ${MAX_NAME_LENGTH} characters.`,
+      );
     }
 
     // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      return {
-        success: false,
-        error: `File size must be less than ${MAX_FILE_SIZE / 1024 / 1024}MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB.`,
-      };
+    if (file.size > MAX_DOCUMENT_SIZE) {
+      return actionError(
+        `Files can be up to ${MAX_DOCUMENT_SIZE / 1024 / 1024} MB. This one is ${(file.size / 1024 / 1024).toFixed(1)} MB.`,
+      );
     }
 
-    // Normalize category (lowercase, replace spaces with hyphens)
-    const normalizedCategory = category.toLowerCase().trim().replace(/\s+/g, "-");
+    // The stored file is named what residents see, keeping the original
+    // ending so it still opens in the right app once downloaded.
+    const filename = `${displayName}${splitExtension(file.name).extension.toLowerCase()}`;
+    const key = `${category}/${filename}`;
 
-    // Create the R2 object key
-    const key = `${normalizedCategory}/${file.name}`;
-
-    // Check for duplicate filename
-    const existingFiles = await context.cloudflare.env.DOCUMENTS.list({
-      prefix: `${normalizedCategory}/`,
-    });
-
-    const isDuplicate = existingFiles.objects.some((obj: { key: string }) => obj.key === key);
-
-    if (isDuplicate) {
-      return {
-        success: false,
-        error: `A file named "${file.name}" already exists in the "${category}" category.`,
-      };
+    if (await context.cloudflare.env.DOCUMENTS.head(key)) {
+      return actionError(
+        `There's already a document called "${filename}" in ${categoryLabel(category)}. Give this one a different name.`,
+      );
     }
 
     // Upload to R2
     await context.cloudflare.env.DOCUMENTS.put(key, file, {
       httpMetadata: {
         contentType: file.type,
-        contentDisposition: `attachment; filename="${encodeURIComponent(file.name)}"`,
+        contentDisposition: `attachment; filename="${encodeURIComponent(filename)}"`,
       },
     });
 
@@ -70,21 +76,19 @@ export async function action({ request, context }: Route.ActionArgs) {
     const db = getDatabase(context);
     await db.insert(schema.activityLogs).values(
       createActivityLogData(session.user.id, "created", "document", null, {
-        filename: file.name,
-        category: normalizedCategory,
+        filename,
+        category,
         fileSize: file.size,
-      })
+      }),
     );
 
-    return {
-      success: true,
-      message: `Successfully uploaded "${file.name}" to ${category}.`,
-    };
+    return actionSuccess(
+      `${displayName} was added to ${categoryLabel(category)}.`,
+    );
   } catch (error) {
     console.error("Document upload error:", error);
-    return {
-      success: false,
-      error: "An error occurred while uploading the document. Please try again.",
-    };
+    return actionError(
+      "Something went wrong uploading the document. Please try again.",
+    );
   }
 }

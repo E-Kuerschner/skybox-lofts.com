@@ -30,6 +30,7 @@ body {
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-subtle: var(--subtle);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
@@ -74,6 +75,12 @@ body {
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
+  /*
+   * A quieter fill than `--muted`, for bands inside a white card that should
+   * read as structure rather than content, e.g. the group headers on the
+   * Documents page.
+   */
+  --subtle: oklch(0.985 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
