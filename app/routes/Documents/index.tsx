@@ -231,8 +231,9 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
           </Button>
         )}
         <p className="col-span-2 max-w-2xl text-sm text-balance text-muted-foreground md:col-span-1">
-          Building rules, meeting notes and budgets, open to every resident.
-          Tap a document's name to download it.
+          Building documents, meeting notes and financials are available to all
+          residents for download. Expand the sections below to see more. Tap a
+          document's name to download it.
         </p>
       </div>
 
