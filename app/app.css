@@ -30,6 +30,7 @@ body {
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-subtle: var(--subtle);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
@@ -45,6 +46,9 @@ body {
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-highlight: var(--highlight);
+  --color-highlight-surface: var(--highlight-surface);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -74,6 +78,12 @@ body {
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
+  /*
+   * A quieter fill than `--muted`, for bands inside a white card that should
+   * read as structure rather than content, e.g. the group headers on the
+   * Documents page.
+   */
+  --subtle: oklch(0.985 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
@@ -87,7 +97,7 @@ body {
    * - error: went wrong, e.g. a failed save.
    *
    * These describe outcomes. The green used for the selected tab or chip is
-   * the focus accent (`--ring`), not "positive". `--destructive` is the
+   * the highlight (`--highlight`), not "positive". `--destructive` is the
    * solid red for buttons that delete things.
    */
   --positive: var(--color-emerald-50);
@@ -102,15 +112,26 @@ body {
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   /*
-   * The app's one "active/focused" accent color: input focus rings, and any
-   * component indicating a currently-selected state (segmented toggles,
-   * filter chips, etc.) should all pull from this rather than hardcoding an
-   * emerald shade directly. Pair it as a border/ring accent (as inputs do)
-   * rather than a solid fill — a fully-saturated emerald-500 background
-   * doesn't leave room for text dark enough to read well without looking
-   * like plain black.
+   * The app's green accent, for whatever is selected, active or calling for
+   * attention without being a status: the chosen chip, toggle or card, the
+   * active tab's bar, a switch that's on, the icon on an upload area.
+   *
+   * - `highlight`: the accent itself, for edges, bars and icons
+   *   (`border-highlight`, `bg-highlight`, `text-highlight`).
+   * - `highlight-surface`: a soft fill behind something selected.
+   * - `highlight-foreground`: text sitting on that fill.
+   *
+   * Use it as an edge or icon rather than a solid fill: a fully saturated
+   * emerald-500 background leaves no room for text dark enough to read well.
    */
-  --ring: var(--color-emerald-500);
+  --highlight: var(--color-emerald-500);
+  --highlight-surface: var(--color-emerald-50);
+  --highlight-foreground: var(--color-emerald-800);
+  /*
+   * Focus rings only. It matches the highlight today, but nothing besides
+   * focus styles should use it, so the two can change separately.
+   */
+  --ring: var(--highlight);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);

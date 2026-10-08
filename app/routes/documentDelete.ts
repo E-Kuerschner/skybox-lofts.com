@@ -40,13 +40,13 @@ export async function action({ request, context }: Route.ActionArgs) {
 
     return {
       success: true,
-      message: `Successfully deleted "${filename}".`,
+      message: `${filename.replace(/\.[^.]+$/, "")} was removed.`,
     };
   } catch (error) {
     console.error("Document delete error:", error);
     return {
       success: false,
-      error: "An error occurred while deleting the document. Please try again.",
+      error: "Something went wrong removing the document. Please try again.",
     };
   }
 }

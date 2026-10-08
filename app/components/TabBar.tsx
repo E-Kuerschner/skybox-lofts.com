@@ -43,7 +43,7 @@ export function TabBarTab({
     <TabsTrigger
       className={cn(
         // The active line sits right on the rule rather than below it.
-        "group h-12 flex-none cursor-pointer px-3 text-base after:-bottom-px! after:bg-ring",
+        "group h-12 flex-none cursor-pointer px-3 text-base after:-bottom-px! after:bg-highlight",
         className,
       )}
       {...props}
@@ -52,7 +52,7 @@ export function TabBarTab({
       {count !== undefined && (
         <Badge
           variant="secondary"
-          className="min-w-5 px-1.5 text-muted-foreground group-data-[state=active]:bg-emerald-50 group-data-[state=active]:text-emerald-800"
+          className="min-w-5 px-1.5 text-muted-foreground group-data-[state=active]:bg-highlight-surface group-data-[state=active]:text-highlight-foreground"
         >
           {count}
         </Badge>

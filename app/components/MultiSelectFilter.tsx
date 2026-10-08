@@ -51,7 +51,7 @@ export function MultiSelectFilter({
       <PopoverTrigger
         className={cn(
           "flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-full border bg-white px-4 text-sm shadow-sm transition-colors hover:bg-stone-50",
-          selectedCount > 0 && "border-ring bg-emerald-50 hover:bg-emerald-50",
+          selectedCount > 0 && "border-highlight bg-highlight-surface hover:bg-highlight-surface",
           className,
         )}
       >

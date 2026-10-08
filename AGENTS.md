@@ -101,6 +101,7 @@ Project requirements and specifications are documented in the `docs/` folder.
 - Use the dev-server-debugger sub-agent to help debug complex new features in the browser
 - NEVER manually create database migrations. ALWAYS relaying on the database migration generator script
 - Always use `type` over `interface` for Typescript types
+- For design explorations, mockups or Design canvas artifacts, follow the `design-canvas` skill (`.claude/skills/design-canvas/`): the app shell and dialog frame are captured from the running dev server, and only the content being designed is new
 
 ### Email Testing & Debugging
 When testing features with the dev server that send emails:

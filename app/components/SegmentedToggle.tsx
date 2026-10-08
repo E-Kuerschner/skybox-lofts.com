@@ -69,7 +69,7 @@ export function SegmentedToggle<T extends string>({
       {highlight && (
         <div
           aria-hidden
-          className="absolute inset-y-0.5 left-0 rounded-full border border-ring bg-emerald-50 transition-[transform,width] duration-200 ease-[cubic-bezier(0.645,0.045,0.355,1)] motion-reduce:transition-none"
+          className="absolute inset-y-0.5 left-0 rounded-full border border-highlight bg-highlight-surface transition-[transform,width] duration-200 ease-[cubic-bezier(0.645,0.045,0.355,1)] motion-reduce:transition-none"
           style={{
             transform: `translateX(${highlight.left}px)`,
             width: highlight.width,
@@ -91,7 +91,7 @@ export function SegmentedToggle<T extends string>({
             "relative z-10 cursor-pointer rounded-full px-3 py-1.5 transition-colors",
             stretch && "flex-1",
             value === option.value
-              ? "text-emerald-800"
+              ? "text-highlight-foreground"
               : "text-muted-foreground hover:text-foreground",
           )}
         >

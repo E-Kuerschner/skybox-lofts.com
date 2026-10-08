@@ -1,174 +1,190 @@
-import { useState, useEffect } from "react";
-import { useFetcher } from "react-router";
-import { ActionButton } from "~/components/ActionButton";
-import {
-  OverlayBody,
-  OverlayFooter,
-  ResponsiveOverlay,
-} from "~/components/ResponsiveOverlay";
+import { useEffect, useRef, useState } from "react";
+import { XIcon } from "lucide-react";
+import { CrudFormDialog } from "~/components/crud/CrudFormDialog";
+import { FileDropZone } from "~/components/FileDropZone";
+import { IconButton } from "~/components/IconButton";
+import { RadioCards } from "~/components/RadioCards";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { StatusBanner } from "~/components/StatusBanner";
 import { cn } from "~/util/ui/utils";
+import {
+  ACCEPTED_DOCUMENT_TYPES,
+  DOCUMENT_CATEGORIES,
+  MAX_DOCUMENT_SIZE,
+  fileType,
+  formatFileSize,
+  splitExtension,
+  suggestDisplayName,
+  type DocumentCategory,
+} from "./documents";
+import { FileTypeIcon } from "./FileTypeIcon";
 
 type DocumentUploadDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  existingCategories: string[];
   onUploadSuccess?: (message: string) => void;
 };
 
 export function DocumentUploadDialog({
   open,
   onOpenChange,
-  existingCategories,
   onUploadSuccess,
 }: DocumentUploadDialogProps) {
-  const fetcher = useFetcher();
-  const isSubmitting = fetcher.state === "submitting";
+  const [file, setFile] = useState<File | null>(null);
+  const [displayName, setDisplayName] = useState("");
+  const [category, setCategory] = useState<DocumentCategory | null>(null);
 
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [customCategory, setCustomCategory] = useState<string>("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  // const isCustomCategory = selectedCategory === "custom";
-  // const categoryValue = isCustomCategory ? customCategory : selectedCategory;
-  const categoryValue = selectedCategory;
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-    }
-  };
-
-  const handleClose = () => {
-    if (!isSubmitting) {
-      onOpenChange(false);
-      // Reset form state
-      setSelectedCategory("");
-      setCustomCategory("");
-      setSelectedFile(null);
-    }
-  };
-
-  // Close dialog and reset form on successful upload
+  // Start fresh each time it opens
   useEffect(() => {
-    if (fetcher.state === "idle" && fetcher.data?.success) {
-      if (onUploadSuccess && fetcher.data.message) {
-        onUploadSuccess(fetcher.data.message);
-      }
-      handleClose();
+    if (!open) {
+      setFile(null);
+      setDisplayName("");
+      setCategory(null);
     }
-  }, [fetcher.state, fetcher.data, onUploadSuccess]);
+  }, [open]);
+
+  const handleFileChange = (next: File | null) => {
+    setFile(next);
+    setDisplayName(next ? suggestDisplayName(next.name) : "");
+  };
+
+  const isTooBig = file !== null && file.size > MAX_DOCUMENT_SIZE;
 
   return (
-    <ResponsiveOverlay
+    <CrudFormDialog
       open={open}
-      onOpenChange={handleClose}
-      title="Upload Document"
-      description="Choose a file to upload from your computer and the category to file it under. Files will be accessible to all registered residents."
-      bare
+      onOpenChange={onOpenChange}
+      mode="create"
+      entityName="document"
+      action="/documentUpload"
+      title="Upload a document"
+      description="Every resident will be able to see and download it."
+      hasFileUploads
+      submitLabel="Upload document"
+      pendingLabel="Uploading..."
+      submitDisabled={
+        !file || isTooBig || !category || displayName.trim() === ""
+      }
+      onSuccess={onUploadSuccess}
     >
-      <fetcher.Form
-        method="post"
-        action="/documentUpload"
-        encType="multipart/form-data"
-        className="flex min-h-0 flex-1 flex-col"
-      >
-        <OverlayBody className="flex flex-col gap-6">
-          {/* Error Message */}
-          {fetcher.data && !fetcher.data.success && fetcher.data.error && (
-            <StatusBanner
-              variant="error"
-              message={fetcher.data.error}
-              className="shrink-0"
-            />
+      <FileField file={file} isTooBig={isTooBig} onChange={handleFileChange} />
+
+      {file && (
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="document-name">Name residents will see</Label>
+          <Input
+            id="document-name"
+            name="displayName"
+            className="h-10 bg-card"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            suffix={splitExtension(file.name).extension.toLowerCase() || null}
+            required
+          />
+          <p className="text-[0.8125rem] text-muted-foreground">
+            We filled this in from the file. Change it to something clear, like
+            “Rules and Regulations”.
+          </p>
+        </div>
+      )}
+
+      <RadioCards
+        name="category"
+        legend="Where should it go?"
+        options={DOCUMENT_CATEGORIES.map((c) => ({ ...c }))}
+        value={category}
+        onValueChange={setCategory}
+        required
+      />
+    </CrudFormDialog>
+  );
+}
+
+/**
+ * Drop a file or pick one. The file input stays mounted (it's what the form
+ * posts), and once there's a file it's shown as a card that can be cleared to
+ * pick again.
+ */
+function FileField({
+  file,
+  isTooBig,
+  onChange,
+}: {
+  file: File | null;
+  isTooBig: boolean;
+  onChange: (file: File | null) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const clear = () => {
+    if (inputRef.current) inputRef.current.value = "";
+    onChange(null);
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-sm font-medium" id="document-file-label">
+        File
+      </span>
+      <input
+        ref={inputRef}
+        type="file"
+        name="file"
+        accept={ACCEPTED_DOCUMENT_TYPES}
+        className="sr-only"
+        aria-labelledby="document-file-label"
+        tabIndex={-1}
+        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+      />
+
+      {file ? (
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-xl border py-3 pr-2 pl-3.5",
+            isTooBig
+              ? "border-error-border bg-error"
+              : "border-positive-border bg-positive",
           )}
-
-          {/* Category Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="category-select">Category</Label>
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-              disabled={isSubmitting}
-            >
-              <SelectTrigger id="category-select" className="bg-card w-full">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {existingCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category
-                      .split("-")
-                      .map(
-                        (word) => word.charAt(0).toUpperCase() + word.slice(1),
-                      )
-                      .join(" ")}
-                  </SelectItem>
-                ))}
-                {/*<SelectItem value="custom">+ New Category</SelectItem>*/}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Hidden input for category value */}
-          <input type="hidden" name="category" value={categoryValue} />
-
-          {/* File Upload */}
-          <div className="space-y-2">
-            <Label htmlFor="file">Document</Label>
-            <Input
-              id="file"
-              name="file"
-              type="file"
-              className={cn("bg-card", [selectedFile && "text-emerald-500"])}
-              onChange={handleFileChange}
-              disabled={isSubmitting}
-              required
+        >
+          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-card text-positive-foreground">
+            <FileTypeIcon
+              kind={fileType(file.name).kind}
+              className="size-4.5"
             />
-            {selectedFile && (
-              <p className="text-sm text-muted-foreground">
-                Selected: {selectedFile.name} (
-                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-              </p>
-            )}
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span className="truncate text-sm font-medium" title={file.name}>
+              {file.name}
+            </span>
+            <span
+              className={cn(
+                "text-[0.8125rem]",
+                isTooBig
+                  ? "text-error-foreground"
+                  : "text-positive-foreground",
+              )}
+            >
+              {formatFileSize(file.size)} ·{" "}
+              {isTooBig
+                ? `Too big. Files can be up to ${formatFileSize(MAX_DOCUMENT_SIZE)}.`
+                : "Ready to upload"}
+            </span>
           </div>
-        </OverlayBody>
-
-        <OverlayFooter>
-          <ActionButton
+          <IconButton
             type="button"
-            variant="outline"
-            className="flex-1"
-            onClick={handleClose}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </ActionButton>
-          <ActionButton
-            variant="cta"
-            type="submit"
-            className="flex-1"
-            disabled={
-              isSubmitting ||
-              !selectedFile ||
-              !categoryValue ||
-              categoryValue.trim() === ""
-            }
-          >
-            {isSubmitting ? "Uploading..." : "Upload"}
-          </ActionButton>
-        </OverlayFooter>
-      </fetcher.Form>
-    </ResponsiveOverlay>
+            icon={XIcon}
+            label="Choose a different file"
+            onClick={clear}
+          />
+        </div>
+      ) : (
+        <FileDropZone
+          inputRef={inputRef}
+          title="Drag a file here, or"
+          buttonLabel="Choose a file"
+          hint={`PDF, Word or Excel, up to ${formatFileSize(MAX_DOCUMENT_SIZE)}`}
+        />
+      )}
+    </div>
   );
 }
