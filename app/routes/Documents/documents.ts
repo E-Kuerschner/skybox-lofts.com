@@ -13,7 +13,7 @@ export const DOCUMENT_CATEGORIES = [
   {
     value: "budget",
     label: "Budget",
-    description: "Budgets, reserve studies and financial reports",
+    description: "Building financials, bank statements and reports",
   },
 ] as const;
 
