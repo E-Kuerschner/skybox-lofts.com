@@ -65,7 +65,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       emailVerified: schema.users.emailVerified,
       unitNumber: schema.users.unitNumber,
       role: schema.users.role,
-      isAnonymous: schema.users.isAnonymous,
       createdAt: schema.users.createdAt,
       updatedAt: schema.users.updatedAt,
       boardPosition: schema.boardMembers.role,
@@ -75,7 +74,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       schema.boardMembers,
       eq(schema.users.id, schema.boardMembers.userId),
     )
-    .where(eq(schema.users.isAnonymous, false))
     .all()
     .then((results) =>
       results.map((row) => ({
@@ -191,7 +189,6 @@ async function handleCreateUser(
         email,
         unitNumber: unitNum,
         role,
-        isAnonymous: false,
         emailVerified: false,
         createdAt: new Date(),
         updatedAt: new Date(),

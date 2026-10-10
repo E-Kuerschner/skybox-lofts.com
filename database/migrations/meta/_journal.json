@@ -85,6 +85,13 @@
       "when": 1791651096634,
       "tag": "0011_strange_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1791658279237,
+      "tag": "0012_white_thanos",
+      "breakpoints": true
     }
   ]
 }
