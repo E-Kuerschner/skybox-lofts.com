@@ -83,7 +83,7 @@ try {
   const userId = crypto.randomUUID();
 
   // Create the SQL INSERT statement
-  const sql = `INSERT INTO users (id, name, email, email_verified, created_at, updated_at, role, is_anonymous) VALUES ('${userId}', '${USER_NAME}', '${adminEmail}', 1, ${Date.now()}, ${Date.now()}, 'admin', 0);`;
+  const sql = `INSERT INTO users (id, name, email, email_verified, created_at, updated_at, role) VALUES ('${userId}', '${USER_NAME}', '${adminEmail}', 1, ${Date.now()}, ${Date.now()}, 'admin');`;
 
   // Execute the SQL command against the D1 database using Bun's shell
   const insertProc = Bun.spawn(

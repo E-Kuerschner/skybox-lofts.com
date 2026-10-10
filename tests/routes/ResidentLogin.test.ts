@@ -22,9 +22,9 @@ beforeEach(() => {
   testDb = createTestDatabase();
 });
 
-describe("ResidentLogin action — loginMethod=full (magic link)", () => {
+describe("ResidentLogin action — magic link", () => {
   test("returns error when email field is missing", async () => {
-    const request = makeFormRequest(ACTION_URL, { loginMethod: "full" });
+    const request = makeFormRequest(ACTION_URL, {});
     const result = await action({ request, context: makeTestContext(), params: {} });
 
     expect(result).toMatchObject({ error: "Email is required" });
@@ -33,7 +33,6 @@ describe("ResidentLogin action — loginMethod=full (magic link)", () => {
 
   test("returns error when email is not registered", async () => {
     const request = makeFormRequest(ACTION_URL, {
-      loginMethod: "full",
       email: "nobody@example.com",
     });
     const result = await action({ request, context: makeTestContext(), params: {} });
@@ -48,7 +47,6 @@ describe("ResidentLogin action — loginMethod=full (magic link)", () => {
     seedUser(testDb, { email: "resident@test.com" });
 
     const request = makeFormRequest(ACTION_URL, {
-      loginMethod: "full",
       email: "resident@test.com",
     });
     const result = await action({ request, context: makeTestContext(), params: {} });
@@ -63,7 +61,6 @@ describe("ResidentLogin action — loginMethod=full (magic link)", () => {
     seedUser(testDb, { email: "resident@test.com" });
 
     const request = makeFormRequest(ACTION_URL, {
-      loginMethod: "full",
       email: "resident@test.com",
     });
     await action({ request, context: makeTestContext(), params: {} });
@@ -79,7 +76,6 @@ describe("ResidentLogin action — loginMethod=full (magic link)", () => {
     seedUser(testDb, { email: "alice@test.com", firstName: "Alice" });
 
     const request = makeFormRequest(ACTION_URL, {
-      loginMethod: "full",
       email: "alice@test.com",
     });
     await action({ request, context: makeTestContext(), params: {} });
@@ -90,7 +86,6 @@ describe("ResidentLogin action — loginMethod=full (magic link)", () => {
 
   test("does not call Resend when user is not found", async () => {
     const request = makeFormRequest(ACTION_URL, {
-      loginMethod: "full",
       email: "ghost@test.com",
     });
     await action({ request, context: makeTestContext(), params: {} });
@@ -108,7 +103,6 @@ describe("ResidentLogin action — loginMethod=full (magic link)", () => {
     );
 
     const request = makeFormRequest(ACTION_URL, {
-      loginMethod: "full",
       email: "resident@test.com",
     });
     const result = await action({ request, context: makeTestContext(), params: {} });
@@ -116,15 +110,5 @@ describe("ResidentLogin action — loginMethod=full (magic link)", () => {
     expect(result).toMatchObject({
       error: expect.stringContaining("Something went wrong"),
     });
-  });
-});
-
-describe("ResidentLogin action — unknown loginMethod", () => {
-  test("throws for an unknown loginMethod value", async () => {
-    const request = makeFormRequest(ACTION_URL, { loginMethod: "magic" });
-
-    await expect(
-      action({ request, context: makeTestContext(), params: {} }),
-    ).rejects.toThrow("Unknown login method: magic");
   });
 });

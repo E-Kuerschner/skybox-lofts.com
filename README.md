@@ -62,7 +62,6 @@ These are needed both in `.dev.vars` for local development **and** must be set i
 |---|---|---|
 | `BETTER_AUTH_SECRET` | A random 32-character secret. Generate with `openssl rand -base64 32`. | Signs and verifies all authentication tokens. **Keep this value stable** — changing it logs every resident out. |
 | `BETTER_AUTH_URL` | Base URL of the app (`http://localhost:5173` locally, `https://skybox-lofts.com` in production). | Included in magic link emails so the link points to the right domain. |
-| `APP_SECRET` | Any long random string. | Additional signing secret used by the application. |
 | `RESEND_KEY` | API key from [Resend](https://resend.com). | Authenticates with Resend to send magic link login emails and resident invitations. |
 | `CONTACT_US_EMAIL` | An email address you control. | Destination for contact form submissions from the public-facing site. |
 | `ENVIRONMENT` | `development` or `production`. | Tells the app which environment it's running in. |
@@ -82,8 +81,10 @@ These are only needed in `.dev.vars` on your local machine. They authenticate th
 Run the full test suite:
 
 ```bash
-bun test
+bun run test
 ```
+
+Use `bun run test` rather than a bare `bun test`: the script adds `--isolate`, which stops one test file's `mock.module()` fakes from leaking into other files.
 
 Run tests in watch mode during development:
 

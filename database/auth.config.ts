@@ -5,7 +5,7 @@
  * - better-auth-config.ts (CLI stub for schema generation)
  * - app/auth/index.ts (runtime config)
  */
-import { anonymous, admin, magicLink } from "better-auth/plugins";
+import { admin, magicLink } from "better-auth/plugins";
 
 type MagicLinkSender = Parameters<typeof magicLink>[0]["sendMagicLink"];
 
@@ -20,7 +20,6 @@ type CreatePluginsParams = {
 export function createPlugins({ sendMagicLink }: CreatePluginsParams = {}) {
   return [
     admin(),
-    anonymous(),
     magicLink({
       disableSignUp: true,
       sendMagicLink: sendMagicLink ?? (async () => {}),
