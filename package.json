@@ -15,7 +15,7 @@
     "db:migrate": "bun --env-file=.dev.vars drizzle-kit --config database/drizzle.config.ts migrate",
     "db:migrate:local": "wrangler d1 migrations apply app --local",
     "db:seed": "bun --env-file=.dev.vars ./scripts/seedDefaultUser.ts --remote",
-    "db:reset:local": "rm -rf .wrangler/state/v3/d1 && bun run db:migrate:local && bun ./scripts/seedDefaultUser.ts --local",
+    "db:reset:local": "rm -rf .wrangler/state/v3/d1 && CI=true bun run db:migrate:local && bun --env-file=.dev.vars ./scripts/seedDefaultUser.ts --local",
     "test": "bun test --isolate",
     "test:watch": "bun test --isolate --watch"
   },

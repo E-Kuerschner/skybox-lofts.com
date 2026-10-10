@@ -13,5 +13,19 @@
     ],
     "deny": ["Bash(bun run db:migrate)", "Bash(bun run deploy)"],
     "ask": []
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/setup-worktree-db.sh",
+            "timeout": 300
+          }
+        ]
+      }
+    ]
   }
 }

@@ -1,0 +1,5 @@
+# Gitignored files Claude Code copies into each new worktree.
+# Same syntax as .gitignore; only files that are also gitignored are copied.
+
+# Local secrets for the dev server (Better Auth, Resend, ...)
+.dev.vars
