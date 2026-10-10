@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Chip } from "~/components/Chip";
 import { Button } from "~/components/ui/button";
 import {
@@ -18,7 +18,9 @@ const VISIBLE_PICKS = 4;
  * Picks the services a business offers from the building's service list.
  *
  * Type to search the list, pick from the dropdown, and the picks collect as
- * chips underneath (folding into "+N more" past a handful, so a busy business
+ * chips underneath. The dropdown closes after each pick, since most businesses
+ * offer one service; focus stays in the search box, so typing again, clicking
+ * it or pressing the down arrow brings the list back for another (folding into "+N more" past a handful, so a busy business
  * doesn't push the rest of the form off screen). Only services already on the
  * list can be picked, which keeps the list tidy for everyone. Each pick is
  * posted as a `serviceIds` field.
@@ -36,6 +38,36 @@ export function ServicePicker({
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [showAllPicks, setShowAllPicks] = useState(false);
+  // Read out by screen readers after a pick, since the dropdown closing on its
+  // own would otherwise leave them unsure whether anything happened.
+  const [announcement, setAnnouncement] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // cmdk always marks its search box as expanded, even while this component
+  // has the list closed. Keep the attribute honest so screen readers say
+  // whether there's a list to move into.
+  useEffect(() => {
+    inputRef.current?.setAttribute("aria-expanded", String(isOpen));
+  }, [isOpen]);
+
+  // Escape closes the dropdown first, rather than the whole dialog (and
+  // everything typed into it). The dialog listens for Escape on the document
+  // before React's handlers run, so this has to catch it earlier, on the way
+  // down from the window.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const closeList = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (document.activeElement !== inputRef.current) return;
+      event.stopPropagation();
+      setIsOpen(false);
+    };
+
+    window.addEventListener("keydown", closeList, { capture: true });
+    return () =>
+      window.removeEventListener("keydown", closeList, { capture: true });
+  }, [isOpen]);
 
   const byId = useMemo(
     () => new Map(services.map((service) => [service.id, service])),
@@ -52,8 +84,13 @@ export function ServicePicker({
   const hiddenCount = picked.length - visiblePicks.length;
 
   const add = (id: number) => {
+    const count = selectedIds.length + 1;
     onChange([...selectedIds, id]);
     setQuery("");
+    setIsOpen(false);
+    setAnnouncement(
+      `${byId.get(id)?.name} added. ${count} ${count === 1 ? "service" : "services"} picked.`,
+    );
   };
   const remove = (id: number) =>
     onChange(selectedIds.filter((selectedId) => selectedId !== id));
@@ -68,21 +105,24 @@ export function ServicePicker({
         loop
         className="overflow-visible rounded-none bg-transparent **:data-[slot=command-input-wrapper]:h-10 **:data-[slot=command-input-wrapper]:rounded-lg **:data-[slot=command-input-wrapper]:border **:data-[slot=command-input-wrapper]:bg-card **:data-[slot=command-input-wrapper]:shadow-xs **:data-[slot=command-input-wrapper]:focus-within:border-ring **:data-[slot=command-input-wrapper]:focus-within:ring-[3px] **:data-[slot=command-input-wrapper]:focus-within:ring-ring/50"
         onKeyDown={(event) => {
-          // Escape closes the dropdown first, rather than the whole dialog.
-          if (event.key === "Escape" && isOpen) {
-            event.stopPropagation();
-            setIsOpen(false);
+          // The usual combobox key for opening the list again after a pick.
+          if (event.key === "ArrowDown" && !isOpen) {
+            event.preventDefault();
+            setIsOpen(true);
           }
         }}
       >
         <div className="relative">
           <CommandInput
+            ref={inputRef}
             value={query}
             onValueChange={(value) => {
               setQuery(value);
               setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
+            // Focus never leaves after a pick, so a click has to reopen it.
+            onClick={() => setIsOpen(true)}
             onBlur={() => setIsOpen(false)}
             placeholder={
               picked.length > 0 ? "Add a service" : "Add a service, like painting"
@@ -92,8 +132,8 @@ export function ServicePicker({
 
           {isOpen && (
             <CommandList
-              // Keep focus in the search box while picking, so the dropdown
-              // stays open for picking several in a row.
+              // Keep focus in the search box while picking, so it's ready for
+              // another pick without clicking back into it.
               onMouseDown={(event) => event.preventDefault()}
               className="absolute inset-x-0 top-full z-50 mt-1.5 max-h-64 rounded-xl border bg-popover p-1 shadow-lg"
             >
@@ -131,6 +171,10 @@ export function ServicePicker({
           )}
         </div>
       </Command>
+
+      <p role="status" className="sr-only">
+        {announcement}
+      </p>
 
       {picked.length === 0 ? (
         <p className="text-sm text-muted-foreground">

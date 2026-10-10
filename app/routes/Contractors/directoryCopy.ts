@@ -8,6 +8,8 @@ export const DIRECTORY_COPY: Record<DirectoryTab, DirectoryBrowserCopy> = {
     description:
       "Pick a job to see who residents recommend. Contact the business yourself. Who you hire is up to you.",
     addLabel: "Add contractor",
+    addPrompt:
+      "Hired someone you'd happily use again? Add them here so your neighbors can find them too. A good recommendation from someone in the building goes a long way.",
     emptyMessage: "No contractors have been added yet. Check back soon.",
   },
   building: {

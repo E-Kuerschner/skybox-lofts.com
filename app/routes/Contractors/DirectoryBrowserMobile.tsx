@@ -49,6 +49,7 @@ export function DirectoryBrowserMobile({
             ? "What do you need done?"
             : searchPlaceholder(jobs, pickedJob)
         }
+        className="md:max-w-sm"
       />
 
       {total === 0 ? (

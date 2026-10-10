@@ -18,6 +18,17 @@ type AdminActionHandlers = Record<
   (args: AdminActionArgs) => Promise<ActionResult>
 >;
 
+type AdminActionOptions = {
+  /**
+   * Roles allowed past the door, in addition to admins. A route that lets
+   * other residents make some changes lists their roles here, and its handlers
+   * then decide record by record what each person may touch.
+   */
+  alsoAllow?: string[];
+  /** The refusal shown to anyone whose role isn't allowed. */
+  forbiddenMessage?: string;
+};
+
 /**
  * Runs the admin-only half of a route's action.
  *
@@ -26,7 +37,8 @@ type AdminActionHandlers = Record<
  *
  * - Not signed in at all -> 401, handled by the route error boundary. There is
  *   no friendly copy for this because the person has no session to speak of.
- * - Signed in but not an admin -> a normal `ActionResult` error, so the page can
+ * - Signed in but not an admin (or one of the roles in `alsoAllow`) -> a
+ *   normal `ActionResult` error, so the page can
  *   explain what happened in plain language instead of a blank error screen.
  *   This is the case that matters: most people using the site are residents.
  * - Unexpected failure -> logged for us, generic apology for them.
@@ -46,14 +58,20 @@ export async function runAdminAction(
     context: AppLoadContext;
   },
   handlers: AdminActionHandlers,
+  options: AdminActionOptions = {},
 ): Promise<ActionResult> {
   const session = await isAuthenticated(request, context, {
     returnUnauthorized: true,
   });
 
-  if (session.user.role !== "admin") {
+  const role = session.user.role;
+  const isAllowed =
+    role === "admin" || (!!role && !!options.alsoAllow?.includes(role));
+
+  if (!isAllowed) {
     return actionError(
-      "Only building administrators can make changes here. If you think you should have access, please contact a board member.",
+      options.forbiddenMessage ??
+        "Only building administrators can make changes here. If you think you should have access, please contact a board member.",
     );
   }
 

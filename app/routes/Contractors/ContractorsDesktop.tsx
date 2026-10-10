@@ -11,6 +11,7 @@ export function ContractorsDesktop({
   onTabChange,
   unit,
   building,
+  canAdd,
   onAdd,
   className,
   ...handlers
@@ -35,6 +36,7 @@ export function ContractorsDesktop({
           section={unit}
           copy={DIRECTORY_COPY.unit}
           showPhotos
+          canAdd={canAdd.unit}
           onAdd={() => onAdd(false)}
           {...handlers}
         />
@@ -45,6 +47,7 @@ export function ContractorsDesktop({
           section={building}
           copy={DIRECTORY_COPY.building}
           showPhotos={false}
+          canAdd={canAdd.building}
           onAdd={() => onAdd(true)}
           {...handlers}
         />

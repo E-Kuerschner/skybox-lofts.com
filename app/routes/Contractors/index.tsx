@@ -7,6 +7,7 @@ import { useStatusBanner } from "~/components/crud/ActionStatusBanner";
 import { ConfirmActionDialog } from "~/components/crud/ConfirmActionDialog";
 import { ResponsiveOverlay } from "~/components/ResponsiveOverlay";
 import {
+  canAddContractors,
   createContractor,
   deleteContractor,
   fetchContractorDirectory,
@@ -21,21 +22,31 @@ import { useDirectorySection } from "./useDirectorySection";
 import type { ContractorListing } from "./types";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  await isAuthenticated(request, context);
+  const session = await isAuthenticated(request, context);
 
   const { contractors, services } = await fetchContractorDirectory(
     getDatabase(context),
+    session.user,
   );
 
-  // `isAdmin` deliberately isn't returned here - the resident layout already
-  // provides it, and `useIsAdmin()` reads it from there.
+  const isAdmin = session.user.role === "admin";
+
   return {
     contractors,
     services,
+    // Owners can add to the in-unit list; only admins add building service
+    // providers or choose which list a business goes in.
+    canAdd: {
+      unit: canAddContractors(session.user),
+      building: isAdmin,
+    } satisfies Record<DirectoryTab, boolean>,
+    canChooseSections: isAdmin,
   };
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
+  // Owners get through the door too; the handlers then check that an owner is
+  // only changing a listing they added themselves.
   return runAdminAction(
     { request, context },
     {
@@ -43,11 +54,21 @@ export async function action({ request, context }: Route.ActionArgs) {
       update: updateContractor,
       delete: deleteContractor,
     },
+    {
+      alsoAllow: ["owner"],
+      forbiddenMessage:
+        "Only owners and building administrators can add or change contractors. If you think you should have access, please contact a board member.",
+    },
   );
 }
 
 export default function Contractors({ loaderData }: Route.ComponentProps) {
-  const { contractors: allContractors, services } = loaderData;
+  const {
+    contractors: allContractors,
+    services,
+    canAdd,
+    canChooseSections,
+  } = loaderData;
   const { banner, showSuccess } = useStatusBanner();
 
   // The two flags are independent, so a business that does both kinds of work
@@ -104,6 +125,7 @@ export default function Contractors({ loaderData }: Route.ComponentProps) {
     onTabChange: setTab,
     unit,
     building,
+    canAdd,
     onAdd: openAddForm,
     onOpenDetails: setDetailContractor,
     onEdit: (contractor) => openEditForm(contractor),
@@ -138,12 +160,14 @@ export default function Contractors({ loaderData }: Route.ComponentProps) {
         )}
       </ResponsiveOverlay>
 
-      {/* Admin-only overlays. The action re-checks the role on every submit. */}
+      {/* Only reachable by admins and the owner of a listing. The action
+          re-checks both on every submit. */}
       <ContractorFormDialog
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
         contractor={formContractor}
         defaultBuildingService={addingBuildingService}
+        canChooseSections={canChooseSections}
         services={services}
         onSuccess={showSuccess}
         onBack={

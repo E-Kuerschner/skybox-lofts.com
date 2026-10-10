@@ -1,5 +1,4 @@
 import { PlusIcon } from "lucide-react";
-import { AdminOnly } from "~/components/AdminOnly";
 import { CategoryPicker } from "~/components/CategoryPicker";
 import { NoContent } from "~/components/NoContent";
 import { SearchInput } from "~/components/SearchInput";
@@ -16,6 +15,11 @@ export type DirectoryBrowserCopy = {
   title: string;
   description: string;
   addLabel: string;
+  /**
+   * Invites people who can add to the list to share businesses they
+   * recommend. Only shown to them, since nobody else has a way to add one.
+   */
+  addPrompt?: string;
   /** Shown when the tab has no listings at all yet. */
   emptyMessage: string;
 };
@@ -29,12 +33,14 @@ export function DirectoryBrowserDesktop({
   section,
   copy,
   showPhotos,
+  canAdd,
   onAdd,
   ...handlers
 }: ListingHandlers & {
   section: DirectorySection;
   copy: DirectoryBrowserCopy;
   showPhotos: boolean;
+  canAdd: boolean;
   onAdd: () => void;
 }) {
   const { total, jobs, pickedJob, onPickJob, query, onQueryChange, groups } =
@@ -45,16 +51,19 @@ export function DirectoryBrowserDesktop({
       <div className="flex flex-col gap-1.5">
         <h2 className="text-2xl font-semibold">{copy.title}</h2>
         <p className="max-w-3xl text-muted-foreground">{copy.description}</p>
+        {canAdd && copy.addPrompt && (
+          <p className="max-w-3xl text-muted-foreground">{copy.addPrompt}</p>
+        )}
       </div>
 
       <div className="flex items-start gap-6">
         <aside className="sticky top-4 flex w-56 shrink-0 flex-col gap-3">
-          <AdminOnly>
+          {canAdd && (
             <Button variant="secondary" onClick={onAdd}>
               <PlusIcon />
               {copy.addLabel}
             </Button>
-          </AdminOnly>
+          )}
           <CategoryPicker
             layout="list"
             ariaLabel="Jobs"
@@ -70,6 +79,7 @@ export function DirectoryBrowserDesktop({
             value={query}
             onChange={onQueryChange}
             placeholder={searchPlaceholder(jobs, pickedJob)}
+            className="md:max-w-sm"
           />
 
           {total === 0 ? (
