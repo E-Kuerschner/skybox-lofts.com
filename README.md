@@ -150,6 +150,56 @@ Production migrations run in CI. You don't run them by hand. The [Migrate workfl
 
 The workflow applies migrations with drizzle-kit rather than `wrangler d1 migrations apply`. Production tracks applied migrations in drizzle's `__drizzle_migrations` table. Wrangler keeps its own separate list and would treat every migration as not yet applied.
 
+## Agentic Development
+
+This project is set up for working with AI coding agents. The preferred harness is [Claude Code](https://claude.com/claude-code) (CLI, desktop app or IDE extension); the configuration below is written for it.
+
+### Project instructions
+
+`CLAUDE.md` points to [`AGENTS.md`](AGENTS.md), which holds the conventions agents follow: Bun only, Tailwind theme variables instead of raw colors, PascalCase component files, plain language for residents, generated (never hand-written) migrations, and so on. When a convention changes, update `AGENTS.md` so every agent session picks it up. Longer write-ups an agent should read before touching an area live in `docs/` (e.g. [`docs/admin-crud-pattern.md`](docs/admin-crud-pattern.md)).
+
+### What's in `.claude/`
+
+| Path | What it does |
+|---|---|
+| `hooks/setup-worktree-db.sh` | Sets up a local database in new worktrees (see [Hooks](#hooks)). |
+| `settings.json` | Shared permissions and hooks. Common safe commands are pre-approved, and `bun run db:migrate` (production) and `bun run deploy` are **denied**, so an agent can never touch production. Personal overrides go in `settings.local.json`, which is gitignored. |
+| `launch.json` | How to start the dev server (`bun run dev` with Node 24 on the PATH, which Wrangler needs). The desktop app's preview browser uses it. |
+| `skills/design-canvas/` | How to make design mockups that sit inside the app's real shell, captured from the running dev server. |
+| `skills/react-router-framework-mode/` | Reference for React Router v7 routes, loaders, actions and forms. |
+| `agents/dev-server-debugger.md` | A sub-agent that tests features in the running dev server through a browser. |
+
+### Worktrees and `.worktreeinclude`
+
+Claude Code can run each task in its own git worktree under `.claude/worktrees/`, so several agents can work in parallel without stepping on each other. A new worktree only contains tracked files, so gitignored ones like `.dev.vars` are missing, and signing in fails with an "Invalid URL string" error because `BETTER_AUTH_URL` is unset.
+
+[`.worktreeinclude`](.worktreeinclude) fixes that: it lists gitignored files (using `.gitignore` syntax) that Claude Code copies from your main checkout into every new worktree. It currently copies `.dev.vars`. Worktrees created before a file was listed won't have it; copy it in by hand from the main checkout.
+
+The local database (`.wrangler/`) is deliberately not copied, so each worktree starts with a clean one. The hook below sets it up.
+
+### Hooks
+
+Hooks are scripts Claude Code runs on its own at set moments. They're registered in `.claude/settings.json` and live in `.claude/hooks/`.
+
+#### `setup-worktree-db.sh`: a ready-to-use database in every new worktree
+
+Runs when a Claude Code session starts (not when one is resumed or cleared). The first time that happens in a new worktree, it:
+
+1. Checks that it's in a worktree with no local database yet. In your main checkout, or in a worktree that already has a database, it stops straight away, so your data is never touched.
+2. Puts Node 24 on the PATH if nvm has it (Wrangler needs it), and runs `bun install` if `node_modules` is missing.
+3. Runs `bun run db:reset:local`, which creates the database, applies every migration without asking for confirmation, and adds an admin user you can sign in with.
+
+This takes a few seconds. The hook never stops a session from starting: if something it needs is missing or the setup fails, it tells Claude what to do at the start of the session, and the full output is in `.wrangler/worktree-setup.log`.
+
+Claude Code has no hook for "after a worktree is created". Its `WorktreeCreate` hook replaces how worktrees are made entirely, and turns off `.worktreeinclude`, so this hook runs at session start and checks for itself whether there's anything to do.
+
+### Tips
+
+- **Signing in as an agent:** emails aren't sent in development, so an agent reads the magic link from the dev server's terminal output (see [Local Development](#local-development)).
+- **Only one dev server on port 5173 at a time.** Stop the one in another worktree before starting a new one, or the agent will be looking at the wrong code.
+- **Check the work like any other PR:** run `bun run test` and `bun run typecheck`, and look at UI changes in the browser before merging.
+- **Never put secrets in prompts, `AGENTS.md`, skills or committed settings.** They belong in `.dev.vars` and the Worker's secrets.
+
 ## Cloudflare Infrastructure
 
 The app runs entirely on Cloudflare's infrastructure. Here is what is in use and what a new maintainer needs access to in order to take over the project.
