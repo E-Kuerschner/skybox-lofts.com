@@ -68,6 +68,13 @@ export const contractors = sqliteTable("contractors", {
   isBuildingService: integer("is_building_service", { mode: "boolean" })
     .notNull()
     .default(false),
+  // Id of the user who added the listing. An owner can edit or remove the
+  // listings they added; admins can change any of them. Null for listings added
+  // before this was tracked, which are admin-only. Deliberately not a foreign
+  // key: SQLite can't add one with ON DELETE SET NULL to an existing table, and
+  // a plain reference would stop a resident who added a listing from ever being
+  // removed. An id left behind by a removed resident just matches nobody.
+  createdBy: text("created_by"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .$defaultFn(() => new Date())
     .notNull(),

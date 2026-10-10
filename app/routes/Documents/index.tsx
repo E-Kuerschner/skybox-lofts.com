@@ -230,7 +230,9 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
             Upload document
           </Button>
         )}
-        <p className="col-span-2 max-w-2xl text-sm text-balance text-muted-foreground md:col-span-1">
+        {/* Pinned to the first column, or without the admin's upload button
+            it moves up into the empty spot beside the heading. */}
+        <p className="col-span-2 max-w-2xl text-sm text-balance text-muted-foreground md:col-[1]">
           Building documents, meeting notes and financials are available to all
           residents for download. Expand the sections below to see more. Tap a
           document's name to download it.

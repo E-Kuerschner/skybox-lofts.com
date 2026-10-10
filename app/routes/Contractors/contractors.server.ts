@@ -26,12 +26,48 @@ const ALLOWED_PHOTO_TYPES = [
   "image/gif",
 ];
 
+/** The signed-in person, as far as contractor permissions care. */
+export type ContractorViewer = {
+  id: string;
+  role?: string | null;
+};
+
+/**
+ * Whether this person may add listings at all. Owners can add to the in-unit
+ * list; only admins can add building service providers.
+ */
+export function canAddContractors(viewer: ContractorViewer): boolean {
+  return viewer.role === "admin" || viewer.role === "owner";
+}
+
+/**
+ * Whether this person may edit or remove a listing: admins can change any of
+ * them, owners only the ones they added themselves.
+ */
+export function canManageContractor(
+  viewer: ContractorViewer,
+  contractor: { createdBy: string | null },
+): boolean {
+  if (viewer.role === "admin") return true;
+  return (
+    viewer.role === "owner" &&
+    contractor.createdBy !== null &&
+    contractor.createdBy === viewer.id
+  );
+}
+
 /**
  * Loads everything the contractors page needs in four flat queries and stitches
  * the rows together in memory. The building has a handful of vetted
  * contractors, not thousands, so this stays well clear of an N+1 join tangle.
+ *
+ * Each listing says whether `viewer` may change it, so the page never needs to
+ * know who added what.
  */
-export async function fetchContractorDirectory(db: Database): Promise<{
+export async function fetchContractorDirectory(
+  db: Database,
+  viewer: ContractorViewer,
+): Promise<{
   contractors: ContractorListing[];
   services: ContractorService[];
 }> {
@@ -91,6 +127,7 @@ export async function fetchContractorDirectory(db: Database): Promise<{
       a.name.localeCompare(b.name),
     ),
     photos: photosByContractor.get(contractor.id) ?? [],
+    canManage: canManageContractor(viewer, contractor),
   }));
 
   return {
@@ -122,14 +159,27 @@ type ContractorInput = {
   isBuildingService: boolean;
 };
 
+type ContractorSections = Pick<
+  ContractorInput,
+  "isUnitContractor" | "isBuildingService"
+>;
+
+/**
+ * Reads the add/edit form. `fixedSections`, when given, decides which list(s)
+ * the listing goes in instead of the form's checkboxes - for people who aren't
+ * allowed to choose.
+ */
 function parseContractorFields(
   formData: FormData,
+  fixedSections?: ContractorSections,
 ): { ok: true; value: ContractorInput } | { ok: false; error: string } {
   const businessName = readTrimmed(formData, "businessName");
   const phone = readTrimmed(formData, "phone");
   const email = readTrimmed(formData, "email");
-  const isUnitContractor = formData.get("isUnitContractor") === "on";
-  const isBuildingService = formData.get("isBuildingService") === "on";
+  const { isUnitContractor, isBuildingService } = fixedSections ?? {
+    isUnitContractor: formData.get("isUnitContractor") === "on",
+    isBuildingService: formData.get("isBuildingService") === "on",
+  };
 
   if (!businessName) {
     return { ok: false, error: "Please enter the business or owner name." };
@@ -355,6 +405,9 @@ async function replaceServiceLinks(
     .values(serviceIds.map((serviceId) => ({ contractorId, serviceId })));
 }
 
+const NOT_YOURS_MESSAGE =
+  "You can only change contractors you added yourself. If something about this one needs fixing, please contact a board member.";
+
 function readPhotoIdsToRemove(formData: FormData): number[] {
   return formData
     .getAll("removePhotoIds")
@@ -368,7 +421,14 @@ export async function createContractor({
   context,
   session,
 }: AdminActionArgs): Promise<ActionResult> {
-  const fields = parseContractorFields(formData);
+  // Only admins pick the list. Anyone else can only add to the in-unit list -
+  // the form doesn't offer them the choice, so whatever arrives is ignored.
+  const fields = parseContractorFields(
+    formData,
+    session.user.role === "admin"
+      ? undefined
+      : { isUnitContractor: true, isBuildingService: false },
+  );
   if (!fields.ok) return actionError(fields.error);
 
   const services = await resolveServiceIds(formData, db);
@@ -376,7 +436,7 @@ export async function createContractor({
 
   const contractor = await db
     .insert(schema.contractors)
-    .values(fields.value)
+    .values({ ...fields.value, createdBy: session.user.id })
     .returning()
     .get();
 
@@ -434,7 +494,17 @@ export async function updateContractor({
     );
   }
 
-  const fields = parseContractorFields(formData);
+  if (!canManageContractor(session.user, existing)) {
+    return actionError(NOT_YOURS_MESSAGE);
+  }
+
+  // Someone who isn't an admin can't move a listing between lists, so it stays
+  // wherever it already is - including if an admin has since added it to the
+  // building service providers.
+  const fields = parseContractorFields(
+    formData,
+    session.user.role === "admin" ? undefined : existing,
+  );
   if (!fields.ok) return actionError(fields.error);
 
   const services = await resolveServiceIds(formData, db);
@@ -513,6 +583,10 @@ export async function deleteContractor({
     return actionError(
       "That contractor has already been removed. Refresh the page to see the current list.",
     );
+  }
+
+  if (!canManageContractor(session.user, existing)) {
+    return actionError(NOT_YOURS_MESSAGE);
   }
 
   const photos = await db

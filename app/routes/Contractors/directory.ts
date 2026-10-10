@@ -146,5 +146,7 @@ export type DirectoryViewProps = ListingHandlers & {
   onTabChange: (tab: DirectoryTab) => void;
   unit: DirectorySection;
   building: DirectorySection;
+  /** Whether the signed-in person can add to each tab's list. */
+  canAdd: Record<DirectoryTab, boolean>;
   onAdd: (asBuildingService: boolean) => void;
 };

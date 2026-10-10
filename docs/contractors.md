@@ -1,11 +1,29 @@
 # Contractors & service providers
 
 A directory of businesses the building has vetted, at `/resident/contractors`.
-Every signed-in resident can browse it; only admins can add, edit or remove
-listings. The admin controls follow the interaction pattern in
-[admin-crud-pattern.md](./admin-crud-pattern.md): no edit mode, an "Add" button
-beside the job list, and Edit/Remove controls on each listing — all visible to
-admins at all times, all hidden from residents.
+Every signed-in resident can browse it. The add/edit controls follow the
+interaction pattern in [admin-crud-pattern.md](./admin-crud-pattern.md): no edit
+mode, an "Add" button beside the job list, and Edit/Remove controls on each
+listing — always visible to the people who can use them, hidden from everyone
+else.
+
+## Who can change what
+
+| | Admin | Owner | Renter |
+| --- | --- | --- | --- |
+| Add to the in-unit list | yes | yes | no |
+| Add building service providers | yes | no | no |
+| Choose which list(s) a listing is in | yes | no | no |
+| Edit or remove a listing | any | only ones they added | no |
+
+Each listing records who added it in `contractors.created_by`. Listings added
+before that column existed have no creator, so only admins can change them.
+When an owner edits their listing it stays in whichever list(s) it's already in
+— an admin may have added it to the building service providers as well.
+
+The loader works out `canManage` for each listing on the server, so the page
+never sees who added what; the action re-checks it on every submit. Every add,
+edit and removal — by an owner or an admin — is written to the activity log.
 
 ## Two tabs
 

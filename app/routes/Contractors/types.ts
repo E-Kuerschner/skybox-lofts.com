@@ -29,4 +29,9 @@ export type ContractorListing = {
   isBuildingService: boolean;
   services: ContractorService[];
   photos: ContractorPhoto[];
+  /**
+   * Whether the signed-in person may edit or remove this listing: always for
+   * admins, and for owners on the listings they added.
+   */
+  canManage: boolean;
 };

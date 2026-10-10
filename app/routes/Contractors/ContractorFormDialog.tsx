@@ -24,6 +24,7 @@ export function ContractorFormDialog({
   onOpenChange,
   contractor,
   defaultBuildingService = false,
+  canChooseSections,
   services,
   onSuccess,
   onBack,
@@ -34,6 +35,12 @@ export function ContractorFormDialog({
   contractor: ContractorListing | null;
   /** How a brand new listing starts out, set by which "add" button was used. */
   defaultBuildingService?: boolean;
+  /**
+   * Only admins choose which list(s) a business goes in. Owners don't see the
+   * choice: what they add goes in the in-unit list, and what they edit stays
+   * where it is.
+   */
+  canChooseSections: boolean;
   services: ContractorService[];
   onSuccess: (message: string) => void;
   /** Set when the form was opened from the details view, to go back to it. */
@@ -77,7 +84,7 @@ export function ContractorFormDialog({
       }
       submitDisabled={
         selectedServiceIds.length === 0 ||
-        (!isUnitContractor && !isBuildingService)
+        (canChooseSections && !isUnitContractor && !isBuildingService)
       }
       headerStart={
         isEditing &&
@@ -93,7 +100,7 @@ export function ContractorFormDialog({
         )
       }
     >
-      <FormSection title="Photos">
+      <FormSection title="Photos (optional)">
         <PhotoField
           existingPhotos={contractor?.photos ?? []}
           maxPhotos={MAX_PHOTOS}
@@ -125,7 +132,8 @@ export function ContractorFormDialog({
 
       <FormSection
         title="How to reach them"
-        hint="A phone number or an email is needed. The address is optional."
+        required
+        hint="Add a phone number or an email so residents can get in touch. One is enough, but both is better. Website and address are optional."
       >
         <div className="flex flex-col gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -187,25 +195,27 @@ export function ContractorFormDialog({
         />
       </FormSection>
 
-      <CheckboxGroup
-        legend="Show this business under"
-        options={[
-          {
-            name: "isUnitContractor",
-            label: "In-unit work",
-            description: "Work owners arrange for their own unit.",
-            checked: isUnitContractor,
-            onChange: setIsUnitContractor,
-          },
-          {
-            name: "isBuildingService",
-            label: "Building services",
-            description: "Work on the building. The board handles these.",
-            checked: isBuildingService,
-            onChange: setIsBuildingService,
-          },
-        ]}
-      />
+      {canChooseSections && (
+        <CheckboxGroup
+          legend="Show this business under"
+          options={[
+            {
+              name: "isUnitContractor",
+              label: "In-unit work",
+              description: "Work owners arrange for their own unit.",
+              checked: isUnitContractor,
+              onChange: setIsUnitContractor,
+            },
+            {
+              name: "isBuildingService",
+              label: "Building services",
+              description: "Work on the building. The board handles these.",
+              checked: isBuildingService,
+              onChange: setIsBuildingService,
+            },
+          ]}
+        />
+      )}
     </CrudFormDialog>
   );
 }

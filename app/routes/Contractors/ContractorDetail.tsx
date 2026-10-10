@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { PencilIcon } from "lucide-react";
 import { ActionButton } from "~/components/ActionButton";
-import { AdminOnly } from "~/components/AdminOnly";
 import {
   OverlayCloseButton,
   OverlayFooter,
@@ -15,8 +14,8 @@ import type { ContractorListing } from "./types";
 
 /**
  * Everything about one business: its photos, the services it offers, every
- * way to reach it, and anything worth knowing first. Board admins can edit
- * or remove it from here.
+ * way to reach it, and anything worth knowing first. Admins, and the owner who
+ * added it, can edit or remove it from here.
  *
  * Meant for a `ResponsiveOverlay` with `hideHeader` and `bare` - it draws its
  * own top, with the cover photo when there is one, and footer.
@@ -34,7 +33,7 @@ export function ContractorDetail({
 
   const actions = (floating: boolean) => (
     <div className="flex shrink-0 items-center gap-2">
-      <AdminOnly>
+      {contractor.canManage && (
         <Button
           variant="outline"
           className={cn(
@@ -46,7 +45,7 @@ export function ContractorDetail({
           <PencilIcon />
           Edit
         </Button>
-      </AdminOnly>
+      )}
       <OverlayCloseButton floating={floating} />
     </div>
   );
@@ -93,7 +92,7 @@ export function ContractorDetail({
         </div>
       </div>
 
-      <AdminOnly>
+      {contractor.canManage && (
         <OverlayFooter>
           <ActionButton
             type="button"
@@ -104,7 +103,7 @@ export function ContractorDetail({
             Remove contractor
           </ActionButton>
         </OverlayFooter>
-      </AdminOnly>
+      )}
     </>
   );
 }

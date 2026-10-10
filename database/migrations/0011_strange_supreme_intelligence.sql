@@ -1,0 +1,1 @@
+ALTER TABLE `contractors` ADD `created_by` text;

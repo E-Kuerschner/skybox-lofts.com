@@ -1,5 +1,4 @@
 import { PlusIcon } from "lucide-react";
-import { AdminOnly } from "~/components/AdminOnly";
 import { ActionButton } from "~/components/ActionButton";
 import { SegmentedToggle } from "~/components/SegmentedToggle";
 import { Tabs, TabsContent } from "~/components/ui/tabs";
@@ -14,6 +13,7 @@ export function ContractorsMobile({
   onTabChange,
   unit,
   building,
+  canAdd,
   onAdd,
   className,
   ...handlers
@@ -38,19 +38,20 @@ export function ContractorsMobile({
           ]}
           className="w-auto min-w-0 shrink grow"
         />
-        <AdminOnly>
+        {canAdd[tab] && (
           <ActionButton
             variant="secondary"
             icon={PlusIcon}
             label={copy.addLabel}
             onClick={() => onAdd(tab === "building")}
           />
-        </AdminOnly>
+        )}
       </div>
 
       <TabsContent value="unit" className="flex flex-col gap-4">
         <DirectoryBrowserMobile
           section={unit}
+          intro={canAdd.unit ? DIRECTORY_COPY.unit.addPrompt : undefined}
           emptyMessage={DIRECTORY_COPY.unit.emptyMessage}
           {...handlers}
         />
