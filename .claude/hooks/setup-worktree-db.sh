@@ -1,6 +1,10 @@
 #!/bin/sh
 # SessionStart hook: the first time Claude Code starts in a new worktree, set
-# up a local database seeded with the admin from ADMIN_EMAIL in .dev.vars.
+# up a local database with an admin user to sign in as.
+#
+# Requires ADMIN_EMAIL in .dev.vars: the email address of the admin user that
+# `bun run db:reset:local` seeds. Put it in the main checkout's .dev.vars;
+# .worktreeinclude copies that file into every new worktree.
 #
 # Never fails the session: if something's missing it says so and carries on.
 # Anything printed to stdout is shown to Claude at the start of the session.
@@ -16,7 +20,7 @@ common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
 [ -d .wrangler/state/v3/d1 ] && exit 0
 
 if ! grep -q '^ADMIN_EMAIL=.' .dev.vars 2>/dev/null; then
-  echo "Skipped setting up the local database in this worktree: ADMIN_EMAIL isn't set in .dev.vars. Add it there (and in the main checkout's .dev.vars, so new worktrees get it), then run: bun run db:reset:local"
+  echo "Skipped setting up the local database in this worktree: ADMIN_EMAIL isn't set in .dev.vars. It's the email address of the admin user the database is seeded with, used to sign in locally. Add ADMIN_EMAIL=<email> to .dev.vars here and in the main checkout's .dev.vars (so new worktrees get it), then run: bun run db:reset:local"
   exit 0
 fi
 

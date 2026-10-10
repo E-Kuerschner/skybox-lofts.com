@@ -75,7 +75,6 @@ These are only needed in `.dev.vars` on your local machine. They authenticate th
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID, found in the dashboard sidebar. | Tells Wrangler which account to target. |
 | `CLOUDFLARE_ACCOUNT_TOKEN` | A Cloudflare API token with D1 and R2 read/write permissions. Create one at Cloudflare Dashboard → My Profile → API Tokens. | Authenticates Wrangler CLI commands (migrations, deployments) with Cloudflare. |
 | `CLOUDFLARE_DATABASE_ID` | The ID of the D1 database, found at Cloudflare Dashboard → D1 → `app`. | Used by Drizzle migration scripts to target the correct database. |
-| `ADMIN_EMAIL` | An email address you can sign in with. | `bun run db:reset:local` seeds an admin user with this email, so you can sign in to a fresh local database. |
 
 ## Testing
 
@@ -187,15 +186,10 @@ Hooks are scripts Claude Code runs on its own at set moments. They're registered
 Runs when a Claude Code session starts (not when one is resumed or cleared). The first time that happens in a new worktree, it:
 
 1. Checks that it's in a worktree with no local database yet. In your main checkout, or in a worktree that already has a database, it stops straight away, so your data is never touched.
-2. Checks that `.dev.vars` has `ADMIN_EMAIL`.
-3. Puts Node 24 on the PATH if nvm has it (Wrangler needs it), and runs `bun install` if `node_modules` is missing.
-4. Runs `bun run db:reset:local`, which creates the database, applies every migration without asking for confirmation, and adds an admin user with the `ADMIN_EMAIL` address.
+2. Puts Node 24 on the PATH if nvm has it (Wrangler needs it), and runs `bun install` if `node_modules` is missing.
+3. Runs `bun run db:reset:local`, which creates the database, applies every migration without asking for confirmation, and adds an admin user you can sign in with.
 
-This takes a few seconds. Sign in with the `ADMIN_EMAIL` address once the dev server is running.
-
-**Setup, once:** add `ADMIN_EMAIL` to the `.dev.vars` in your main checkout. `.worktreeinclude` copies that file into each new worktree, which is where the hook reads it from.
-
-**If it doesn't run:** the hook never stops a session from starting. If `ADMIN_EMAIL` is missing or the setup fails, it tells Claude at the start of the session, and the full output is in `.wrangler/worktree-setup.log`. Fix the cause, then run `bun run db:reset:local` yourself.
+This takes a few seconds. The hook never stops a session from starting: if something it needs is missing or the setup fails, it tells Claude what to do at the start of the session, and the full output is in `.wrangler/worktree-setup.log`.
 
 Claude Code has no hook for "after a worktree is created". Its `WorktreeCreate` hook replaces how worktrees are made entirely, and turns off `.worktreeinclude`, so this hook runs at session start and checks for itself whether there's anything to do.
 
