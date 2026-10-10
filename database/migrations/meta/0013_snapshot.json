@@ -1,8 +1,8 @@
 {
-  "id": "19c91ef2-0b05-4a61-a3a4-142cbadfec27",
-  "prevId": "552379c3-f47c-426e-9b45-eb61e1dd0ad6",
   "version": "6",
   "dialect": "sqlite",
+  "id": "a4e02585-d164-4a36-8d45-74d9c1de01d6",
+  "prevId": "19c91ef2-0b05-4a61-a3a4-142cbadfec27",
   "tables": {
     "activity_logs": {
       "name": "activity_logs",
@@ -62,15 +62,15 @@
         "activity_logs_user_id_users_id_fk": {
           "name": "activity_logs_user_id_users_id_fk",
           "tableFrom": "activity_logs",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -114,15 +114,15 @@
         "board_members_user_id_users_id_fk": {
           "name": "board_members_user_id_users_id_fk",
           "tableFrom": "board_members",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -189,15 +189,15 @@
         "contractor_photos_contractor_id_contractors_id_fk": {
           "name": "contractor_photos_contractor_id_contractors_id_fk",
           "tableFrom": "contractor_photos",
+          "tableTo": "contractors",
           "columnsFrom": [
             "contractor_id"
           ],
-          "tableTo": "contractors",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -235,28 +235,28 @@
         "contractor_service_links_contractor_id_contractors_id_fk": {
           "name": "contractor_service_links_contractor_id_contractors_id_fk",
           "tableFrom": "contractor_service_links",
+          "tableTo": "contractors",
           "columnsFrom": [
             "contractor_id"
           ],
-          "tableTo": "contractors",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "contractor_service_links_service_id_contractor_services_id_fk": {
           "name": "contractor_service_links_service_id_contractor_services_id_fk",
           "tableFrom": "contractor_service_links",
+          "tableTo": "contractor_services",
           "columnsFrom": [
             "service_id"
           ],
-          "tableTo": "contractor_services",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -521,15 +521,15 @@
         "accounts_user_id_users_id_fk": {
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -623,15 +623,15 @@
         "sessions_user_id_users_id_fk": {
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -715,13 +715,6 @@
         },
         "ban_expires": {
           "name": "ban_expires",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "is_anonymous": {
-          "name": "is_anonymous",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -836,9 +829,9 @@
   "views": {},
   "enums": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
+    "tables": {},
+    "columns": {}
   },
   "internal": {
     "indexes": {}
