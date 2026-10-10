@@ -81,8 +81,10 @@ These are only needed in `.dev.vars` on your local machine. They authenticate th
 Run the full test suite:
 
 ```bash
-bun test
+bun run test
 ```
+
+Use `bun run test` rather than a bare `bun test`: the script adds `--isolate`, which stops one test file's `mock.module()` fakes from leaking into other files.
 
 Run tests in watch mode during development:
 
