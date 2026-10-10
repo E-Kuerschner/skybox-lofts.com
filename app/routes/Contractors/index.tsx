@@ -45,8 +45,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  // Owners get through the door too; the handlers then check that an owner is
-  // only changing a listing they added themselves.
+  // Owners get through the door as well as admins; the handlers then check
+  // that an owner is only changing a listing they added themselves.
   return runAdminAction(
     { request, context },
     {
@@ -55,7 +55,7 @@ export async function action({ request, context }: Route.ActionArgs) {
       delete: deleteContractor,
     },
     {
-      alsoAllow: ["owner"],
+      allowedRoles: ["admin", "owner"],
       forbiddenMessage:
         "Only owners and building administrators can add or change contractors. If you think you should have access, please contact a board member.",
     },
