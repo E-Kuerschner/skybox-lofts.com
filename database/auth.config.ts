@@ -30,22 +30,31 @@ export function createPlugins({ sendMagicLink }: CreatePluginsParams = {}) {
 /**
  * Custom fields added to the user table.
  * AGENTS.md: custom fields must be added here, never via raw migration scripts.
+ *
+ * Better Auth lets a signed-in user set any field on their own account through
+ * POST /api/auth/update-user unless the field has `input: false`. Give every new
+ * field `input: false` unless residents are meant to change it themselves.
+ * Admin edits write to the database directly, so they are not affected.
  */
 export const userAdditionalFields = {
   unitNumber: {
     type: "number",
     required: true,
     defaultValue: 0,
+    input: false,
   },
   firstName: {
     type: "string",
     required: false,
+    input: false,
   },
   lastName: {
     type: "string",
     required: false,
+    input: false,
   },
   // Email preference: general communications (announcements, new site features, etc.)
+  // Residents change this themselves on the Preferences page, so it stays user-settable.
   receivesGeneralEmails: {
     type: "boolean",
     required: true,
